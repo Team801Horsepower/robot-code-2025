@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# This script helps us complete common actions easily. 
+
+case "$1" in
+  verify)
+    echo 'run mypy static type checker:'
+    printf %"$COLUMNS"s | tr " " "_"
+    poetry run mypy src/
+    printf '\n\n\nrun ruff check:\n'
+    printf %"$COLUMNS"s | tr " " "_"
+    poetry run ruff check --fix .
+    poetry run ruff format .
+    ;;
+  deploy)
+    poetry run robotpy --main src/robot.py deploy --skip-tests --team 801
+    ;;
+  console)
+    poetry run netconsole 10.8.1.2
+    ;;
+  shell)
+    poetry shell
+    ;;
+  ssh)
+    ssh -o StrictHostKeyChecking=no admin@10.8.1.2
+    ;;
+  rlds)
+    ssh -o StrictHostKeyChecking=no admin@10.8.1.2 'sh /home/lvuser/rlds/deploy'
+    ;;
+  sb)
+    { poetry run python3 dev-utils/soundboard/play.py dev-utils/soundboard/$2*.wav; } > /dev/null 2>&1
+    # This segfaults about half the time. I'm not sure why. It probably isn't my fault. Anyway, I've silenced it. 
+    ;;
+  install)
+    poetry env remove --all
+    poetry install --no-root
+    ;;
+  *)
+    echo 'Usage: ./frc [verify | deploy | console]'
+    ;;
+esac

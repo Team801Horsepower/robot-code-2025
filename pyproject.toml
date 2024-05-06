@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "robot-code-2025"
+version = "0.1.0"
+description = ""
+authors = [
+  "Ishaan Sen <ishaan.sen100@gmail.com", 
+  "Omkar Subramaniam <omnikar5@gmail.com>",
+  "Aneesha Guna <aneesha.guna@gmail.com>",
+  "Matthew Carr <matthewjumpingdolphin@gmail.com>"
+]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+robotpy = {extras = ["navx", "rev"], version = "^2024.3.2.1"}
+photonlibpy = "^2024.3.1"
+simpleaudio = "^1.0.4"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.3.4"
+mypy = "^1.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
