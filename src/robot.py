@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
 import wpilib
-
+from rev import CANSparkFlex, CANSparkMax
 
 class Robot(wpilib.TimedRobot):
-    def __init__(self):
-        pass
-
     def robotInit(self):
-        pass
+        self.drive_motor = CANSparkFlex(5, CANSparkFlex.MotorType.kBrushless)
+        self.turn_motor = CANSparkMax(3, CANSparkFlex.MotorType.kBrushless)
 
     def robotPeriodic(self):
         pass
@@ -35,7 +33,8 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        pass
+        self.drive_motor.set(0.05)
+        self.turn_motor.set(0.05)
 
     def teleopExit(self):
         pass
