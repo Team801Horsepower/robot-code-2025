@@ -3,10 +3,12 @@
 import wpilib
 from rev import CANSparkFlex, CANSparkMax
 
+from phoenix6.hardware import cancoder
+
+
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        self.drive_motor = CANSparkFlex(5, CANSparkFlex.MotorType.kBrushless)
-        self.turn_motor = CANSparkMax(3, CANSparkFlex.MotorType.kBrushless)
+        self.ccs = [cancoder.CANcoder(n) for n in (12, 22, 32, 42)]
 
     def robotPeriodic(self):
         pass
@@ -24,7 +26,9 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousPeriodic(self):
-        pass
+        for cc in self.ccs:
+            print(cc.get_position(), end="\t")
+            print()
 
     def autonomousExit(self):
         pass
