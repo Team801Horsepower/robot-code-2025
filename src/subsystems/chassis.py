@@ -1,32 +1,28 @@
 from subsystems.swerve import Swerve
 import config
 
-import rev
 from math import pi
+from functools import reduce
+from typing import Tuple
 
-
+import rev
 from rev import CANSparkMax, CANSparkFlex
 from wpimath.geometry import Translation2d, Transform2d, Rotation2d
-
 from wpimath.kinematics import ChassisSpeeds
-from functools import reduce
-
-from typing import Tuple
+from phoenix6.hardware.cancoder import CANcoder
 
 
 # pylint: disable=missing-docstring, too-few-public-methods
 class Chassis:
     def __init__(self) -> None:
-        def make_swerve(t: Tuple[int, Tuple[int, int, float]]) -> Swerve:
-            i, (drive_id, turn_id, abs_enc_val) = t
-            positional_offset = [1 / 8, 3 / 8, -1 / 8, -3 / 8][i]
+        def make_swerve(t: Tuple[int, Tuple[int, int, int]]) -> Swerve:
+            i, (drive_id, turn_id, cancoder_id) = t
+            positional_offset = [-1 / 4, 1 / 2, 0, 1 / 4][i]
             return Swerve(
                 CANSparkFlex(drive_id, CANSparkMax.MotorType.kBrushless),
                 CANSparkMax(turn_id, CANSparkMax.MotorType.kBrushless),
-                # AnalogEncoder(i),
-                None,
-                # (abs_enc_val - positional_offset) % 1,
-                None,
+                CANcoder(cancoder_id),
+                positional_offset,
             )
 
         self.swerves = list(
@@ -36,16 +32,10 @@ class Chassis:
         for swerve in self.swerves:
             swerve.drive_encoder.setPosition(0.0)
             swerve.drive_motor.setInverted(False)
-            # swerve.turn_motor.setInverted(True)
             swerve.turn_motor.setInverted(False)
-            swerve.turn_encoder.setPosition(0.0)
 
-            # swerve.drive_motor.setIdleMode(CANSparkMax.IdleMode.kBrake)
-            # swerve.turn_motor.setIdleMode(CANSparkMax.IdleMode.kBrake)
-            swerve.drive_motor.setIdleMode(CANSparkMax.IdleMode.kCoast)
-            swerve.turn_motor.setIdleMode(CANSparkMax.IdleMode.kCoast)
-
-            # print(swerve.turn_abs_encoder.getAbsolutePosition())
+            swerve.drive_motor.setIdleMode(CANSparkMax.IdleMode.kBrake)
+            swerve.turn_motor.setIdleMode(CANSparkMax.IdleMode.kBrake)
 
             # Makes turn encoders operate in radians
             swerve.turn_encoder.setPositionConversionFactor(
@@ -84,6 +74,7 @@ class Chassis:
         """
         # HACK: We don't know the actual reason for the discrepancy
         #       between configured speeds and effective speeds.
+        # TODO: Check if we still need this on the new chassis
         # vel *= 2.5
 
         # Equality check is fine here since the deadzone handles rounding to 0.

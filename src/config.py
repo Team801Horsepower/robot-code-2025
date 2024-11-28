@@ -23,11 +23,12 @@ turn_speed = 4
 auto_drive_speed = 0.5
 auto_turn_speed = 0.5
 
+# drive id, turn id, cancoder id
 swerves = [
-    (10, 11, 0),
-    (20, 21, 0),
-    (30, 31, 0),
-    (40, 41, 0),
+    (10, 11, 12),
+    (20, 21, 22),
+    (30, 31, 32),
+    (40, 41, 42),
 ]
 
 # front left, back left, front right, back right

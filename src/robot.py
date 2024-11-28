@@ -10,15 +10,13 @@ from subsystems import drive
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        # self.drive_motor = CANSparkFlex(5, CANSparkFlex.MotorType.kBrushless)
-        # self.turn_motor = CANSparkMax(3, CANSparkFlex.MotorType.kBrushless)
-
         self.driver_controller = wpilib.XboxController(0)
         self.manip_controller = wpilib.XboxController(1)
 
         self.scheduler = CommandScheduler()
 
         self.drive = drive.Drive(self.scheduler)
+        self.drive.chassis.set_swerves()
 
     def robotPeriodic(self):
         pass
@@ -45,8 +43,6 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        # self.drive_motor.set(0.05)
-        # self.turn_motor.set(0.05)
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:
                 return 0.0
