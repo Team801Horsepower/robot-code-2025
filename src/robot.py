@@ -3,12 +3,13 @@
 import wpilib
 from rev import CANSparkFlex, CANSparkMax
 
-from phoenix6.hardware import cancoder
+from phoenix6.hardware import CANcoder, Pigeon2
 
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        self.ccs = [cancoder.CANcoder(n) for n in (12, 22, 32, 42)]
+        self.ccs = [CANcoder(n) for n in (12, 22, 32, 42)]
+        self.pigeon = Pigeon2(5)
 
     def robotPeriodic(self):
         pass
@@ -26,9 +27,8 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousPeriodic(self):
-        for cc in self.ccs:
-            print(cc.get_position(), end="\t")
-            print()
+        print(self.pigeon.get_yaw())
+        print([str(cc.get_position()) for cc in self.ccs])
 
     def autonomousExit(self):
         pass
