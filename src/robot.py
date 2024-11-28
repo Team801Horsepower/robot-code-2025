@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 
 import wpilib
-from rev import SparkFlex, SparkMax
+from wpimath.geometry import Transform2d
+from commands2 import CommandScheduler
+
+import config
+from subsystems import drive
 
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        self.flexes = [SparkFlex(n, SparkFlex.MotorType.kBrushless) for n in (10, 20, 30, 40)]
-        self.maxes = [SparkMax(n, SparkMax.MotorType.kBrushless) for n in (11, 21, 31, 41)]
+        self.driver_controller = wpilib.XboxController(0)
+        self.manip_controller = wpilib.XboxController(1)
+
+        self.scheduler = CommandScheduler()
+
+        self.drive = drive.Drive(self.scheduler)
 
     def robotPeriodic(self):
         pass
@@ -34,12 +42,17 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        # for motor in self.flexes:
-        #     motor.set(0.5)
-        # for motor in self.maxes:
-        #     motor.set(0.5)
+        def deadzone(activation: float) -> float:
+            if abs(activation) < 0.01:
+                return 0.0
+            return activation
 
-        self.maxes[0].set(0.5)
+        drive_input = Transform2d(
+            deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
+            deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
+            deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
+        )
+        self.drive.drive(drive_input)
 
     def teleopExit(self):
         pass
