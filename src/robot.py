@@ -16,6 +16,7 @@ class Robot(wpilib.TimedRobot):
         self.scheduler = CommandScheduler()
 
         self.drive = drive.Drive(self.scheduler)
+        self.drive.chassis.set_swerves()
 
     def robotPeriodic(self):
         pass
