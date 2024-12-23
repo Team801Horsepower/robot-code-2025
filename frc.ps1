@@ -36,7 +36,9 @@ switch ($Action) {
     }
     "sb" {
         Get-ChildItem -Path "dev-utils\soundboard\" -Filter "$Param*.wav" | ForEach-Object {
-            poetry run python dev-utils/soundboard/play.py $_.FullName | Out-Null
+            $Song = New-Object System.Media.SoundPlayer
+            $Song.SoundLocation = $_.FullName 
+            $Song.Play()
         }
     }
     "install" {
