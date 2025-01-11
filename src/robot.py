@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
 import wpilib
-from rev import CANSparkFlex, CANSparkMax
-
-from phoenix6.hardware import CANcoder, Pigeon2
+from rev import SparkFlex, SparkMax
 
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        self.ccs = [CANcoder(n) for n in (12, 22, 32, 42)]
-        self.pigeon = Pigeon2(5)
+        self.flexes = [SparkFlex(n, SparkFlex.MotorType.kBrushless) for n in (10, 20, 30, 40)]
+        self.maxes = [SparkMax(n, SparkMax.MotorType.kBrushless) for n in (11, 21, 31, 41)]
 
     def robotPeriodic(self):
         pass
@@ -27,8 +25,7 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousPeriodic(self):
-        print(self.pigeon.get_yaw())
-        print([str(cc.get_position()) for cc in self.ccs])
+        pass
 
     def autonomousExit(self):
         pass
@@ -37,8 +34,10 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        self.drive_motor.set(0.05)
-        self.turn_motor.set(0.05)
+        for motor in self.flexes:
+            motor.set(0.5)
+        for motor in self.maxes:
+            motor.set(0.5)
 
     def teleopExit(self):
         pass
