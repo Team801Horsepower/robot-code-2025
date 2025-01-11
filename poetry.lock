@@ -473,7 +473,7 @@ setuptools = "*"
 [[package]]
 name = "photonlibpy"
 version = "2025.0.0b8"
-description = "Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors. Implemented with PhotonVision version v2025.0.0-beta-8-30-ge40c8fbca ."
+description = "Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors. Implemented with PhotonVision version v2025.0.0-beta-8 ."
 optional = false
 python-versions = "*"
 files = []
@@ -491,9 +491,9 @@ wpilib = ">=2025.0.0b1,<2026"
 [package.source]
 type = "git"
 url = "https://github.com/PhotonVision/photonvision.git"
-reference = "main"
-resolved_reference = "e40c8fbca08e8397e00e35f72809ac69d752ad57"
-subdirectory = "photon-lib/py"
+reference = "v2025.0.0-beta-8"
+resolved_reference = "e506ac6b28d382e490fdd3960e194e9ecb9b7661"
+subdirectory = "photon-lib/py/"
 
 [[package]]
 name = "pint"
@@ -1320,4 +1320,4 @@ robotpy-wpiutil = "2025.1.1.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.13,<3.14"
-content-hash = "0c4faaf8944e727bd41f6c1b9cd89b6fe50a1eab80a0c22140844192dee67dc8"
+content-hash = "38a4c9c11395f25b3174c09329eec7e8f3ccdca0bb87fff75d26f0479d23e542"

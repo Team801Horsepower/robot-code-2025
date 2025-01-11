@@ -15,7 +15,7 @@ readme = "README.md"
 python = ">=3.13,<3.14"
 robotpy = {extras = ["commands2", "phoenix6", "rev", "navx"], version = "^2025.1.1.1"}
 pycowsay = "^0.0.0.2"
-photonlibpy = {git = "https://github.com/PhotonVision/photonvision.git", rev = "main", subdirectory = "photon-lib/py"}
+photonlibpy = {git = "https://github.com/PhotonVision/photonvision.git", rev = "v2025.0.0-beta-8", subdirectory = "photon-lib/py/"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.14.1"
