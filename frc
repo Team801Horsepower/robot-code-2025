@@ -13,7 +13,7 @@ case "$1" in
     poetry run ruff format .
     ;;
   deploy)
-    poetry run robotpy --main src/robot.py deploy --skip-tests --team 801
+    poetry run robotpy --main src/robot.py deploy --skip-tests --team 801 --no-install
     ;;
   console)
     poetry run netconsole 10.8.1.2
