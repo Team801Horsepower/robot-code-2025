@@ -15,41 +15,40 @@ from wpimath.geometry import (
     Translation3d,
 )
 from wpimath import units
+from wpilib import SmartDashboard
 from commands2 import Subsystem, CommandScheduler
 from typing import Tuple, Optional, List
 
-from math import tan, sin, cos
+from math import tan, sin, cos, pi
 
 import config
 
 
 class Vision(Subsystem):
-    def __init__(self, scheduler: CommandScheduler, camera_name="Camera_Module_v1"):
-        # TODO: remove this and the function parameter
-        self.camera = PhotonCamera(camera_name)
-
+    def __init__(self, scheduler: CommandScheduler):
         self.cameras: List[Tuple[PhotonCamera, Transform3d]] = [
             (
-                PhotonCamera("Front Camera"),
+                PhotonCamera("FrontCamera"),
                 Transform3d(
                     Translation3d(0.60880625, 0.29845, 0.428625),
                     Rotation3d(0, units.degreesToRadians(-5), 0),
                 ),
             ),
             (
-                PhotonCamera("Rear Camera"),
+                PhotonCamera("RearCamera"),
                 Transform3d(
                     Translation3d(0.52466875, 0.29845, 0.428625),
-                    Rotation3d(0, units.degreesToRadians(-5.9), 0),
+                    Rotation3d(0, units.degreesToRadians(-5.9), pi),
                 ),
             ),
         ]
 
+        layout_path = config.code_path + "firehouse-apriltags.json"
+
         self.layout = AprilTagFieldLayout(
             # config.code_path
             # + "reefscape-apriltags.json"
-            config.code_path
-            + "firehouse-apriltags.json"
+            layout_path
         )
 
         scheduler.registerSubsystem(self)
@@ -57,18 +56,11 @@ class Vision(Subsystem):
     def periodic(self):
         pass
 
-    def test(self):
-        # result = self.camera.getLatestResult()
-        # for target in result.getTargets():
-        #     target.getPitch()
-        # print(result.getTargets())
-        pass
-
     def cur_atag(
         self, cam_i: int, red_id: int, blue_id: int
     ) -> Tuple[float, float] | None:
         atag_id = red_id if config.is_red() else blue_id
-        result = self.cameras[cam_i].getLatestResult()
+        result = self.cameras[cam_i][0].getLatestResult()
         for target in result.getTargets():
             if target.fiducialId == atag_id:
                 return (
@@ -77,21 +69,30 @@ class Vision(Subsystem):
                 )
         return None
 
+    def test(self):
+        atag = self.cur_atag(0, 1, 1)
+        if atag is not None:
+            SmartDashboard.putNumber("tag 1 yaw raw", units.radiansToDegrees(atag[1]))
+
     def estimate_multitag_pose(self, robot_angle: float) -> List[Tuple[Pose2d, float]]:
         tag_info = []
         for cam, transform in self.cameras:
             res = cam.getLatestResult()
+            # print(res)
             tags = res.getTargets()
             for tag in tags:
-                tag_info.append(
-                    (
-                        tag.getFiducialId(),
-                        units.degreesToRadians(-tag.getYaw()),
-                        transform.translation()
-                        .toTranslation2d()
-                        .rotateBy(Rotation2d(robot_angle)),
+                id = tag.getFiducialId()
+                if self.layout.getTagPose(id) is not None:
+                    tag_info.append(
+                        (
+                            id,
+                            units.degreesToRadians(-tag.getYaw())
+                            + transform.rotation().toRotation2d().radians(),
+                            transform.translation()
+                            .toTranslation2d()
+                            .rotateBy(Rotation2d(robot_angle)),
+                        )
                     )
-                )
         poses = []
         for i in range(len(tag_info)):
             for j in range(i + 1, len(tag_info)):
@@ -126,6 +127,6 @@ class Vision(Subsystem):
         y = (c2 * a1 - c1 * a2) / (a1 * b2 - a2 * b1)
 
         return (
-            Pose2d(x, y, robot_angle) + Transform2d(tag1[2], Rotation2d()),
+            Pose2d(x, y, robot_angle) + Transform2d(-tag1[2], Rotation2d()),
             confidence,
         )

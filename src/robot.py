@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import wpilib
+from wpilib import SmartDashboard
 from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler
 
 import config
 from subsystems import drive
+from subsystems import vision
 
 
 class Robot(wpilib.TimedRobot):
@@ -18,8 +20,22 @@ class Robot(wpilib.TimedRobot):
         self.drive = drive.Drive(self.scheduler)
         self.drive.chassis.set_swerves()
 
+        self.vision = vision.Vision(self.scheduler)
+
+        self.field_oriented = True
+
     def robotPeriodic(self):
-        pass
+        SmartDashboard.putNumber("heading", self.drive.odometry.rotation().degrees())
+
+        estimates = self.vision.estimate_multitag_pose(
+            self.drive.odometry.rotation().radians()
+        )
+        for i, (pose, conf) in enumerate(estimates):
+            SmartDashboard.putNumber(f"x {i}", pose.x)
+            SmartDashboard.putNumber(f"y {i}", pose.y)
+            SmartDashboard.putNumber(f"confidence {i}", conf)
+
+        self.vision.test()
 
     def disabledInit(self):
         pass
@@ -53,7 +69,12 @@ class Robot(wpilib.TimedRobot):
             deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
             deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
         )
-        self.drive.drive(drive_input)
+        self.drive.drive(drive_input, self.field_oriented)
+
+        self.field_oriented ^= self.driver_controller.getBButtonPressed()
+
+        if self.driver_controller.getStartButtonPressed():
+            self.drive.odometry.reset()
 
     def teleopExit(self):
         pass
