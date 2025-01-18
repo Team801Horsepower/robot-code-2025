@@ -29,13 +29,12 @@ case "$1" in
     ;;
   sb)
     { poetry run python3 dev-utils/soundboard/play.py dev-utils/soundboard/$2*.wav; } > /dev/null 2>&1
-    # This segfaults about half the time. I'm not sure why. It probably isn't my fault. Anyway, I've silenced it. 
     ;;
   install)
     poetry env remove --all
     poetry install --no-root
     ;;
   *)
-    echo 'Usage: ./frc [verify | deploy | console]'
+    echo 'Usage: ./frc [verify | deploy | console | shell | ssh | rlds | sb | install]'
     ;;
 esac
