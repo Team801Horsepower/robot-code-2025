@@ -34,10 +34,12 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        for motor in self.flexes:
-            motor.set(0.5)
-        for motor in self.maxes:
-            motor.set(0.5)
+        # for motor in self.flexes:
+        #     motor.set(0.5)
+        # for motor in self.maxes:
+        #     motor.set(0.5)
+
+        self.maxes[0].set(0.5)
 
     def teleopExit(self):
         pass
