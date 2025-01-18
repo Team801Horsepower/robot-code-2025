@@ -6,7 +6,7 @@ from functools import reduce
 from typing import Tuple
 
 import rev
-from rev import CANSparkMax, CANSparkFlex
+from rev import SparkMax, SparkFlex, SparkBaseConfig, SparkBase
 from wpimath.geometry import Translation2d, Transform2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 from phoenix6.hardware.cancoder import CANcoder
@@ -19,8 +19,8 @@ class Chassis:
             i, (drive_id, turn_id, cancoder_id) = t
             positional_offset = [-1 / 4, 1 / 2, 0, 1 / 4][i]
             return Swerve(
-                CANSparkFlex(drive_id, CANSparkMax.MotorType.kBrushless),
-                CANSparkMax(turn_id, CANSparkMax.MotorType.kBrushless),
+                SparkFlex(drive_id, SparkMax.MotorType.kBrushless),
+                SparkMax(turn_id, SparkMax.MotorType.kBrushless),
                 CANcoder(cancoder_id),
                 positional_offset,
             )
@@ -30,29 +30,38 @@ class Chassis:
         )
 
         for swerve in self.swerves:
-            swerve.drive_encoder.setPosition(0.0)
-            swerve.drive_motor.setInverted(False)
-            swerve.turn_motor.setInverted(False)
-
-            swerve.drive_motor.setIdleMode(CANSparkMax.IdleMode.kBrake)
-            swerve.turn_motor.setIdleMode(CANSparkMax.IdleMode.kBrake)
-
-            # Makes turn encoders operate in radians
-            swerve.turn_encoder.setPositionConversionFactor(
-                2 * pi / config.turn_gear_ratio
+            drive_config = (
+                SparkBaseConfig()
+                .inverted(False)
+                .setIdleMode(SparkBaseConfig.IdleMode.kBrake)
             )
-
-            # Makes drive encoders operate in m/s
-            swerve.drive_encoder.setVelocityConversionFactor(
+            drive_config.encoder.velocityConversionFactor(
                 pi * config.wheel_diameter / 60 / config.drive_gear_ratio
-            )
-            swerve.drive_encoder.setPositionConversionFactor(
+            ).positionConversionFactor(
                 pi * config.wheel_diameter / config.drive_gear_ratio
             )
+            drive_config.closedLoop.pid(*config.drive_pid)
+            swerve.drive_motor.configure(
+                drive_config,
+                SparkBase.ResetMode.kResetSafeParameters,
+                SparkBase.PersistMode.kNoPersistParameters,
+            )
+            swerve.drive_encoder.setPosition(0.0)
 
-            # PIDs to tune
-            swerve.drive_pid.setP(0.15)
-            swerve.turn_pid.setP(0.5)
+            turn_config = (
+                SparkBaseConfig()
+                .inverted(False)
+                .setIdleMode(SparkBaseConfig.IdleMode.kCoast)
+            )
+            turn_config.encoder.positionConversionFactor(
+                2 * pi / config.turn_gear_ratio
+            )
+            turn_config.closedLoop.pid(*config.turn_pid)
+            swerve.turn_motor.configure(
+                turn_config,
+                SparkBase.ResetMode.kResetSafeParameters,
+                SparkBase.PersistMode.kNoPersistParameters,
+            )
 
             # Prevs must be updated again after conversion factors were changed
             swerve.update_prevs()
@@ -64,9 +73,7 @@ class Chassis:
     def zero_swerves(self):
         self.set_swerves()
         for swerve in self.swerves:
-            swerve.turn_pid.setReference(
-                0.0, rev.CANSparkLowLevel.ControlType.kPosition
-            )
+            swerve.turn_pid.setReference(0.0, rev.SparkLowLevel.ControlType.kPosition)
 
     def drive(self, vel: Transform2d) -> None:
         """
@@ -81,7 +88,7 @@ class Chassis:
         if vel.rotation().degrees() == 0.0 and vel.translation().norm() == 0.0:
             for swerve in self.swerves:
                 swerve.drive_pid.setReference(
-                    0.0, rev.CANSparkLowLevel.ControlType.kVelocity
+                    0.0, rev.SparkLowLevel.ControlType.kVelocity
                 )
             return
 
@@ -119,10 +126,10 @@ class Chassis:
                 drive_speed *= -1.0
 
             swerve.turn_pid.setReference(
-                turn_angle, rev.CANSparkLowLevel.ControlType.kPosition
+                turn_angle, rev.SparkLowLevel.ControlType.kPosition
             )
             swerve.drive_pid.setReference(
-                -drive_speed, rev.CANSparkLowLevel.ControlType.kVelocity
+                -drive_speed, rev.SparkLowLevel.ControlType.kVelocity
             )
 
     # Robot relative

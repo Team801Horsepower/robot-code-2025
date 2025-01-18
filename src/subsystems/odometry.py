@@ -1,5 +1,4 @@
 from navx import AHRS
-from wpilib import SPI
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d
 
 from subsystems.chassis import Chassis
@@ -7,7 +6,7 @@ from subsystems.chassis import Chassis
 
 class Odometry:
     def __init__(self):
-        self.ahrs = AHRS(SPI.Port.kMXP)
+        self.ahrs = AHRS(AHRS.NavXComType.kUSB1)
         self.translation = Translation2d()
 
     def rotation(self) -> Rotation2d:
