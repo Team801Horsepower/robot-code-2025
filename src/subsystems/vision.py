@@ -1,5 +1,5 @@
 from photonlibpy.photonCamera import PhotonCamera
-from photonlibpy.photonTrackedTarget import PhotonTrackedTarget
+from photonlibpy.targeting import PhotonTrackedTarget
 from photonlibpy.photonPoseEstimator import (
     PhotonPoseEstimator,
     AprilTagFieldLayout,
