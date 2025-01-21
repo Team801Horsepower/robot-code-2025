@@ -36,3 +36,15 @@ swerve_ids = [1, 2, 0, 3]
 
 drive_pid = (0.15, 0, 0)
 turn_pid = (0.5, 0, 0)
+
+pivot_motors = [1, 2, 3, 4]
+
+elevator_mass = 1 # kg
+end_effector_mass = 1 # kg
+
+
+pivot_encoder_id = 1
+extension_encoder_id = 1
+
+extension_encoder_ratio = 1
+pivot_encoder_ratio = 1
