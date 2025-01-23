@@ -5,7 +5,7 @@ from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler
 
 import config
-from subsystems import drive
+from subsystems import drive, end_effector
 
 
 class Robot(wpilib.TimedRobot):
@@ -17,6 +17,7 @@ class Robot(wpilib.TimedRobot):
 
         self.drive = drive.Drive(self.scheduler)
         self.drive.chassis.set_swerves()
+        self.end_effector = end_effector.EndEffector(self.scheduler)
 
     def robotPeriodic(self):
         pass

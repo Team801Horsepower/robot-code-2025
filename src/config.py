@@ -39,6 +39,9 @@ turn_pid = (0.5, 0, 0)
 
 pivot_motors = [1, 2, 3, 4]
 
+effector_motor_id = 1 #temp
+wrist_motor_id = 1 #temp
+
 elevator_mass = 1 # kg
 end_effector_mass = 1 # kg
 
