@@ -24,9 +24,10 @@ class Elevator(Subsystem):
         self.theta_pid = PIDController(1, 0, 1)
 
     def periodic(self):
-        self.get_length()
-        self.get_theta()
-        self.target_setpoint()
+        # self.get_length()
+        # self.get_theta()
+        # self.target_setpoint()
+        pass
 
     def target_setpoint(self):
         output = self.gravity_torque() + self.theta_pid.calculate(self.get_theta(), self.setpoint_theta)
@@ -40,9 +41,9 @@ class Elevator(Subsystem):
         return self.pivot.get_absolute_position() * config.pivot_encoder_ratio
 
     def calculate_moi(self):
-        return self.length() ** 2 * ((config.elevator_mass / 3) + config.end_effector_mass)
+        return self.length ** 2 * ((config.elevator_mass / 3) + config.end_effector_mass)
 
     def gravity_torque(self):
-        return sin(self.angle) * 9.81 * self.calculate_moi()
+        return sin(self.angle) * 9.81 * (config.elevator_mass / 2 + config.end_effector_mass) * self.length
 
 
