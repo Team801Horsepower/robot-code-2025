@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # This script helps us complete common actions easily. 
 
 case "$1" in
@@ -19,7 +17,7 @@ case "$1" in
     poetry run netconsole 10.8.1.2
     ;;
   shell)
-    poetry shell
+    poetry run $SHELL
     ;;
   ssh)
     ssh -o StrictHostKeyChecking=no admin@10.8.1.2
