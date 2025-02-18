@@ -65,3 +65,35 @@ class ManipulatorController(Subsystem):
             f")"
         )
 
+#ok so we have the buttons returning values
+#What will we do with these values
+    #Climb
+    #Coral placement
+        #DriveToPose
+        #Elevator arm positioning
+        #run a check?
+        #Release coral
+    #Algae placement
+        #Need elevator arm extend independent button (full height)
+        #Need algae release button independent
+    #Coral collection
+        #Any auto straightening?
+        #Run gatherer
+        #Check if gathered
+        #report to manipulator
+    #Algae collection
+        #DriveToPose and appropriate elevator positioning
+        #run a check?
+        #Gather algae
+        #Algae collection vs coral placement
+#What about when the inputs overlap
+    #Have a drivetopose cancel
+    #Coral placement over all else
+        #Coral placement will not trigger unless coral gathered
+    #Then whatever else, dunno the subsystems
+#Commmunicate w/ manipulator for when some object is gathered/dispensed? How?
+    #Drive controller vibrate?
+    #LEDs?
+#What if the robot gets bumped into while dispensing coral or autopositioning
+    #Periodically run position check, run coral gather IMMEDIATELY if outside of some zone
+    #idk
