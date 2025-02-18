@@ -10,6 +10,31 @@ class ManipulatorController(Subsystem):
         self.joystick_states = [None for _ in range(6)]
         self.tree_selection = None
         self.height_selection = None
+        
+        self.left_player_station = False #LPS
+        self.right_player_station = False #RPS
+        self.left_processor = False #LP
+        self.right_processor = False #RP
+        self.power = False #P
+        self.reset = False #R
+        self.deep_ascent = False #DA
+        self.misc1 = False #M1
+        self.misc2 = False #M2
+        self.misc3 = False #M3
+        self.misc4 = False #M4
+
+# Diagram, for dummies and smart people alike - Hudson
+
+# ___________________________
+#|                           |\
+#|   T   M1         ______   | \
+#|   T   M2        / LPS  \  |  |
+#|   T   M3       /LP    RP\ |  |
+#|   T   M4       \  RPS   / | R|
+#|       DA        \______/  |  |
+#|___________________________| P|
+#\                            \ |
+# \_____________________________|
 
     def update_button_states(self):
         self.button_states = [self.controller.getRawButtonPressed(i + 1) for i in range(32)]
