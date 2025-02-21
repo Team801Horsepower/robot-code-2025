@@ -20,8 +20,8 @@ wheel_diameter = units.inchesToMeters(3)
 
 drive_speed = 2
 turn_speed = 4
-auto_drive_speed = 0.5
-auto_turn_speed = 0.5
+auto_drive_speed = 2
+auto_turn_speed = 2
 
 # drive id, turn id, cancoder id
 swerves = [

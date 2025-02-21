@@ -18,8 +18,9 @@ from wpimath import units
 from wpilib import SmartDashboard
 from commands2 import Subsystem, CommandScheduler
 from typing import Tuple, Optional, List
+import numpy as np
 
-from math import tan, sin, cos, pi
+from math import tan, sin, cos, pi, atan, isfinite
 
 import config
 
@@ -30,14 +31,18 @@ class Vision(Subsystem):
             (
                 PhotonCamera("FrontCamera"),
                 Transform3d(
-                    Translation3d(0.60880625, 0.29845, 0.428625),
+                    # Translation3d(0.60880625, 0.29845, 0.428625),
+                    # Translation3d(0, 0, 0.428625),
+                    Translation3d(0.29880625, 0, 0.428625),
                     Rotation3d(0, units.degreesToRadians(-5), 0),
                 ),
             ),
             (
                 PhotonCamera("RearCamera"),
                 Transform3d(
-                    Translation3d(0.52466875, 0.29845, 0.428625),
+                    # Translation3d(0.52466875, 0.29845, 0.428625),
+                    # Translation3d(-0.0841375, 0, 0.428625),
+                    Translation3d(0.21466875, 0.29845, 0.428625),
                     Rotation3d(0, units.degreesToRadians(-5.9), pi),
                 ),
             ),
@@ -70,11 +75,20 @@ class Vision(Subsystem):
         return None
 
     def test(self):
-        atag = self.cur_atag(0, 1, 1)
-        if atag is not None:
-            SmartDashboard.putNumber("tag 1 yaw raw", units.radiansToDegrees(atag[1]))
+        atag0 = self.cur_atag(0, 9, 9)
+        if atag0 is not None:
+            SmartDashboard.putNumber(
+                "front cam tag 9 yaw", units.radiansToDegrees(atag0[1])
+            )
+        atag1 = self.cur_atag(1, 9, 9)
+        if atag1 is not None:
+            SmartDashboard.putNumber(
+                "rear cam tag 9 yaw", units.radiansToDegrees(atag1[1])
+            )
 
-    def estimate_multitag_pose(self, robot_angle: float) -> List[Tuple[Pose2d, float]]:
+    def estimate_multitag_pos(
+        self, robot_angle: float
+    ) -> Tuple[int, List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]]:
         tag_info = []
         for cam, transform in self.cameras:
             res = cam.getLatestResult()
@@ -93,21 +107,24 @@ class Vision(Subsystem):
                             .rotateBy(Rotation2d(robot_angle)),
                         )
                     )
-        poses = []
+        positions = []
         for i in range(len(tag_info)):
             for j in range(i + 1, len(tag_info)):
-                poses.append(
-                    self.estimate_2tag_pose(robot_angle, tag_info[i], tag_info[j])
+                positions.append(
+                    (
+                        (tag_info[i][0], tag_info[j][0]),
+                        self.estimate_2tag_pos(robot_angle, tag_info[i], tag_info[j]),
+                    )
                 )
-        return poses
+        return (len(tag_info), positions)
 
-    def estimate_2tag_pose(
+    def estimate_2tag_pos(
         self,
         robot_angle: float,
         # ID, yaw angle, camera offset from robot origin
         tag1: Tuple[int, float, Translation2d],
         tag2: Tuple[int, float, Translation2d],
-    ) -> Tuple[Pose2d, float]:
+    ) -> Tuple[Translation2d, float]:
         p1 = self.layout.getTagPose(tag1[0]).toPose2d().translation()
         p2 = self.layout.getTagPose(tag2[0]).toPose2d().translation()
 
@@ -126,7 +143,62 @@ class Vision(Subsystem):
         x = (b2 * c1 - b1 * c2) / (a1 * b2 - a2 * b1)
         y = (c2 * a1 - c1 * a2) / (a1 * b2 - a2 * b1)
 
+        # return (
+        #     Pose2d(x, y, robot_angle) + Transform2d(-tag1[2], Rotation2d()),
+        #     confidence,
+        # )
         return (
-            Pose2d(x, y, robot_angle) + Transform2d(-tag1[2], Rotation2d()),
+            Translation2d(x, y) - tag1[2],
             confidence,
         )
+
+    def pos_report(
+        self, robot_angle: float
+    ) -> Tuple[int, Optional[Tuple[Translation2d, float, float]]]:
+        ntags, estimates = self.estimate_multitag_pos(robot_angle)
+        confs = [tup[1][1] for tup in estimates]
+        total_conf = sum(confs)
+        weights = [conf / total_conf for conf in confs]
+        positions = [tup[1][0] for tup in estimates]
+
+        try:
+            avg_pos = Translation2d(np.dot(weights, positions))
+            sq_diffs = [(pos - avg_pos).norm() ** 2 for pos in positions]
+            # deviation_conf = 1 / (1 + float(np.sqrt(np.dot(weights, sq_diffs))))
+            deviation = float(np.sqrt(np.dot(weights, sq_diffs)))
+            composite_conf = float(np.dot(weights, confs))
+            return (ntags, (avg_pos, composite_conf, deviation))
+        except TypeError:
+            # avg_pos = None
+            # deviation_conf = 0
+            # composite_conf = 0
+            return (ntags, None)
+
+    def heading_correction(self, robot_angle: float) -> Optional[float]:
+        x1 = robot_angle - pi / 4
+        x2 = robot_angle + pi / 4
+        try:
+            if self.pos_report(robot_angle)[1][2] == 0:
+                return None
+            y1 = self.pos_report(x1)[1][2]
+            y2 = self.pos_report(x2)[1][2]
+        except TypeError:
+            return None
+
+        mat = np.array([[cos(x1), sin(x1)], [cos(x2), sin(x2)]])
+        matinv = np.linalg.inv(mat)
+
+        out1 = np.array([[y1], [y2]])
+        out2 = np.array([[y1], [-y2]])
+
+        coefs1 = (matinv @ out1).flatten()
+        coefs2 = (matinv @ out2).flatten()
+
+        h1 = round(robot_angle / pi) * pi - atan(coefs1[0] / coefs1[1])
+        h2 = round(robot_angle / pi) * pi - atan(coefs2[0] / coefs2[1])
+
+        new_angle = min(h1, h2, key=lambda h: abs(h - robot_angle))
+        if isfinite(new_angle):
+            return new_angle
+        else:
+            return None
