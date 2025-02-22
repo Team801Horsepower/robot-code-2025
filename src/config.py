@@ -5,6 +5,9 @@ from wpilib import DriverStation
 from os import path
 
 
+# -- General --
+
+
 def is_red() -> bool:
     return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
@@ -12,6 +15,8 @@ def is_red() -> bool:
 code_path = path.dirname(__file__) + "/"
 
 robot_dimensions = Translation2d(units.inchesToMeters(20.5), units.inchesToMeters(20.5))
+
+# -- Drive --
 
 drive_gear_ratio = 4.4
 turn_gear_ratio = 41.25
@@ -36,3 +41,15 @@ swerve_ids = [1, 2, 0, 3]
 
 drive_pid = (0.15, 0, 0)
 turn_pid = (0.5, 0, 0)
+
+# -- Vision --
+
+# -- Claw --
+
+# -- Climber --
+
+# -- Pivot --
+
+# -- Elevator --
+
+# -- Wrist --
