@@ -21,7 +21,9 @@ code_path = path.dirname(__file__) + "/"
 
 robot_dimensions = Translation2d(units.inchesToMeters(20.5), units.inchesToMeters(20.5))
 
-robot_frame_dimensions = Translation2d(units.inchesToMeters(28), units.inchesToMeters(30))
+robot_frame_dimensions = Translation2d(
+    units.inchesToMeters(28), units.inchesToMeters(30)
+)
 
 # -- Drive --
 
