@@ -75,3 +75,5 @@ pivot_offset = Translation2d(1, 1)
 # -- Elevator --
 
 # -- Wrist --
+
+wrist_motor_id = 0 # TODO: change to actual motor id
