@@ -44,9 +44,13 @@ turn_pid = (0.5, 0, 0)
 
 # -- Vision --
 
+# -- Periscope --
+
 # -- Claw --
 
 # -- Climber --
+
+# -- Arm --
 
 # -- Pivot --
 
