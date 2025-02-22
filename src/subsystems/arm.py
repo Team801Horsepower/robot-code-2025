@@ -1,6 +1,7 @@
 from commands2 import CommandScheduler, Subsystem
 from wpimath.geometry import Transform2d
 from typing import Optional
+from math import atan2
 
 from subsystems.pivot import Pivot
 from subsystems.elevator import Elevator
@@ -19,7 +20,15 @@ class Arm(Subsystem):
         self.should_extend = False
 
     def periodic(self):
-        pass
+        if self.target is not None:
+            self.pivot.target_angle = self.target.translation().angle()
+            # TODO: Software limits on wrist
+            self.wrist.target_angle = self.target.rotation()
+            if self.should_extend:
+                self.elevator.target_extension = self.target.translation().norm()
+            else:
+                # TODO: Insert retracted elevator length
+                self.elevator.target_extension = 0
 
     def at_target(self) -> bool:
         return (
