@@ -78,6 +78,8 @@ claw_beam_break_id = 0
 
 # -- Climber --
 
+climb_motor_id = 0 # TODO: change to actual motor id
+
 # -- Arm --
 
 # TODO: Set claw to wrist length and angle to correct value
