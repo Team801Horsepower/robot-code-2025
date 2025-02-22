@@ -51,6 +51,10 @@ turn_pid = (0.5, 0, 0)
 
 # -- Claw --
 
+# TODO: actual values
+claw_motor_id = 0
+claw_beam_break_id = 0
+
 # -- Climber --
 
 # -- Arm --
