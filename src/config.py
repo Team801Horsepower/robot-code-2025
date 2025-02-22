@@ -1,5 +1,5 @@
 from wpimath import units
-from wpimath.geometry import Translation2d
+from wpimath.geometry import Translation2d, Transform2d
 from wpilib import DriverStation
 
 from os import path
@@ -51,6 +51,18 @@ turn_pid = (0.5, 0, 0)
 # -- Climber --
 
 # -- Arm --
+
+# TODO: Get actual values for these
+# L1, L2, L3, L4
+arm_reef_presets = [
+    Transform2d(0.1, 0.1, 0),
+    Transform2d(0.2, 0.2, 0),
+    Transform2d(0.3, 0.3, 0),
+    Transform2d(0.4, 0.4, 0),
+]
+arm_stow_preset = Transform2d(0, 0, 0)
+arm_station_preset = Transform2d(0.5, 0.5, 0)
+arm_barge_preset = Transform2d(0.6, 0.6, 0)
 
 # -- Pivot --
 
