@@ -25,7 +25,7 @@ class GraphPathfind(Command):
         self.graph = graph
         self.drive = drive
         # self.note_vision = note_vision
-        self.path: List[Translation2d] = None
+        self.path: Optional[List[Translation2d]] = None
         self.dtp: Optional[DriveToPose] = None
         self.target_rot: Optional[Rotation2d] = None
         # self.chase_note = chase_note
