@@ -57,3 +57,5 @@ turn_pid = (0.5, 0, 0)
 # -- Elevator --
 
 # -- Wrist --
+
+wrist_motor_id = 0 # TODO: change to actual motor id
