@@ -52,6 +52,13 @@ turn_pid = (0.5, 0, 0)
 
 # -- Arm --
 
+# TODO: Set claw to wrist length and angle to correct value
+claw_to_wrist_lengths = {
+    "coral": 0.5,
+    "algae": 0.5,
+}
+coral_algae_pickup_angle = 1
+
 # -- Pivot --
 
 # -- Elevator --
