@@ -9,7 +9,7 @@ case "$1" in
     poetry run mypy src/
     printf '\n\n\nrun ruff check:\n'
     printf %"$COLUMNS"s | tr " " "_"
-    poetry run ruff check --fix .
+    poetry run ruff check .
     poetry run ruff format .
     ;;
   deploy)

@@ -2,7 +2,7 @@ from commands2 import CommandScheduler, Subsystem
 
 from subsystems.arm import Arm
 from subsystems.claw import Claw
-from subsystems.climb import Climb
+from subsystems.climber import Climber
 
 
 class Periscope(Subsystem):
@@ -11,7 +11,7 @@ class Periscope(Subsystem):
 
         self.arm = Arm(scheduler)
         self.claw = Claw(scheduler)
-        self.climb = Climb(scheduler)
+        self.climber = Climber(scheduler)
 
     def periodic(self):
         pass
