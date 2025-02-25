@@ -54,6 +54,14 @@ turn_pid = (0.5, 0, 0)
 
 # -- Pivot --
 
+pivot_motor_ids = [8, 9, 10, 11]  # TODO: set correct IDs
+pivot_pid_constants = (1, 1, 1)
+pivot_pid_constraint_constants = (1, 1)
+
+pivot_encoder_id = 0
+pivot_angle_offset = 0.5
+pivot_epsilon_pos = 0.05
+pivot_epsilon_v = 0.05
 # -- Elevator --
 
 # -- Wrist --
