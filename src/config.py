@@ -17,6 +17,10 @@ def is_red() -> bool:
     return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
 
+def flip_red(pos: Translation2d) -> Translation2d:
+    return Translation2d(17.548, 8.0518) - pos
+
+
 code_path = path.dirname(__file__) + "/"
 
 robot_dimensions = Translation2d(units.inchesToMeters(20.5), units.inchesToMeters(20.5))
