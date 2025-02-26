@@ -7,7 +7,7 @@ from subsystems.pivot import Pivot
 from subsystems.elevator import Elevator
 from subsystems.wrist import Wrist
 
-from config import claw_to_wrist_lengths, coral_algae_pickup_angle
+from config import claw_to_wrist_lengths, coral_algae_pickup_angle, claw_up_down_lengths
 
 
 class Arm(Subsystem):
@@ -19,22 +19,22 @@ class Arm(Subsystem):
         self.wrist = Wrist(scheduler)
 
         self.target: Optional[Transform2d] = None
-        self.use_algae = 0
+        self.use_algae = False
         self.should_extend = False
 
     def periodic(self):
         if self.target is not None:
             # Position of the wrist pivot in 2D arm space
             p_1 = Translation2d(
-                claw_to_wrist_lengths["algae" if self.use_algae else "coral"], 0
-            ).rotate(self.target.rotation() + self.use_algae * coral_algae_pickup_angle)
-
+                claw_to_wrist_lengths["algae" if self.use_algae else "coral"], self.target.rotation() + self.use_algae * coral_algae_pickup_angle)
+            claw_bounds = [Translation2d(target.translation()-p_1).norm().rotate(pi/2)*claw_up_down_lengths[0] + target.translation(), Translation2d(-target.translation()-p_1).norm().rotate(pi/2)*claw_up_down_lengths[1] + target.translation()]
+                
             self.pivot.target_angle = p_1.angle()
-            # TODO: Software limits on wrist
             self.wrist.target_angle = pi - (
                 p_1.angle()
                 - self.target.rotation()
-                + self.use_algae * coral_algae_pickup_angle
+                + float(self.use_algae)
+                * coral_algae_pickup_angle
             )
             if self.should_extend:
                 self.elevator.target_extension = p_1.norm()

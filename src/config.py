@@ -59,6 +59,8 @@ claw_to_wrist_lengths = {
 }
 coral_algae_pickup_angle = 1
 
+claw_up_down_lengths = (1, 0.5)
+
 # -- Pivot --
 
 # -- Elevator --
