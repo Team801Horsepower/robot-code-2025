@@ -7,7 +7,7 @@ from subsystems.pivot import Pivot
 from subsystems.elevator import Elevator
 from subsystems.wrist import Wrist
 
-from config import claw_to_wrist_lengths, coral_algae_pickup_angle, claw_up_down_lengths,bumper_distance, pivot_offset, robot_dimensions, ik_boundary_distance, ik_floor
+from config import claw_to_wrist_lengths, coral_algae_pickup_angle, claw_up_down_lengths, bumper_distance, pivot_offset, robot_dimensions, ik_boundary_distance, ik_floor, extension_range
 
 
 class Arm(Subsystem):
@@ -53,7 +53,7 @@ class Arm(Subsystem):
                 self.elevator.target_extension = p_1.norm()
             else:
                 # TODO: Insert retracted elevator length
-                self.elevator.target_extension = 0
+                self.elevator.target_extension = extension_range[0]
         elif isinstance(self.target, Tuple[float, float, float]):
             self.pivot.target = self.target[0]
             self.elevator.target = self.target[1]

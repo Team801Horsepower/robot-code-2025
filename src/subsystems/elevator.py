@@ -54,7 +54,7 @@ class Elevator(Subsystem):
         return False
 
     def target_attainable(self) -> bool:
-        return True
+        return config.extension_range[0] <= self.target_extension and self.target_extension <= config.extension_range[1]
 
     def update_extension(self) -> float:
         return self.extension_motor_encoders[0].

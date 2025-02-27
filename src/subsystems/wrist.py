@@ -29,4 +29,4 @@ class Wrist(Subsystem):
         return abs(self.position() - self.target_angle) <= self.tolerance
 
     def target_attainable(self) -> bool:
-        return config.wrist_limits[0] < self.target_angle and self.target_angle < config.wrist_limits[1]
+        return config.wrist_limits[0] <= self.target_angle and self.target_angle <= config.wrist_limits[1]

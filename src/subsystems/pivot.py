@@ -53,10 +53,10 @@ class Pivot(Subsystem):
 
         self.pivot_encoder = DutyCycleEncoder(pivot_encoder_id)
 
-        self.setpoint: float = 0
+        self.target_angle: float = 0 # TODO: Shouldn't default to 0
 
     def periodic(self):
-        self.target_angle(self.setpoint)
+        self.target_angle(self.target_angle)
         self.current_angle = self.update_angle()
 
     def target_angle(self, target):
@@ -75,7 +75,7 @@ class Pivot(Subsystem):
 
     def at_angle(self) -> bool:
         if (
-            abs(self.get_angle() - self.setpoint) < pivot_epsilon_pos
+            abs(self.get_angle() - self.target_angle) < pivot_epsilon_pos
             and abs(self.pivot_motor_encoders[0].getVelocity()) < pivot_epsilon_v
         ):
             return True
@@ -83,7 +83,7 @@ class Pivot(Subsystem):
         return False
 
     def target_attainable(self) -> bool:
-        return True
+        return config.pivot_range[0] <= self.target_angle and self.target_angle <=config.pivot_range[1]
 
     def pivot_ff_torque(self):
         t_g = self.elevator.r_com * self.elevator.mass * sin(self.get_angle()) * g
