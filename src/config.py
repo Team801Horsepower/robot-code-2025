@@ -52,6 +52,9 @@ turn_pid = (0.5, 0, 0)
 
 # -- Vision --
 
+front_camera_height = 0.2  # TODO: filler val
+score_atag_height = 0.305
+
 # -- Periscope --
 
 # -- Claw --
