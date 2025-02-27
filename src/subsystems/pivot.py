@@ -4,7 +4,10 @@ from wpimath.controller import ProfiledPIDController
 from math import pi
 from wpimath.trajectory import TrapezoidProfile
 from rev import SparkFlex, SparkBaseConfig
+from navx import AHRS
 
+
+from math import sin, cos
 
 from subsystems.elevator import Elevator
 from config import (
@@ -15,14 +18,16 @@ from config import (
     pivot_angle_offset,
     pivot_epsilon_pos,
     pivot_epsilon_v,
+    g,
 )
 
 
 class Pivot(Subsystem):
-    def __init__(self, scheduler: CommandScheduler, elevator: Elevator):
+    def __init__(self, scheduler: CommandScheduler, elevator: Elevator, navx: AHRS):
         scheduler.registerSubsystem(self)
 
         self.elevator: Elevator = elevator
+        self.navx: AHRS = navx
 
         self.pivot_motors = [
             SparkFlex(motor_id, SparkFlex.MotorType.kBrushless)
@@ -55,13 +60,16 @@ class Pivot(Subsystem):
 
     def target_angle(self, target):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
-        self.set_power(pid_output + self.elevator.ff_power())
+        self.set_power((pid_output * self.elevator.moi) + self.pivot_ff_torque())
 
     def set_power(self, power: float):
         for motor in self.pivot_motors:
             motor.set(power)
 
     def get_angle(self) -> float:
+        return self.current_angle
+
+    def update_angle(self) -> float:
         return self.pivot_encoder.get() * 2.0 * pi - pivot_angle_offset
 
     def at_angle(self) -> bool:
@@ -75,3 +83,12 @@ class Pivot(Subsystem):
 
     def target_attainable(self) -> bool:
         return True
+
+    def pivot_ff_torque(self):
+        t_g = self.elevator.get_r_com() * self.elevator.mass * sin(self.get_angle()) * g
+        t_a = self.elevator.get_r_com() * self.elevator.mass * cos(self.get_angle()) * self.navx.getRawAccelX()
+
+        return t_g + t_a
+
+
+
