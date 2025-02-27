@@ -59,3 +59,4 @@ turn_pid = (0.5, 0, 0)
 # -- Wrist --
 
 wrist_motor_id = 0 # TODO: change to actual motor id
+wrist_limits = (0, 1) # TODO: change to the range of angles attainable by the wrist

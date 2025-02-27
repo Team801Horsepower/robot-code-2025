@@ -20,7 +20,7 @@ class Wrist(Subsystem):
         return self.wrist_encoder.getPosition()
 
     def periodic(self):
-        self.wrist_motor.set(self.pid.calculate(self.position(), self.target_angle))
+        self.wrist_motor.set(self.pid.calculate(self.position(), min(max(self.target_angle,config.wrist_limits[0]), config.wrist_limits[1])))
 
     def fold(self):
         self.target = 0.0  # TODO: change to preferred folding position
@@ -29,4 +29,4 @@ class Wrist(Subsystem):
         return abs(self.position() - self.target_angle) <= self.tolerance
 
     def target_attainable(self) -> bool:
-        return True
+        return config.wrist_limits[0] < self.target_angle and self.target_angle < config.wrist_limits[1]
