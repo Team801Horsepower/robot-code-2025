@@ -86,8 +86,8 @@ class Pivot(Subsystem):
         return True
 
     def pivot_ff_torque(self):
-        t_g = self.elevator.get_r_com() * self.elevator.mass * sin(self.get_angle()) * g
-        t_a = self.elevator.get_r_com() * self.elevator.mass * cos(self.get_angle()) * self.navx.getRawAccelX()
+        t_g = self.elevator.r_com * self.elevator.mass * sin(self.get_angle()) * g
+        t_a = self.elevator.r_com * self.elevator.mass * cos(self.get_angle()) * self.navx.getRawAccelX()
 
         return t_g + t_a
 

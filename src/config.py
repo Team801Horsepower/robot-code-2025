@@ -1,12 +1,14 @@
+from typing import List, Tuple
+
 from wpimath import units
 from wpimath.geometry import Translation2d
 from wpilib import DriverStation
-
 from os import path
 
+from utils import format_table
 
 # -- General --
-
+g = 9.81
 
 def is_red() -> bool:
     return DriverStation.getAlliance() == DriverStation.Alliance.kRed
@@ -86,6 +88,25 @@ pivot_epsilon_pos = 0.05
 pivot_epsilon_v = 0.05
 # -- Elevator --
 
+elevator_mass = 1 # kg
+
+# fmt: off
+elevator_dynamics_table = [
+    (0, 0, 0),
+    (0, 0, 0),
+    (0, 0, 0),
+    (0, 0, 0),
+    (0, 0, 0),
+]
+elevator_dynamics_table: List[Tuple[float, ...]] = format_table(elevator_dynamics_table)
+# fmt: on
+
+extension_motor_ids = [20, 21]  # TODO: set correct IDs
+extension_pid_constants = (1, 1, 1)
+extension_pid_constraint_constants = (1, 1)
+
+extension_zero_length = 1 # m
+extension_ratio = 1 # m / revolution
 # -- Wrist --
 
 wrist_motor_id = 0 # TODO: change to actual motor id
