@@ -23,10 +23,13 @@ turn_gear_ratio = 41.25
 
 wheel_diameter = units.inchesToMeters(3)
 
+bumper_distance = 0.5
+
 drive_speed = 2
 turn_speed = 4
 auto_drive_speed = 0.5
 auto_turn_speed = 0.5
+
 
 # drive id, turn id, cancoder id
 swerves = [
@@ -52,7 +55,22 @@ turn_pid = (0.5, 0, 0)
 
 # -- Arm --
 
+# TODO: Set claw to wrist length and angle to correct value
+claw_to_wrist_lengths = {
+    "coral": 0.5,
+    "algae": 0.5,
+}
+coral_algae_pickup_angle = 1
+
+claw_up_down_lengths = (1, 0.5)
+# TODO: Get real :()
+ik_boundary_distance = units.feetToMeters(1.5)
+# TODO: SET THIS; IK will not be able to put the claw below this point
+ik_floor = 1
+
 # -- Pivot --
+# TODO: Get real
+pivot_offset = Translation2d(1, 1)
 
 # -- Elevator --
 
