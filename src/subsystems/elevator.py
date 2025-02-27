@@ -12,3 +12,6 @@ class Elevator(Subsystem):
 
     def at_extension(self) -> bool:
         return False
+
+    def target_attainable(self) -> bool:
+        return True

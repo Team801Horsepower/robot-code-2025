@@ -12,3 +12,6 @@ class Pivot(Subsystem):
 
     def at_angle(self) -> bool:
         return False
+
+    def target_attainable(self) -> bool:
+        return True
