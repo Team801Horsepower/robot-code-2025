@@ -57,6 +57,7 @@ class Pivot(Subsystem):
 
     def periodic(self):
         self.target_angle(self.setpoint)
+        self.current_angle = self.update_angle()
 
     def target_angle(self, target):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
