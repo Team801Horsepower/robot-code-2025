@@ -11,6 +11,7 @@ from utils import format_table
 
 g = 9.81
 
+
 def is_red() -> bool:
     return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
@@ -79,7 +80,7 @@ ik_floor = 1
 
 # TODO: Get real
 pivot_offset = Translation2d(1, 1)
-pivot_range = (0, 1) # TODO: Insert correct angle values
+pivot_range = (0, 1)  # TODO: Insert correct angle values
 
 pivot_motor_ids = [8, 9, 10, 11]  # TODO: set correct IDs
 pivot_pid_constants = (1, 1, 1)
@@ -92,7 +93,7 @@ pivot_epsilon_v = 0.05
 
 # -- Elevator --
 
-elevator_mass = 1 # kg
+elevator_mass = 1  # kg
 
 # fmt: off
 elevator_dynamics_table = [
@@ -109,10 +110,10 @@ extension_motor_ids = [20, 21]  # TODO: set correct IDs
 extension_pid_constants = (1, 1, 1)
 extension_pid_constraint_constants = (1, 1)
 
-extension_range = (0, 1) # m
-extension_ratio = 1 # m / revolution
+extension_range = (0, 1)  # m
+extension_ratio = 1  # m / revolution
 
 # -- Wrist --
 
-wrist_motor_id = 0 # TODO: change to actual motor id
-wrist_limits = (0, 1) # TODO: change to the range of angles attainable by the wrist
+wrist_motor_id = 0  # TODO: change to actual motor id
+wrist_limits = (0, 1)  # TODO: change to the range of angles attainable by the wrist

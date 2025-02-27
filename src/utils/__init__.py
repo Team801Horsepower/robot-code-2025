@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+
 def lerp_over_table(table: List[Tuple[float, ...]], x: float) -> Tuple[float, ...]:
     if x <= table[0][0]:
         return table[0][1:]
@@ -18,4 +19,6 @@ def lerp_over_table(table: List[Tuple[float, ...]], x: float) -> Tuple[float, ..
 
 
 def format_table(table: List[Tuple[float, ...]]) -> List[Tuple[float, ...]]:
-    return sorted([tuple(float(value) for value in row) for row in table], key=lambda x: x[0])
+    return sorted(
+        [tuple(float(value) for value in row) for row in table], key=lambda x: x[0]
+    )

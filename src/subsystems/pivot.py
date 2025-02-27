@@ -18,6 +18,7 @@ from config import (
     pivot_angle_offset,
     pivot_epsilon_pos,
     pivot_epsilon_v,
+    pivot_range,
     g,
 )
 
@@ -53,13 +54,13 @@ class Pivot(Subsystem):
 
         self.pivot_encoder = DutyCycleEncoder(pivot_encoder_id)
 
-        self.target_angle: float = 0 # TODO: Shouldn't default to 0
+        self.target_angle: float = 0  # TODO: Shouldn't default to 0
 
     def periodic(self):
-        self.target_angle(self.target_angle)
+        self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()
 
-    def target_angle(self, target):
+    def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
         self.set_power((pid_output * self.elevator.moi) + self.pivot_ff_torque())
 
@@ -83,13 +84,17 @@ class Pivot(Subsystem):
         return False
 
     def target_attainable(self) -> bool:
-        return config.pivot_range[0] <= self.target_angle and self.target_angle <=config.pivot_range[1]
+        return (
+            pivot_range[0] <= self.target_angle and self.target_angle <= pivot_range[1]
+        )
 
     def pivot_ff_torque(self):
         t_g = self.elevator.r_com * self.elevator.mass * sin(self.get_angle()) * g
-        t_a = self.elevator.r_com * self.elevator.mass * cos(self.get_angle()) * self.navx.getRawAccelX()
+        t_a = (
+            self.elevator.r_com
+            * self.elevator.mass
+            * cos(self.get_angle())
+            * self.navx.getRawAccelX()
+        )
 
         return t_g + t_a
-
-
-

@@ -1,5 +1,5 @@
 from commands2 import CommandScheduler, Subsystem
-from rev import SparkFlex, SparkBaseConfig
+from rev import SparkFlex
 from wpilib import DigitalInput
 
 import config
