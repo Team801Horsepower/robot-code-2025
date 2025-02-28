@@ -1,7 +1,7 @@
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpilib import DigitalInput
-
+from wpilib import SmartDashboard
 from config import claw_motor_id
 
 
@@ -15,7 +15,7 @@ class Claw(Subsystem):
             SparkFlex.ResetMode.kResetSafeParameters,
             SparkFlex.PersistMode.kNoPersistParameters,
         )
-        # self.sensor = DigitalInput
+        self.sensor = DigitalInput(1)
         scheduler.registerSubsystem(self)
 
     def periodic(self):
@@ -25,5 +25,4 @@ class Claw(Subsystem):
         self.motor.set(power)
 
     def has_coral(self) -> bool:
-        pass
-        # return not self.sensor.get()
+        return not self.sensor.get()

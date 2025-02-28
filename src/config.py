@@ -116,4 +116,4 @@ extension_ratio = 1  # m / revolution
 # -- Wrist --
 
 wrist_motor_id = 50  # TODO: change to actual motor id
-wrist_limits = (0, 33.2)  # TODO: change to the range of angles attainable by the wrist
+wrist_limits = (-20, 33.2)  # TODO: change to the range of angles attainable by the wrist

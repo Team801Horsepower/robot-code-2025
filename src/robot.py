@@ -64,7 +64,7 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousPeriodic(self):
-        pass
+        self.claw.gather(-1)
 
     def autonomousExit(self):
         pass
@@ -92,7 +92,11 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testPeriodic(self):
-        pass
+        if not self.claw.has_coral():
+            self.claw.gather(1)
+        else:
+            self.claw.gather(0)
+
 
     def testExit(self):
         pass
