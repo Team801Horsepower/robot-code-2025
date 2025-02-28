@@ -26,7 +26,7 @@ switch ($Action) {
         poetry run netconsole 10.8.1.2
     }
     "shell" {
-        poetry shell
+        poetry run powershell
     }
     "ssh" {
         ssh -o StrictHostKeyChecking=no admin@10.8.1.2
