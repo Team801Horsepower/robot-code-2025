@@ -1,7 +1,8 @@
 from commands2 import CommandScheduler, Subsystem
-from wpimath.geometry import Transform2d, Translation2d
+from wpimath.geometry import Rotation2d, Transform2d, Translation2d
 from typing import Optional, Tuple
 from math import pi
+from navx import AHRS
 
 from subsystems.pivot import Pivot
 from subsystems.elevator import Elevator
@@ -21,11 +22,11 @@ from config import (
 
 
 class Arm(Subsystem):
-    def __init__(self, scheduler: CommandScheduler):
+    def __init__(self, scheduler: CommandScheduler, navx: AHRS):
         scheduler.registerSubsystem(self)
 
-        self.pivot = Pivot(scheduler)
         self.elevator = Elevator(scheduler)
+        self.pivot = Pivot(scheduler, self.elevator, navx)
         self.wrist = Wrist(scheduler)
 
         self.target: Optional[Transform2d | Tuple[float, float, float]] = None
@@ -41,54 +42,67 @@ class Arm(Subsystem):
             # Position of the wrist pivot in 2D arm space
             p_1 = Translation2d(
                 claw_to_wrist_lengths["algae" if self.use_algae else "coral"],
-                self.target.rotation() + self.use_algae * coral_algae_pickup_angle,
+                self.target.rotation().radians()
+                + self.use_algae * coral_algae_pickup_angle,
             )
+            target_to_p_1_norm = self.target.translation() - p_1
+            target_to_p_1_norm /= target_to_p_1_norm.norm()
             claw_bounds = (
-                Translation2d(target.translation() - p_1).norm().rotate(pi / 2)
+                Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
                 * claw_up_down_lengths[0]
-                + target.translation(),
-                Translation2d(-target.translation() - p_1).norm().rotate(pi / 2)
+                + self.target.translation(),
+                Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
                 * claw_up_down_lengths[1]
-                + target.translation(),
+                + self.target.translation(),
             )
-            max_point = (
+            max_point = Translation2d(
                 max(claw_bounds[0].x, claw_bounds[1].x),
                 max(claw_bounds[0].y, claw_bounds[1].y),
             )
-            min_point = (
+            min_point = Translation2d(
                 min(claw_bounds[0].x, claw_bounds[1].x),
                 min(claw_bounds[0].y, claw_bounds[1].y),
             )
             if max_point.x + pivot_offset.x > (
                 robot_dimensions.x / 2 + bumper_distance + ik_boundary_distance
             ):
-                p_1.x -= (
-                    max_point.x
-                    + pivot_offset.x
-                    - robot_dimensions.x / 2
-                    - bumper_distance
-                    - ik_boundary_distance
+                p_1 = Translation2d(
+                    p_1.x
+                    - (
+                        max_point.x
+                        + pivot_offset.x
+                        - robot_dimensions.x / 2
+                        - bumper_distance
+                        - ik_boundary_distance
+                    ),
+                    p_1.y,
                 )
                 self._target_outofbounds = True
             elif min_point.x + pivot_offset.x < (
                 -robot_dimensions.x / 2 - bumper_distance - ik_boundary_distance
             ):
-                p_1.x += (
-                    min_point.x
-                    + pivot_offset.x
-                    + robot_dimensions.x / 2
-                    + bumper_distance
-                    + ik_boundary_distance
+                p_1 = Translation2d(
+                    p_1.x
+                    + (
+                        min_point.x
+                        + pivot_offset.x
+                        + robot_dimensions.x / 2
+                        + bumper_distance
+                        + ik_boundary_distance
+                    ),
+                    p_1.y,
                 )
                 self._target_outofbounds = True
             if min_point.y + pivot_offset.y < ik_floor:
-                p_1.y -= min_point.y + pivot_offset.y - ik_floor
+                p_1 = Translation2d(
+                    p_1.x, p_1.y - (min_point.y + pivot_offset.y - ik_floor)
+                )
                 self._target_outofbounds = True
 
-            self.pivot.target_angle = max(min(p_1.angle(), 50), 110)
+            self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
             self.wrist.target_angle = pi - (
-                p_1.angle()
-                - self.target.rotation()
+                p_1.angle().radians()
+                - self.target.rotation().radians()
                 + float(self.use_algae) * coral_algae_pickup_angle
             )
             if self.should_extend:
@@ -96,10 +110,12 @@ class Arm(Subsystem):
             else:
                 # TODO: Insert retracted elevator length
                 self.elevator.target_extension = extension_range[0]
-        elif isinstance(self.target, Tuple[float, float, float]):
-            self.pivot.target = self.target[0]
-            self.elevator.target = self.target[1]
-            self.wrist.target_angle = self.target[2]
+        else:
+            match self.target:
+                case (float(_), float(_), float(_)):
+                    self.pivot.target_angle = self.target[0]
+                    self.elevator.target_extension = self.target[1]
+                    self.wrist.target_angle = self.target[2]
 
     def at_target(self) -> bool:
         return (

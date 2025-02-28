@@ -95,14 +95,13 @@ pivot_epsilon_v = 0.05
 elevator_mass = 1  # kg
 
 # fmt: off
-elevator_dynamics_table = [
+elevator_dynamics_table: List[Tuple[float, ...]] = format_table([
     (0, 0, 0),
     (0, 0, 0),
     (0, 0, 0),
     (0, 0, 0),
     (0, 0, 0),
-]
-elevator_dynamics_table: List[Tuple[float, ...]] = format_table(elevator_dynamics_table)
+])
 # fmt: on
 
 extension_motor_ids = [40, 41]

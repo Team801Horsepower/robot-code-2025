@@ -1,8 +1,6 @@
-from typing import Unpack
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
-from wpimath.controller import ProfiledPIDController, PIDController
-from wpimath.trajectory import TrapezoidProfile
+from wpimath.controller import PIDController
 
 from wpilib import SmartDashboard
 
@@ -13,7 +11,6 @@ from config import (
     extension_ratio,
     extension_motor_ids,
     extension_pid_constants,
-    extension_pid_constraint_constants,
     elevator_ff_power,
 )
 from utils import lerp_over_table

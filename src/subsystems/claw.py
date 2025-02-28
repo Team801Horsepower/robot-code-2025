@@ -1,7 +1,6 @@
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpilib import DigitalInput
-from wpilib import SmartDashboard
 from config import claw_motor_id
 
 

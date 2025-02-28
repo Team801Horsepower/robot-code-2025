@@ -2,7 +2,6 @@ from navx import AHRS
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d
 from commands2 import CommandScheduler, Subsystem
 
-from wpilib import SPI
 
 from subsystems.chassis import Chassis
 

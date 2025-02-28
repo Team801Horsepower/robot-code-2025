@@ -23,7 +23,7 @@ class Robot(wpilib.TimedRobot):
         self.drive = drive.Drive(self.scheduler)
         # self.scheduler.registerSubsystem(self.drive)
 
-        # self.periscope = periscope.Periscope(self.scheduler)
+        # self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
         # self.arm = arm.Arm(self.scheduler)
         self.wrist = wrist.Wrist(self.scheduler)
         # self.scheduler.registerSubsystem(self.claw)

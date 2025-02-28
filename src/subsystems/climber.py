@@ -8,5 +8,5 @@ class Climber(Subsystem):
     def periodic(self):
         pass
 
-    def run(self, power: float):
+    def run_climber(self, power: float):
         pass
