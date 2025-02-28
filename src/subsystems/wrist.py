@@ -3,9 +3,12 @@ from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
 from config import wrist_motor_id
 import config
+from wpilib import SmartDashboard
+
 
 class Wrist(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
+        SmartDashboard.putNumber("W_t", 0)
         scheduler.registerSubsystem(self)
 
         self.wrist_motor = SparkFlex(
@@ -19,7 +22,7 @@ class Wrist(Subsystem):
             SparkFlex.PersistMode.kNoPersistParameters,
         )
         self.wrist_encoder = self.wrist_motor.getEncoder()
-        self.pid = PIDController(0.5, 0, 0)  # TODO: Change to actual constants
+        self.pid = PIDController(0.1, 0, 0)  # TODO: Change to actual constants
         self.target_angle = 0.0
         self.tolerance = 0.05
         scheduler.registerSubsystem(self)
@@ -28,6 +31,8 @@ class Wrist(Subsystem):
         return self.wrist_encoder.getPosition()
 
     def periodic(self):
+
+        self.target_angle = SmartDashboard.getNumber("W_t", 0)
         self.wrist_motor.set(
             self.pid.calculate(
                 self.position(),

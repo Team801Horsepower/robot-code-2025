@@ -25,7 +25,7 @@ class Elevator(Subsystem):
         SmartDashboard.putNumber("kP", 0.1)
         SmartDashboard.putNumber("kI", 0)
         SmartDashboard.putNumber("kD", 0)
-        SmartDashboard.putNumber("setpoint", 30)
+        SmartDashboard.putNumber("setpoint", 0)
         scheduler.registerSubsystem(self)
 
         # self.pivot: Pivot = pivot
@@ -72,7 +72,7 @@ class Elevator(Subsystem):
         kI = SmartDashboard.getNumber("kI", 0)
         kD = SmartDashboard.getNumber("kD", 0)
 
-        target = SmartDashboard.getNumber("setpoint", 30)
+        target = SmartDashboard.getNumber("setpoint", 0)
 
         self.extension_pid.setP(kP)
         self.extension_pid.setI(kI)
