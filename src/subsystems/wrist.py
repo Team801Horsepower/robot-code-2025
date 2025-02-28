@@ -11,9 +11,7 @@ class Wrist(Subsystem):
         SmartDashboard.putNumber("W_t", 0)
         scheduler.registerSubsystem(self)
 
-        self.wrist_motor = SparkFlex(
-            wrist_motor_id, SparkFlex.MotorType.kBrushless
-        )
+        self.wrist_motor = SparkFlex(wrist_motor_id, SparkFlex.MotorType.kBrushless)
         config = SparkFlexConfig()
         config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
         self.wrist_motor.configure(
@@ -31,7 +29,6 @@ class Wrist(Subsystem):
         return self.wrist_encoder.getPosition()
 
     def periodic(self):
-
         self.target_angle = SmartDashboard.getNumber("W_t", 0)
         self.wrist_motor.set(
             self.pid.calculate(

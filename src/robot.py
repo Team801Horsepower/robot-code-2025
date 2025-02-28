@@ -47,9 +47,11 @@ class Robot(wpilib.TimedRobot):
     def robotPeriodic(self):
         self.scheduler.run()
         SmartDashboard.putNumber("Pivot Angle", self.pivot.pivot_encoder.get())
-        SmartDashboard.putNumber("elevator extension", self.elevator.extension_motor_encoders[0].getPosition())
+        SmartDashboard.putNumber(
+            "elevator extension",
+            self.elevator.extension_motor_encoders[0].getPosition(),
+        )
         SmartDashboard.putNumber("wrist pos", self.wrist.wrist_encoder.getPosition())
-
 
     def disabledInit(self):
         pass
@@ -96,7 +98,6 @@ class Robot(wpilib.TimedRobot):
             self.claw.gather(1)
         else:
             self.claw.gather(0)
-
 
     def testExit(self):
         pass

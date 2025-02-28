@@ -14,7 +14,7 @@ from config import (
     extension_motor_ids,
     extension_pid_constants,
     extension_pid_constraint_constants,
-    elevator_ff_power
+    elevator_ff_power,
 )
 from utils import lerp_over_table
 # from subsystems.pivot import Pivot
