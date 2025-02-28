@@ -39,12 +39,12 @@ auto_turn_speed = 0.5
 swerves = [
     (10, 11, 12),
     (20, 21, 22),
-    (30, 31, 32),
-    (40, 41, 42),
+    (15, 16, 17),
+    (25, 26, 27),
 ]
 
 # front left, back left, front right, back right
-swerve_ids = [1, 2, 0, 3]
+swerve_ids = [1, 2, 0, 3]  # TODO: this is probably wrong now
 
 drive_pid = (0.15, 0, 0)
 turn_pid = (0.5, 0, 0)
@@ -55,8 +55,7 @@ turn_pid = (0.5, 0, 0)
 
 # -- Claw --
 
-# TODO: actual values
-claw_motor_id = 0
+claw_motor_id = 51
 claw_beam_break_id = 0
 
 # -- Climber --
@@ -82,7 +81,7 @@ ik_floor = 1
 pivot_offset = Translation2d(1, 1)
 pivot_range = (0, 1)  # TODO: Insert correct angle values
 
-pivot_motor_ids = [8, 9, 10, 11]  # TODO: set correct IDs
+pivot_motor_ids = [30, 32, 31, 33]
 pivot_pid_constants = (1, 1, 1)
 pivot_pid_constraint_constants = (1, 1)
 
@@ -106,14 +105,15 @@ elevator_dynamics_table = [
 elevator_dynamics_table: List[Tuple[float, ...]] = format_table(elevator_dynamics_table)
 # fmt: on
 
-extension_motor_ids = [20, 21]  # TODO: set correct IDs
-extension_pid_constants = (1, 1, 1)
-extension_pid_constraint_constants = (1, 1)
+extension_motor_ids = [40, 41]
+extension_pid_constants = (0.25, 0.01, 0)
+extension_pid_constraint_constants = (1, 10)
+elevator_ff_power = 0.02
 
 extension_range = (0, 1)  # m
 extension_ratio = 1  # m / revolution
 
 # -- Wrist --
 
-wrist_motor_id = 0  # TODO: change to actual motor id
+wrist_motor_id = 50  # TODO: change to actual motor id
 wrist_limits = (0, 1)  # TODO: change to the range of angles attainable by the wrist

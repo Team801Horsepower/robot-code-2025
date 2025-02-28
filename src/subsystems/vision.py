@@ -32,6 +32,7 @@ class Vision(Subsystem):
                 ),
             ),
         ]
+        scheduler.registerSubsystem(self)
 
     def periodic(self):
         pass

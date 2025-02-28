@@ -1,22 +1,29 @@
 from commands2 import CommandScheduler, Subsystem
-from rev import SparkFlex
+from rev import SparkFlex, SparkFlexConfig
 from wpilib import DigitalInput
 
-import config
+from config import claw_motor_id
 
 
 class Claw(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
+        self.motor = SparkFlex(claw_motor_id, SparkFlex.MotorType.kBrushless)
+        config = SparkFlexConfig()
+        config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
+        self.motor.configure(
+            config,
+            SparkFlex.ResetMode.kResetSafeParameters,
+            SparkFlex.PersistMode.kNoPersistParameters,
+        )
+        # self.sensor = DigitalInput
         scheduler.registerSubsystem(self)
-
-        self.motor = SparkFlex(config.claw_motor_id, SparkFlex.MotorType.kBrushless)
-        self.sensor = DigitalInput
 
     def periodic(self):
         pass
 
-    def run(self, power: float):
+    def gather(self, power: float):
         self.motor.set(power)
 
     def has_coral(self) -> bool:
-        return not self.sensor.get()
+        pass
+        # return not self.sensor.get()

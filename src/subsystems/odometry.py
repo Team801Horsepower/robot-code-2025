@@ -2,6 +2,8 @@ from navx import AHRS
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d
 from commands2 import CommandScheduler, Subsystem
 
+from wpilib import SPI
+
 from subsystems.chassis import Chassis
 
 
@@ -9,8 +11,9 @@ class Odometry(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
         scheduler.registerSubsystem(self)
 
-        self.ahrs = AHRS(AHRS.NavXComType.kUSB1)
+        self.ahrs = AHRS(AHRS.NavXComType.kMXP_SPI)
         self.translation = Translation2d()
+        scheduler.registerSubsystem(self)
 
     def rotation(self) -> Rotation2d:
         return Rotation2d.fromDegrees(-self.ahrs.getAngle())

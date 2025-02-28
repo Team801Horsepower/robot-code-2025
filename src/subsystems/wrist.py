@@ -1,20 +1,28 @@
 from commands2 import CommandScheduler, Subsystem
-from rev import SparkFlex
+from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
+from config import wrist_motor_id
 import config
-
 
 class Wrist(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
         scheduler.registerSubsystem(self)
 
         self.wrist_motor = SparkFlex(
-            config.wrist_motor_id, SparkFlex.MotorType.kBrushless
+            wrist_motor_id, SparkFlex.MotorType.kBrushless
+        )
+        config = SparkFlexConfig()
+        config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
+        self.wrist_motor.configure(
+            config,
+            SparkFlex.ResetMode.kResetSafeParameters,
+            SparkFlex.PersistMode.kNoPersistParameters,
         )
         self.wrist_encoder = self.wrist_motor.getEncoder()
         self.pid = PIDController(0.5, 0, 0)  # TODO: Change to actual constants
         self.target_angle = 0.0
         self.tolerance = 0.05
+        scheduler.registerSubsystem(self)
 
     def position(self) -> float:
         return self.wrist_encoder.getPosition()

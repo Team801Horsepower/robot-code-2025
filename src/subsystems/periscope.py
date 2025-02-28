@@ -12,6 +12,7 @@ class Periscope(Subsystem):
         self.arm = Arm(scheduler)
         self.claw = Claw(scheduler)
         self.climber = Climber(scheduler)
+        scheduler.registerSubsystem(self)
 
     def periodic(self):
         pass

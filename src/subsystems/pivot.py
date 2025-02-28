@@ -25,8 +25,6 @@ from config import (
 
 class Pivot(Subsystem):
     def __init__(self, scheduler: CommandScheduler, elevator: Elevator, navx: AHRS):
-        scheduler.registerSubsystem(self)
-
         self.elevator: Elevator = elevator
         self.navx: AHRS = navx
 
@@ -55,6 +53,9 @@ class Pivot(Subsystem):
         self.pivot_encoder = DutyCycleEncoder(pivot_encoder_id)
 
         self.target_angle: float = 0  # TODO: Shouldn't default to 0
+        self.current_angle = pivot_range[0]
+
+        scheduler.registerSubsystem(self)
 
     def periodic(self):
         self.target_target_angle(self.target_angle)

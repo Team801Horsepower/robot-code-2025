@@ -1,7 +1,10 @@
+from typing import Unpack
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
-from wpimath.controller import ProfiledPIDController
+from wpimath.controller import ProfiledPIDController, PIDController
 from wpimath.trajectory import TrapezoidProfile
+
+from wpilib import SmartDashboard
 
 from config import (
     elevator_mass,
@@ -11,16 +14,21 @@ from config import (
     extension_motor_ids,
     extension_pid_constants,
     extension_pid_constraint_constants,
+    elevator_ff_power
 )
 from utils import lerp_over_table
-from subsystems.pivot import Pivot
+# from subsystems.pivot import Pivot
 
 
 class Elevator(Subsystem):
-    def __init__(self, scheduler: CommandScheduler, pivot: Pivot):
+    def __init__(self, scheduler: CommandScheduler):
+        SmartDashboard.putNumber("kP", 0.1)
+        SmartDashboard.putNumber("kI", 0)
+        SmartDashboard.putNumber("kD", 0)
+        SmartDashboard.putNumber("setpoint", 30)
         scheduler.registerSubsystem(self)
 
-        self.pivot: Pivot = pivot
+        # self.pivot: Pivot = pivot
 
         self.mass = elevator_mass
         self.target_extension = 0.0
@@ -36,7 +44,7 @@ class Elevator(Subsystem):
 
         for i, motor in enumerate(self.extension_motors):
             config = SparkFlexConfig()
-            config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
+            config.setIdleMode(SparkFlexConfig.IdleMode.kCoast)
             config.inverted(i % 2 == 1)  # Alternate inverting for correct rotation
             motor.configure(
                 config,
@@ -44,17 +52,34 @@ class Elevator(Subsystem):
                 SparkFlex.PersistMode.kNoPersistParameters,
             )
 
-        self.extension_pid = ProfiledPIDController(
-            *extension_pid_constants,
-            constraints=TrapezoidProfile.Constraints(
-                *extension_pid_constraint_constants
-            ),
-        )
+        # self.extension_pid = ProfiledPIDController(
+        #     *extension_pid_constants,
+        #     constraints=TrapezoidProfile.Constraints(
+        #         *extension_pid_constraint_constants
+        #     ),
+        # )
+
+        self.extension_pid = PIDController(*extension_pid_constants)
 
         self.extension: float = extension_range[0]
 
     def periodic(self):
-        pass
+        self.target_target_extension(None)
+        self.extension = self.update_extension()
+
+    def target_target_extension(self, target):
+        kP = SmartDashboard.getNumber("kP", 0.1)
+        kI = SmartDashboard.getNumber("kI", 0)
+        kD = SmartDashboard.getNumber("kD", 0)
+
+        target = SmartDashboard.getNumber("setpoint", 30)
+
+        self.extension_pid.setP(kP)
+        self.extension_pid.setI(kI)
+        self.extension_pid.setD(kD)
+
+        pid_output = self.extension_pid.calculate(self.extension, target)
+        self.set_power(pid_output + elevator_ff_power)
 
     def set_power(self, power: float):
         for motor in self.extension_motors:
@@ -80,8 +105,8 @@ class Elevator(Subsystem):
 
     @property
     def r_com(self) -> float:
-        return lerp_over_table(elevator_dynamics_table, self.get_extension())[0]
+        return lerp_over_table(elevator_dynamics_table, self.extension)[0]
 
     @property
     def moi(self):
-        return lerp_over_table(elevator_dynamics_table, self.get_extension())[1]
+        return lerp_over_table(elevator_dynamics_table, self.extension)[1]

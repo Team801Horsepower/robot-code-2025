@@ -1,25 +1,55 @@
 #!/usr/bin/env python3
 
 import wpilib
+
+from wpilib import SmartDashboard
+
 from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler
 
 import config
-from subsystems import drive
+from subsystems import drive, claw, elevator, pivot, wrist
 
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
+        self.scheduler = CommandScheduler()
+
+        # Subsystem initialization
+        self.scheduler.unregisterAllSubsystems()
+
+        self.claw = claw.Claw(self.scheduler)
+
+        self.drive = drive.Drive(self.scheduler)
+        # self.scheduler.registerSubsystem(self.drive)
+
+        # self.periscope = periscope.Periscope(self.scheduler)
+        # self.arm = arm.Arm(self.scheduler)
+        self.wrist = wrist.Wrist(self.scheduler)
+        # self.scheduler.registerSubsystem(self.claw)
+        # self.climber = climber.Climber(self.scheduler)
+        self.elevator = elevator.Elevator(self.scheduler)
+        # self.scheduler.registerSubsystem(self.elevator)
+        self.pivot = pivot.Pivot(
+            self.scheduler, self.elevator, self.drive.odometry.ahrs
+        )
+        # self.scheduler.registerSubsystem(self.pivot)
+        # self.turn_signals = turn_signals.TurnSignals(self.scheduler)
+
         self.driver_controller = wpilib.XboxController(0)
         self.manip_controller = wpilib.XboxController(1)
 
-        self.scheduler = CommandScheduler()
-
-        self.drive = drive.Drive(self.scheduler)
         self.drive.chassis.set_swerves()
 
+        for encoder in self.elevator.extension_motor_encoders:
+            encoder.setPosition(0)
+
     def robotPeriodic(self):
-        pass
+        self.scheduler.run()
+        SmartDashboard.putNumber("Pivot Angle", self.pivot.pivot_encoder.get())
+        SmartDashboard.putNumber("elevator extension", self.elevator.extension_motor_encoders[0].getPosition())
+        SmartDashboard.putNumber("wrist pos", self.wrist.wrist_encoder.getPosition())
+
 
     def disabledInit(self):
         pass

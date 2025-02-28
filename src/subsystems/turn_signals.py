@@ -7,6 +7,7 @@ class TurnSignals(Subsystem):
 
         self.signal_left = False
         self.signal_right = False
+        scheduler.registerSubsystem(self)
 
     def periodic(self):
         pass

@@ -68,6 +68,7 @@ class Chassis(Subsystem):
 
             # Prevs must be updated again after conversion factors were changed
             swerve.update_prevs()
+        scheduler.registerSubsystem(self)
 
     def set_swerves(self):
         for swerve in self.swerves:
