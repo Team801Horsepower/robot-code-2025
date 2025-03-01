@@ -85,12 +85,12 @@ class Pivot(Subsystem):
             "pivot acc limit",
             lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0],
         )
-        SmartDashboard.putNumber("ff torque", self.pivot_ff_torque())
+        SmartDashboard.putNumber("ff torque", self.pivot_ff_power())
 
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
         # pid_output = pid_output * (1 + (self.elevator.get_extension() * 2 / 65))
-        self.set_power(pid_output + self.pivot_ff_torque())
+        self.set_power(pid_output + self.pivot_ff_power())
         # self.set_power(self.pivot_ff_torque())
 
     def set_power(self, power: float):
@@ -119,7 +119,7 @@ class Pivot(Subsystem):
             pivot_range[0] <= self.target_angle and self.target_angle <= pivot_range[1]
         )
 
-    def pivot_ff_torque(self):
+    def pivot_ff_power(self):
         t_g = (
             # self.elevator.get_extension()
             self.elevator.ff_scaler
