@@ -18,20 +18,18 @@ from wpimath.trajectory import TrapezoidProfile
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        SmartDashboard.putNumber("elevator_extension", 0)
+        # SmartDashboard.putNumber("elevator_extension", 0)
 
-        SmartDashboard.putNumber("kP", 0)
-        SmartDashboard.putNumber("kI", 0)
-        SmartDashboard.putNumber("kD", 0)
+        # SmartDashboard.putNumber("kP", 0)
+        # SmartDashboard.putNumber("kI", 0)
+        # SmartDashboard.putNumber("kD", 0)
 
-        SmartDashboard.putNumber("acc_lim", 15)
+        # SmartDashboard.putNumber("acc_lim", 15)
 
         self.scheduler = CommandScheduler()
 
         # Subsystem initialization
         self.scheduler.unregisterAllSubsystems()
-
-        self.claw = claw.Claw(self.scheduler)
 
         self.drive = drive.Drive(self.scheduler)
         # self.scheduler.registerSubsystem(self.drive)
@@ -105,16 +103,21 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testInit(self):
-        pass
+        SmartDashboard.putNumber(
+            "new pivot target", self.periscope.arm.pivot.target_angle
+        )
+        SmartDashboard.putNumber(
+            "new elevator target", self.periscope.arm.elevator.target_extension
+        )
 
     def testPeriodic(self):
-        target = SmartDashboard.getNumber("elevator_extension", 0)
+        # target = SmartDashboard.getNumber("elevator_extension", 0)
 
-        kP = SmartDashboard.getNumber("kP", 0)
-        kI = SmartDashboard.getNumber("kI", 0)
-        kD = SmartDashboard.getNumber("kD", 0)
+        # kP = SmartDashboard.getNumber("kP", 0)
+        # kI = SmartDashboard.getNumber("kI", 0)
+        # kD = SmartDashboard.getNumber("kD", 0)
 
-        acc_lim = SmartDashboard.getNumber("acc_lim", 15)
+        # acc_lim = SmartDashboard.getNumber("acc_lim", 15)
 
         SmartDashboard.putNumber(
             "deviation",
@@ -123,23 +126,35 @@ class Robot(wpilib.TimedRobot):
         )
 
         SmartDashboard.putNumber("pivot target", self.periscope.arm.pivot.target_angle)
-
-        self.periscope.arm.pivot.target_angle = pi / 2 - (
-            self.driver_controller.getLeftTriggerAxis() * 0.7
+        SmartDashboard.putNumber(
+            "elevator target", self.periscope.arm.elevator.target_extension
         )
 
-        self.periscope.arm.elevator.target_extension = (
-            self.driver_controller.getRightTriggerAxis()
-            * (config.extension_range[1] - config.extension_range[0])
-            + config.extension_range[0]
+        new_pivot_target = SmartDashboard.getNumber(
+            "new pivot target", self.periscope.arm.pivot.target_angle
         )
+        new_extension_target = SmartDashboard.getNumber(
+            "new elevator target", self.periscope.arm.pivot.target_angle
+        )
+
+        # self.periscope.arm.pivot.target_angle = pi / 2 - (
+        #     self.driver_controller.getLeftTriggerAxis() * 0.7
+        # )
+
+        # self.periscope.arm.elevator.target_extension = (
+        #     self.driver_controller.getRightTriggerAxis()
+        #     * (config.extension_range[1] - config.extension_range[0])
+        #     + config.extension_range[0]
+        # )
 
         if self.driver_controller.getAButton():
-            self.periscope.arm.elevator.target_extension = target
+            # self.periscope.arm.elevator.target_extension = target
             # self.pivot.theta_pid.setP(kP)
             # self.pivot.theta_pid.setI(kI)
             # self.pivot.theta_pid.setD(kD)
             # self.pivot.theta_pid.setConstraints(TrapezoidProfile.Constraints(1000, acc_lim))
+            self.periscope.arm.pivot.target_angle = new_pivot_target
+            self.periscope.arm.elevator.target_extension = new_extension_target
 
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:
@@ -152,6 +167,7 @@ class Robot(wpilib.TimedRobot):
             (pi / 3) * deadzone(-self.driver_controller.getRightX()),
         )
         self.periscope.arm.target = ik_input
+        self.periscope.arm.should_extend ^= self.driver_controller.getBButtonPressed()
 
     def testExit(self):
         pass

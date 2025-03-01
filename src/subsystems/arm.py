@@ -103,24 +103,33 @@ class Arm(Subsystem):
                 )
                 self._target_outofbounds = True
 
-            #self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
-            SmartDashboard.putNumber("Pivot Angle", radiansToDegrees(max(min(p_1.angle().radians(), 50), 110)))
+            # self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
+            SmartDashboard.putNumber(
+                "IK pivot angle",
+                radiansToDegrees(max(min(p_1.angle().radians(), 50), 110)),
+            )
             # self.wrist.target_angle = pi - (
             #     p_1.angle().radians()
             #     - self.target.rotation().radians()
             #     + float(self.use_algae) * coral_algae_pickup_angle
             # )
-            SmartDashboard.putNumber("Wrist Angle", radiansToDegrees(pi - (
-                p_1.angle().radians()
-                - self.target.rotation().radians()
-                + float(self.use_algae) * coral_algae_pickup_angle
-            )))
+            SmartDashboard.putNumber(
+                "IK wrist angle",
+                radiansToDegrees(
+                    pi
+                    - (
+                        p_1.angle().radians()
+                        - self.target.rotation().radians()
+                        + float(self.use_algae) * coral_algae_pickup_angle
+                    )
+                ),
+            )
             if self.should_extend:
-                #self.elevator.target_extension = p_1.norm()
-                SmartDashboard.putNumber("Elevator Extension", p_1.norm())
+                # self.elevator.target_extension = p_1.norm()
+                SmartDashboard.putNumber("IK elevator extension", p_1.norm())
             else:
-                #self.elevator.target_extension = extension_range[0]
-                SmartDashboard.putNumber("Elevator Extension", extension_range[0])
+                # self.elevator.target_extension = extension_range[0]
+                SmartDashboard.putNumber("IK elevator extension", extension_range[0])
         else:
             match self.target:
                 case (float(_), float(_), float(_)):
