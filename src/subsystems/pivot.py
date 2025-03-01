@@ -39,7 +39,9 @@ class Pivot(Subsystem):
         for i, motor in enumerate(self.pivot_motors):
             config = SparkBaseConfig()
             config.setIdleMode(SparkBaseConfig.IdleMode.kBrake)
-            config.inverted(i % 2 == 0)  # Alternate inverting for correct rotation, positive is up
+            config.inverted(
+                i % 2 == 0
+            )  # Alternate inverting for correct rotation, positive is up
             motor.configure(
                 config,
                 SparkFlex.ResetMode.kResetSafeParameters,
@@ -81,7 +83,6 @@ class Pivot(Subsystem):
     def update_angle(self) -> float:
         return pivot_angle_offset - self.pivot_encoder.get() * 2.0 * pi
 
-
     def at_angle(self) -> bool:
         if (
             abs(self.get_angle() - self.target_angle) < pivot_epsilon_pos
@@ -97,7 +98,11 @@ class Pivot(Subsystem):
         )
 
     def pivot_ff_torque(self):
-        t_g = self.elevator.ff_scaler * cos(self.get_angle() - pivot_com_offset_for_feedforward) * g
+        t_g = (
+            self.elevator.ff_scaler
+            * cos(self.get_angle() - pivot_com_offset_for_feedforward)
+            * g
+        )
         t_a = (
             self.elevator.ff_scaler
             * self.elevator.mass
@@ -105,4 +110,4 @@ class Pivot(Subsystem):
             * self.navx.getRawAccelX()
         )
 
-        return t_g # + t_a
+        return t_g  # + t_a

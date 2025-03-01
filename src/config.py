@@ -18,7 +18,7 @@ pivot_pid_constraint_constants = (100, 15)
 
 pivot_encoder_id = 0
 pivot_angle_offset = 0.407 * 2 * pi
-pivot_com_offset_for_feedforward = 0.1742036732 # for claw at zero
+pivot_com_offset_for_feedforward = 0.1742036732  # for claw at zero
 pivot_epsilon_pos = 0.05
 pivot_epsilon_v = 0.05
 
@@ -114,7 +114,7 @@ extension_range = (0, 1)  # m
 extension_ratio = 1  # m / revolution
 
 # -- Wrist --
-
+wrist_pid_constants = (0.1, 0, 0)
 wrist_motor_id = 50  # TODO: change to actual motor id
 wrist_limits = (
     -20,

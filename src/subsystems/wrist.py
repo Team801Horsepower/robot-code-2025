@@ -1,14 +1,12 @@
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
-from config import wrist_motor_id
-import config
+from config import wrist_motor_id, wrist_pid_constants, wrist_limits
 from wpilib import SmartDashboard
 
 
 class Wrist(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
-        SmartDashboard.putNumber("W_t", 0)
         scheduler.registerSubsystem(self)
 
         self.wrist_motor = SparkFlex(wrist_motor_id, SparkFlex.MotorType.kBrushless)
@@ -20,7 +18,9 @@ class Wrist(Subsystem):
             SparkFlex.PersistMode.kNoPersistParameters,
         )
         self.wrist_encoder = self.wrist_motor.getEncoder()
-        self.pid = PIDController(0.1, 0, 0)  # TODO: Change to actual constants
+        self.pid = PIDController(
+            *wrist_pid_constants
+        )  # TODO: Change to actual constants
         self.target_angle = 0.0
         self.tolerance = 0.05
         scheduler.registerSubsystem(self)
@@ -34,8 +34,8 @@ class Wrist(Subsystem):
             self.pid.calculate(
                 self.position(),
                 min(
-                    max(self.target_angle, config.wrist_limits[0]),
-                    config.wrist_limits[1],
+                    max(self.target_angle, wrist_limits[0]),
+                    wrist_limits[1],
                 ),
             )
         )
@@ -48,6 +48,6 @@ class Wrist(Subsystem):
 
     def target_attainable(self) -> bool:
         return (
-            config.wrist_limits[0] <= self.target_angle
-            and self.target_angle <= config.wrist_limits[1]
+            wrist_limits[0] <= self.target_angle
+            and self.target_angle <= wrist_limits[1]
         )

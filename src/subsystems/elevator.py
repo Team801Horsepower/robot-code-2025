@@ -79,7 +79,7 @@ class Elevator(Subsystem):
         self.set_power(pid_output + elevator_ff_power)
 
     def set_power(self, power: float):
-        return # remove when elevator is fixed
+        return  # remove when elevator is fixed
         for motor in self.extension_motors:
             motor.set(power)
 

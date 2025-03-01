@@ -99,8 +99,9 @@ class Robot(wpilib.TimedRobot):
     def testPeriodic(self):
         target = SmartDashboard.getNumber("pvt_theta", pi / 2)
 
-        self.pivot.target_angle = 1.57 - (self.driver_controller.getLeftTriggerAxis() * 0.7)
-
+        self.pivot.target_angle = 1.57 - (
+            self.driver_controller.getLeftTriggerAxis() * 0.7
+        )
 
     def testExit(self):
         pass
