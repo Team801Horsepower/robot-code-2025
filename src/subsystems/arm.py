@@ -35,9 +35,9 @@ class Arm(Subsystem):
         self.use_algae = False
         self.should_extend = False
         self._target_outofbounds = False
-        SmartDashboard.putNumber("Pivot Angle", 0)
-        SmartDashboard.putNumber("Elevator Extension", 0)
-        SmartDashboard.putNumber("Wrist Angle", 0)
+        # SmartDashboard.putNumber("Pivot Angle", 0)
+        # SmartDashboard.putNumber("Elevator Extension", 0)
+        # SmartDashboard.putNumber("Wrist Angle", 0)
         scheduler.registerSubsystem(self)
 
     def periodic(self):

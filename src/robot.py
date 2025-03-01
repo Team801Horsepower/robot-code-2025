@@ -6,6 +6,7 @@ from wpilib import SmartDashboard
 
 from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler
+from wpimath import units
 
 from math import pi
 
@@ -104,7 +105,8 @@ class Robot(wpilib.TimedRobot):
 
     def testInit(self):
         SmartDashboard.putNumber(
-            "new pivot target", self.periscope.arm.pivot.target_angle
+            "new pivot target",
+            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
         )
         SmartDashboard.putNumber(
             "new elevator target", self.periscope.arm.elevator.target_extension
@@ -125,13 +127,19 @@ class Robot(wpilib.TimedRobot):
             - self.periscope.arm.pivot.get_angle(),
         )
 
-        SmartDashboard.putNumber("pivot target", self.periscope.arm.pivot.target_angle)
+        SmartDashboard.putNumber(
+            "pivot target",
+            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+        )
         SmartDashboard.putNumber(
             "elevator target", self.periscope.arm.elevator.target_extension
         )
 
-        new_pivot_target = SmartDashboard.getNumber(
-            "new pivot target", self.periscope.arm.pivot.target_angle
+        new_pivot_target = units.degreesToRadians(
+            SmartDashboard.getNumber(
+                "new pivot target",
+                units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+            )
         )
         new_extension_target = SmartDashboard.getNumber(
             "new elevator target", self.periscope.arm.pivot.target_angle
