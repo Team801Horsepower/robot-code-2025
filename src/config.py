@@ -65,12 +65,12 @@ claw_beam_break_id = 0
 
 # TODO: Set claw to wrist length and angle to correct value
 claw_to_wrist_lengths = {
-    "coral": 0.5,
+    "coral": units.inchesToMeters(17.5),  # TODO: this is approximate
     "algae": 0.5,
 }
-coral_algae_pickup_angle = 1
+coral_algae_pickup_angle = 1  # TODO: get real
 
-claw_up_down_lengths = (1, 0.5)
+claw_up_down_lengths = (units.inchesToMeters(5), units.inchesToMeters(22))
 # TODO: Get real :()
 ik_boundary_distance = units.feetToMeters(1.5)
 # TODO: SET THIS; IK will not be able to put the claw below this point
@@ -80,7 +80,7 @@ ik_floor = 1
 
 # TODO: Get real (y)
 pivot_offset = Translation2d(-0.19671, 0)
-pivot_range = (0.295, 0.100)  # TODO: Insert correct angle values
+pivot_range = (pi / 4, pi / 2)  # TODO: Insert correct angle values
 
 pivot_motor_ids = [30, 32, 31, 33]
 # pivot_pid_constants = (0.65, 0, 0)

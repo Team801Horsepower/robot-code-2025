@@ -21,6 +21,7 @@ from config import (
     ik_floor,
     extension_range,
 )
+from utils import clamp
 
 
 class Arm(Subsystem):
@@ -106,7 +107,13 @@ class Arm(Subsystem):
             # self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
             SmartDashboard.putNumber(
                 "IK pivot angle",
-                radiansToDegrees(max(min(p_1.angle().radians(), degreesToRadians(50)), degreesToRadians(110)))
+                radiansToDegrees(
+                    clamp(
+                        degreesToRadians(50),
+                        degreesToRadians(110),
+                        p_1.angle().radians(),
+                    )
+                ),
             )
             # self.wrist.target_angle = pi - (
             #     p_1.angle().radians()

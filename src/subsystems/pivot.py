@@ -9,7 +9,7 @@ from navx import AHRS
 
 from math import sin, cos
 
-from utils import lerp_over_table
+from utils import lerp_over_table, clamp
 from subsystems.elevator import Elevator
 from config import (
     pivot_motor_ids,
@@ -94,7 +94,7 @@ class Pivot(Subsystem):
         # self.set_power(self.pivot_ff_torque())
 
     def set_power(self, power: float):
-        power = min(0.1, max(-0.1, power))
+        power = clamp(-0.1, 0.1, power)
         SmartDashboard.putNumber("pvt pwr", power)
         for motor in self.pivot_motors:
             motor.set(power)

@@ -177,6 +177,10 @@ class Robot(wpilib.TimedRobot):
         self.periscope.arm.target = ik_input
         self.periscope.arm.should_extend ^= self.driver_controller.getBButtonPressed()
 
+        SmartDashboard.putNumber("IK target x", ik_input.x)
+        SmartDashboard.putNumber("IK target y", ik_input.y)
+        SmartDashboard.putNumber("IK target rot", ik_input.rotation().degrees())
+
     def testExit(self):
         pass
 

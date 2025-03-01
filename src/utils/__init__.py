@@ -22,3 +22,7 @@ def format_table(table: List[Tuple[float, ...]]) -> List[Tuple[float, ...]]:
     return sorted(
         [tuple(float(value) for value in row) for row in table], key=lambda x: x[0]
     )
+
+
+def clamp(lower: float, upper: float, x: float) -> float:
+    return max(lower, min(upper, x))

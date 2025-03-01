@@ -1,8 +1,10 @@
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
-from config import wrist_motor_id, wrist_pid_constants, wrist_limits
 from wpilib import SmartDashboard
+
+from config import wrist_motor_id, wrist_pid_constants, wrist_limits
+from utils import clamp
 
 
 class Wrist(Subsystem):
@@ -33,10 +35,7 @@ class Wrist(Subsystem):
         self.wrist_motor.set(
             self.pid.calculate(
                 self.position(),
-                min(
-                    max(self.target_angle, wrist_limits[0]),
-                    wrist_limits[1],
-                ),
+                clamp(wrist_limits[0], wrist_limits[1], self.target_angle),
             )
         )
 
