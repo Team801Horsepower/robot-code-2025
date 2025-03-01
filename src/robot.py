@@ -60,10 +60,7 @@ class Robot(wpilib.TimedRobot):
     def robotPeriodic(self):
         self.scheduler.run()
         SmartDashboard.putNumber("Pivot Angle", self.pivot.get_angle())
-        SmartDashboard.putNumber(
-            "elevator extension",
-            self.elevator.extension_motor_encoders[0].getPosition(),
-        )
+        SmartDashboard.putNumber("elevator extension", self.elevator.get_extension())
         SmartDashboard.putNumber("wrist pos", self.wrist.wrist_encoder.getPosition())
 
     def disabledInit(self):
@@ -126,7 +123,9 @@ class Robot(wpilib.TimedRobot):
         )
 
         self.elevator.target_extension = (
-            65 * self.driver_controller.getRightTriggerAxis()
+            self.driver_controller.getRightTriggerAxis()
+            * (config.extension_range[1] - config.extension_range[0])
+            + config.extension_range[0]
         )
 
         if self.driver_controller.getAButton():

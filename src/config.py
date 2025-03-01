@@ -78,8 +78,8 @@ ik_floor = 1
 
 # -- Pivot --
 
-# TODO: Get real
-pivot_offset = Translation2d(1, 1)
+# TODO: Get real (y)
+pivot_offset = Translation2d(-0.19671, 0)
 pivot_range = (0.295, 0.100)  # TODO: Insert correct angle values
 
 pivot_motor_ids = [30, 32, 31, 33]
@@ -93,20 +93,22 @@ pivot_epsilon_pos = 0.05
 pivot_epsilon_v = 0.05
 
 # fmt: off
+# (extension, kP, kI, kD)
 pivot_pid_constants: List[Tuple[float, ...]] = format_table([
-    ( 0, 0.65, 0, 0),
-    (10, 0.55, 0, 0),
-    (30, 0.30, 0, 0),
-    (50, 0.15, 0, 0),
-    (65, 0.10, 0, 0),
+    (0.7366, 0.65, 0, 0),
+    (0.9165968599, 0.55, 0, 0),
+    (1.276590580, 0.30, 0, 0),
+    (1.636584300, 0.15, 0, 0),
+    (1.906579590, 0.10, 0, 0),
 ])
 
+# (extension, acc)
 pivot_acc_lim: List[Tuple[float, ...]] = format_table([
-    ( 0, 10),
-    (10, 8),
-    (30, 3),
-    (50, 1.5),
-    (65, 0),
+    (0.7366, 10),
+    (0.9165968599, 8),
+    (1.276590580, 3),
+    (1.636584300, 1.5),
+    (1.906579590, 0),
 ])
 # fmt: on
 
@@ -116,20 +118,20 @@ elevator_mass = 1  # kg
 
 # fmt: off
 elevator_dynamics_table: List[Tuple[float, ...]] = format_table([
-    (00, 0.00263556269000882, 0),
-    (10, 0.00299495760228274, 0),
-    (20, 0.00347415081864798, 0),
-    (30, 0.00407314233910454, 0),
-    (40, 0.00443253725137846, 0),
+    (0.7366, 0.00263556269000882, 0),
+    (0.9165968599, 0.00299495760228274, 0),
+    (1.096593720, 0.00347415081864798, 0),
+    (1.276590580, 0.00407314233910454, 0),
+    (1.456587440, 0.00443253725137846, 0),
 ])
 # fmt: on
 extension_motor_ids = [40, 41]
-extension_pid_constants = (0.1, 0, 0)
+extension_pid_constants = (5.555652474, 0, 0)
 extension_pid_constraint_constants = (1, 10)
 elevator_ff_power = 0.02
 
-extension_range = (0, 1)  # m
-extension_ratio = 1  # m / revolution
+extension_range = (units.inchesToMeters(29), units.inchesToMeters(75.375))  # m
+extension_ratio = units.inchesToMeters(0.22557 * pi)  # m / revolution
 
 # -- Wrist --
 wrist_pid_constants = (0.1, 0, 0)
