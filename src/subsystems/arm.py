@@ -1,7 +1,7 @@
 from commands2 import CommandScheduler, Subsystem
 from wpilib import SmartDashboard
 from wpimath.geometry import Rotation2d, Transform2d, Translation2d
-from wpimath.units import radiansToDegrees
+from wpimath.units import radiansToDegrees, degreesToRadians
 from typing import Optional, Tuple
 from math import pi
 from navx import AHRS
@@ -106,7 +106,7 @@ class Arm(Subsystem):
             # self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
             SmartDashboard.putNumber(
                 "IK pivot angle",
-                radiansToDegrees(max(min(p_1.angle().radians(), 50), 110)),
+                radiansToDegrees(max(min(p_1.angle().radians(), degreesToRadians(50)), degreesToRadians(110)))
             )
             # self.wrist.target_angle = pi - (
             #     p_1.angle().radians()
