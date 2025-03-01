@@ -1,5 +1,7 @@
 from commands2 import CommandScheduler, Subsystem
+from wpilib import SmartDashboard
 from wpimath.geometry import Rotation2d, Transform2d, Translation2d
+from wpimath.units import radiansToDegrees
 from typing import Optional, Tuple
 from math import pi
 from navx import AHRS
@@ -33,7 +35,9 @@ class Arm(Subsystem):
         self.use_algae = False
         self.should_extend = False
         self._target_outofbounds = False
-
+        SmartDashboard.putNumber("Pivot Angle", 0)
+        SmartDashboard.putNumber("Elevator Extension", 0)
+        SmartDashboard.putNumber("Wrist Angle", 0)
         scheduler.registerSubsystem(self)
 
     def periodic(self):
@@ -99,23 +103,32 @@ class Arm(Subsystem):
                 )
                 self._target_outofbounds = True
 
-            self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
-            self.wrist.target_angle = pi - (
+            #self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
+            SmartDashboard.putNumber("Pivot Angle", radiansToDegrees(max(min(p_1.angle().radians(), 50), 110)))
+            # self.wrist.target_angle = pi - (
+            #     p_1.angle().radians()
+            #     - self.target.rotation().radians()
+            #     + float(self.use_algae) * coral_algae_pickup_angle
+            # )
+            SmartDashboard.putNumber("Wrist Angle", radiansToDegrees(pi - (
                 p_1.angle().radians()
                 - self.target.rotation().radians()
                 + float(self.use_algae) * coral_algae_pickup_angle
-            )
+            )))
             if self.should_extend:
-                self.elevator.target_extension = p_1.norm()
+                #self.elevator.target_extension = p_1.norm()
+                SmartDashboard.putNumber("Elevator Extension", p_1.norm())
             else:
-                # TODO: Insert retracted elevator length
-                self.elevator.target_extension = extension_range[0]
+                #self.elevator.target_extension = extension_range[0]
+                SmartDashboard.putNumber("Elevator Extension", extension_range[0])
         else:
             match self.target:
                 case (float(_), float(_), float(_)):
                     self.pivot.target_angle = self.target[0]
                     self.elevator.target_extension = self.target[1]
                     self.wrist.target_angle = self.target[2]
+                case _:
+                    pass
 
     def at_target(self) -> bool:
         return (

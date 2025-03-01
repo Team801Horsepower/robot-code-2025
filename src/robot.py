@@ -10,7 +10,7 @@ from commands2 import CommandScheduler
 from math import pi
 
 import config
-from subsystems import drive, claw, elevator, pivot, wrist
+from subsystems import drive, claw, elevator, pivot, wrist, periscope
 
 from config import pivot_pid_constraint_constants
 from wpimath.trajectory import TrapezoidProfile
@@ -36,16 +36,16 @@ class Robot(wpilib.TimedRobot):
         self.drive = drive.Drive(self.scheduler)
         # self.scheduler.registerSubsystem(self.drive)
 
-        # self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
+        self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
         # self.arm = arm.Arm(self.scheduler)
-        self.wrist = wrist.Wrist(self.scheduler)
+        # self.wrist = wrist.Wrist(self.scheduler)
         # self.scheduler.registerSubsystem(self.claw)
         # self.climber = climber.Climber(self.scheduler)
-        self.elevator = elevator.Elevator(self.scheduler)
+        # self.elevator = elevator.Elevator(self.scheduler)
         # self.scheduler.registerSubsystem(self.elevator)
-        self.pivot = pivot.Pivot(
-            self.scheduler, self.elevator, self.drive.odometry.ahrs
-        )
+        # self.pivot = pivot.Pivot(
+        #     self.scheduler, self.elevator, self.drive.odometry.ahrs
+        # )
         # self.scheduler.registerSubsystem(self.pivot)
         # self.turn_signals = turn_signals.TurnSignals(self.scheduler)
 
@@ -54,14 +54,14 @@ class Robot(wpilib.TimedRobot):
 
         self.drive.chassis.set_swerves()
 
-        for encoder in self.elevator.extension_motor_encoders:
+        for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
 
     def robotPeriodic(self):
         self.scheduler.run()
-        SmartDashboard.putNumber("Pivot Angle", self.pivot.get_angle())
-        SmartDashboard.putNumber("elevator extension", self.elevator.get_extension())
-        SmartDashboard.putNumber("wrist pos", self.wrist.wrist_encoder.getPosition())
+        SmartDashboard.putNumber("pivot angle", self.periscope.arm.pivot.get_angle())
+        SmartDashboard.putNumber("elevator extension", self.periscope.arm.elevator.get_extension())
+        SmartDashboard.putNumber("wrist pos", self.periscope.arm.wrist.wrist_encoder.getPosition())
 
     def disabledInit(self):
         pass
@@ -85,17 +85,12 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        def deadzone(activation: float) -> float:
-            if abs(activation) < 0.01:
-                return 0.0
-            return activation
-
-        drive_input = Transform2d(
-            deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
-            deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
-            deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
-        )
-        self.drive.drive(drive_input)
+        # drive_input = Transform2d(
+        #     deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
+        #     deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
+        #     deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
+        # )
+        # self.drive.drive(drive_input)
 
     def teleopExit(self):
         pass
@@ -113,27 +108,38 @@ class Robot(wpilib.TimedRobot):
         acc_lim = SmartDashboard.getNumber("acc_lim", 15)
 
         SmartDashboard.putNumber(
-            "deviation", self.pivot.target_angle - self.pivot.get_angle()
+            "deviation", self.periscope.arm.pivot.target_angle - self.periscope.arm.pivot.get_angle()
         )
 
-        SmartDashboard.putNumber("pivot target", self.pivot.target_angle)
+        SmartDashboard.putNumber("pivot target", self.periscope.arm.pivot.target_angle)
 
-        self.pivot.target_angle = pi / 2 - (
+        self.periscope.arm.pivot.target_angle = pi / 2 - (
             self.driver_controller.getLeftTriggerAxis() * 0.7
         )
 
-        self.elevator.target_extension = (
+        self.periscope.arm.elevator.target_extension = (
             self.driver_controller.getRightTriggerAxis()
             * (config.extension_range[1] - config.extension_range[0])
             + config.extension_range[0]
         )
 
         if self.driver_controller.getAButton():
-            self.elevator.target_extension = target
+            self.periscope.arm.elevator.target_extension = target
             # self.pivot.theta_pid.setP(kP)
             # self.pivot.theta_pid.setI(kI)
             # self.pivot.theta_pid.setD(kD)
             # self.pivot.theta_pid.setConstraints(TrapezoidProfile.Constraints(1000, acc_lim))
+        def deadzone(activation: float) -> float:
+            if abs(activation) < 0.01:
+                return 0.0
+            return activation
+
+        ik_input = Transform2d(
+            config.ik_floor + 0.5 + 0.5*deadzone(-self.driver_controller.getLeftY()),
+            0.5 + 0.5*deadzone(-self.driver_controller.getLeftX()),
+            (pi/3)*deadzone(-self.driver_controller.getRightX()),
+        )
+        self.periscope.arm.target = ik_input
 
     def testExit(self):
         pass
