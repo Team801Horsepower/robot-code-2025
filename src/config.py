@@ -47,8 +47,8 @@ swerves = [
 # front left, back left, front right, back right
 swerve_ids = [0, 2, 1, 3]
 
-drive_pid = (0.15, 0, 0)
-turn_pid = (0.5, 0, 0)
+drive_pid_constants = (0.15, 0, 0)
+turn_pid_constants = (0.5, 0, 0)
 
 # -- Vision --
 
