@@ -45,10 +45,10 @@ class Arm(Subsystem):
         if isinstance(self.pivot_relative_target, Transform2d):
             self._target_outofbounds = False
             # Position of the wrist pivot in 2D arm space
-            wrist_position = Translation2d(
+            wrist_position = self.pivot_relative_target.translation() - Translation2d(
                 claw_to_wrist_lengths["algae" if self.use_algae else "coral"],
-                self.pivot_relative_target.rotation().radians()
-                + self.use_algae * coral_algae_pickup_angle,
+                Rotation2d(self.pivot_relative_target.rotation().radians()
+                + self.use_algae * coral_algae_pickup_angle),
             )
             target_to_p_1_norm = self.pivot_relative_target.translation() - wrist_position
             target_to_p_1_norm /= target_to_p_1_norm.norm()
@@ -108,11 +108,11 @@ class Arm(Subsystem):
             SmartDashboard.putNumber(
                 "IK pivot angle",
                 radiansToDegrees(
-                    clamp(
-                        degreesToRadians(50),
-                        degreesToRadians(100),
+                    # clamp(
+                    #     degreesToRadians(50),
+                    #     degreesToRadians(100),
                         wrist_position.angle().radians(),
-                    )
+                    # )
                 ),
             )
             # self.wrist.target_angle = pi - (

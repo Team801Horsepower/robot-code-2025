@@ -170,7 +170,7 @@ class Robot(wpilib.TimedRobot):
             return activation
 
         ik_input = Transform2d(
-            0.06846 + 0.5 * deadzone(-self.driver_controller.getLeftX()),
+            0.06846 + 0.5 * deadzone(self.driver_controller.getLeftX()),
             0.97244 + 0.5 * deadzone(-self.driver_controller.getLeftY()),
             units.degreesToRadians(3.31974) + (pi / 3) * deadzone(-self.driver_controller.getRightX()),
         )
@@ -179,7 +179,7 @@ class Robot(wpilib.TimedRobot):
 
         SmartDashboard.putNumber("IK target x", ik_input.x)
         SmartDashboard.putNumber("IK target y", ik_input.y)
-        SmartDashboard.putNumber("IK target rot", ik_input.rotation().degrees())
+        SmartDashboard.putNumber("IK target wrist", ik_input.rotation().degrees())
 
     def testExit(self):
         pass
