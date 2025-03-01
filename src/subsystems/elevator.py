@@ -2,8 +2,6 @@ from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
 
-from wpilib import SmartDashboard
-
 from config import (
     elevator_mass,
     elevator_dynamics_table,
@@ -19,10 +17,6 @@ from utils import lerp_over_table
 
 class Elevator(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
-        SmartDashboard.putNumber("kP", 0.1)
-        SmartDashboard.putNumber("kI", 0)
-        SmartDashboard.putNumber("kD", 0)
-        SmartDashboard.putNumber("setpoint", 0)
         scheduler.registerSubsystem(self)
 
         # self.pivot: Pivot = pivot
@@ -61,25 +55,15 @@ class Elevator(Subsystem):
         self.extension: float = extension_range[0]
 
     def periodic(self):
-        self.target_target_extension(None)
+        self.target_target_extension(self.target_extension)
         self.extension = self.update_extension()
 
     def target_target_extension(self, target):
-        kP = SmartDashboard.getNumber("kP", 0.1)
-        kI = SmartDashboard.getNumber("kI", 0)
-        kD = SmartDashboard.getNumber("kD", 0)
-
-        target = SmartDashboard.getNumber("setpoint", 0)
-
-        self.extension_pid.setP(kP)
-        self.extension_pid.setI(kI)
-        self.extension_pid.setD(kD)
-
         pid_output = self.extension_pid.calculate(self.extension, target)
         self.set_power(pid_output + elevator_ff_power)
 
     def set_power(self, power: float):
-        return  # remove when elevator is fixed
+        # return  # remove when elevator is fixed
         for motor in self.extension_motors:
             motor.set(power)
 

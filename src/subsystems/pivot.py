@@ -9,6 +9,7 @@ from navx import AHRS
 
 from math import sin, cos
 
+from utils import lerp_over_table
 from subsystems.elevator import Elevator
 from config import (
     pivot_motor_ids,
@@ -20,6 +21,7 @@ from config import (
     pivot_epsilon_v,
     pivot_range,
     pivot_com_offset_for_feedforward,
+    pivot_acc_lim,
     g,
 )
 
@@ -49,7 +51,7 @@ class Pivot(Subsystem):
             )
 
         self.theta_pid = ProfiledPIDController(
-            *pivot_pid_constants,
+            *lerp_over_table(pivot_pid_constants, self.elevator.get_extension()),
             constraints=TrapezoidProfile.Constraints(*pivot_pid_constraint_constants),
         )
 
@@ -65,14 +67,20 @@ class Pivot(Subsystem):
     def periodic(self):
         self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()
+        self.theta_pid.setConstraints(
+            TrapezoidProfile.Constraints(
+                1000, lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0]
+            )
+        )
 
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
+        pid_output = pid_output * (1 + (self.elevator.get_extension() * 2 / 65))
         self.set_power(pid_output + self.pivot_ff_torque())
         # self.set_power(self.pivot_ff_torque())
 
     def set_power(self, power: float):
-        power = min(0.5, max(-0.5, power))
+        power = min(0.1, max(-0.1, power))
         SmartDashboard.putNumber("pvt pwr", power)
         for motor in self.pivot_motors:
             motor.set(power)
@@ -99,15 +107,15 @@ class Pivot(Subsystem):
 
     def pivot_ff_torque(self):
         t_g = (
-            self.elevator.ff_scaler
+            self.elevator.get_extension()
             * cos(self.get_angle() - pivot_com_offset_for_feedforward)
             * g
         )
         t_a = (
             self.elevator.ff_scaler
             * self.elevator.mass
-            * sin(self.get_angle())
+            * sin(self.get_angle() - pivot_com_offset_for_feedforward)
             * self.navx.getRawAccelX()
         )
 
-        return t_g  # + t_a
+        return t_g + t_a

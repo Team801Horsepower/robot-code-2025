@@ -12,10 +12,20 @@ from math import pi
 import config
 from subsystems import drive, claw, elevator, pivot, wrist
 
+from config import pivot_pid_constraint_constants
+from wpimath.trajectory import TrapezoidProfile
+
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        SmartDashboard.putNumber("pvt_theta", 1.57)
+        SmartDashboard.putNumber("elevator_extension", 0)
+
+        SmartDashboard.putNumber("kP", 0)
+        SmartDashboard.putNumber("kI", 0)
+        SmartDashboard.putNumber("kD", 0)
+
+        SmartDashboard.putNumber("acc_lim", 15)
+
         self.scheduler = CommandScheduler()
 
         # Subsystem initialization
@@ -97,11 +107,32 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testPeriodic(self):
-        target = SmartDashboard.getNumber("pvt_theta", pi / 2)
+        target = SmartDashboard.getNumber("elevator_extension", 0)
+
+        kP = SmartDashboard.getNumber("kP", 0)
+        kI = SmartDashboard.getNumber("kI", 0)
+        kD = SmartDashboard.getNumber("kD", 0)
+
+        acc_lim = SmartDashboard.getNumber("acc_lim", 15)
+
+        SmartDashboard.putNumber(
+            "deviation", self.pivot.target_angle - self.pivot.get_angle()
+        )
 
         self.pivot.target_angle = 1.57 - (
             self.driver_controller.getLeftTriggerAxis() * 0.7
         )
+
+        self.elevator.target_extension = (
+            65 * self.driver_controller.getRightTriggerAxis()
+        )
+
+        if self.driver_controller.getAButton():
+            self.elevator.target_extension = target
+            # self.pivot.theta_pid.setP(kP)
+            # self.pivot.theta_pid.setI(kI)
+            # self.pivot.theta_pid.setD(kD)
+            # self.pivot.theta_pid.setConstraints(TrapezoidProfile.Constraints(1000, acc_lim))
 
     def testExit(self):
         pass
