@@ -7,12 +7,15 @@ from wpilib import SmartDashboard
 from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler
 
+from math import pi
+
 import config
 from subsystems import drive, claw, elevator, pivot, wrist
 
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
+        SmartDashboard.putNumber("pvt_theta", 1.57)
         self.scheduler = CommandScheduler()
 
         # Subsystem initialization
@@ -46,7 +49,7 @@ class Robot(wpilib.TimedRobot):
 
     def robotPeriodic(self):
         self.scheduler.run()
-        SmartDashboard.putNumber("Pivot Angle", self.pivot.pivot_encoder.get())
+        SmartDashboard.putNumber("Pivot Angle", self.pivot.get_angle())
         SmartDashboard.putNumber(
             "elevator extension",
             self.elevator.extension_motor_encoders[0].getPosition(),
@@ -66,7 +69,7 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousPeriodic(self):
-        self.claw.gather(-1)
+        pass
 
     def autonomousExit(self):
         pass
@@ -94,10 +97,10 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testPeriodic(self):
-        if not self.claw.has_coral():
-            self.claw.gather(1)
-        else:
-            self.claw.gather(0)
+        target = SmartDashboard.getNumber("pvt_theta", pi / 2)
+
+        self.pivot.target_angle = 1.57 - (self.driver_controller.getLeftTriggerAxis() * 0.7)
+
 
     def testExit(self):
         pass

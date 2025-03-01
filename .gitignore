@@ -176,3 +176,9 @@ __pycache__
 # Further modified for Python by Ishaan Sen on 2024-05-06
 
 .wpilib
+
+# Further modified for our use case by Ishaan Sen on 2025-03-01
+
+*.xls
+*.xlsx
+*.numbers

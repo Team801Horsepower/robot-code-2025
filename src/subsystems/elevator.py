@@ -79,6 +79,7 @@ class Elevator(Subsystem):
         self.set_power(pid_output + elevator_ff_power)
 
     def set_power(self, power: float):
+        return # remove when elevator is fixed
         for motor in self.extension_motors:
             motor.set(power)
 
@@ -101,7 +102,7 @@ class Elevator(Subsystem):
         return self.extension
 
     @property
-    def r_com(self) -> float:
+    def ff_scaler(self) -> float:
         return lerp_over_table(elevator_dynamics_table, self.extension)[0]
 
     @property

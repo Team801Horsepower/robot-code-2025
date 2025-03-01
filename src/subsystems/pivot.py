@@ -1,6 +1,6 @@
 from commands2 import CommandScheduler, Subsystem
-from wpilib import DutyCycleEncoder
-from wpimath.controller import ProfiledPIDController
+from wpilib import DutyCycleEncoder, SmartDashboard
+from wpimath.controller import ProfiledPIDController, PIDController
 from math import pi
 from wpimath.trajectory import TrapezoidProfile
 from rev import SparkFlex, SparkBaseConfig
@@ -19,6 +19,7 @@ from config import (
     pivot_epsilon_pos,
     pivot_epsilon_v,
     pivot_range,
+    pivot_com_offset_for_feedforward,
     g,
 )
 
@@ -38,7 +39,7 @@ class Pivot(Subsystem):
         for i, motor in enumerate(self.pivot_motors):
             config = SparkBaseConfig()
             config.setIdleMode(SparkBaseConfig.IdleMode.kBrake)
-            config.inverted(i % 2 == 1)  # Alternate inverting for correct rotation
+            config.inverted(i % 2 == 0)  # Alternate inverting for correct rotation, positive is up
             motor.configure(
                 config,
                 SparkFlex.ResetMode.kResetSafeParameters,
@@ -50,9 +51,11 @@ class Pivot(Subsystem):
             constraints=TrapezoidProfile.Constraints(*pivot_pid_constraint_constants),
         )
 
+        # self.theta_pid = PIDController(*pivot_pid_constants)
+
         self.pivot_encoder = DutyCycleEncoder(pivot_encoder_id)
 
-        self.target_angle: float = 0  # TODO: Shouldn't default to 0
+        self.target_angle: float = pi / 2  # TODO: Shouldn't default to 0
         self.current_angle = pivot_range[0]
 
         scheduler.registerSubsystem(self)
@@ -63,9 +66,12 @@ class Pivot(Subsystem):
 
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
-        self.set_power((pid_output * self.elevator.moi) + self.pivot_ff_torque())
+        self.set_power(pid_output + self.pivot_ff_torque())
+        # self.set_power(self.pivot_ff_torque())
 
     def set_power(self, power: float):
+        power = min(0.5, max(-0.5, power))
+        SmartDashboard.putNumber("pvt pwr", power)
         for motor in self.pivot_motors:
             motor.set(power)
 
@@ -73,7 +79,8 @@ class Pivot(Subsystem):
         return self.current_angle
 
     def update_angle(self) -> float:
-        return self.pivot_encoder.get() * 2.0 * pi - pivot_angle_offset
+        return pivot_angle_offset - self.pivot_encoder.get() * 2.0 * pi
+
 
     def at_angle(self) -> bool:
         if (
@@ -90,12 +97,12 @@ class Pivot(Subsystem):
         )
 
     def pivot_ff_torque(self):
-        t_g = self.elevator.r_com * self.elevator.mass * sin(self.get_angle()) * g
+        t_g = self.elevator.ff_scaler * cos(self.get_angle() - pivot_com_offset_for_feedforward) * g
         t_a = (
-            self.elevator.r_com
+            self.elevator.ff_scaler
             * self.elevator.mass
-            * cos(self.get_angle())
+            * sin(self.get_angle())
             * self.navx.getRawAccelX()
         )
 
-        return t_g + t_a
+        return t_g # + t_a
