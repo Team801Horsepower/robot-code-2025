@@ -20,6 +20,7 @@ from config import (
     ik_boundary_distance,
     ik_floor,
     extension_range,
+    wrist_limits,
 )
 from utils import clamp
 
@@ -47,10 +48,14 @@ class Arm(Subsystem):
             # Position of the wrist pivot in 2D arm space
             wrist_position = self.pivot_relative_target.translation() - Translation2d(
                 claw_to_wrist_lengths["algae" if self.use_algae else "coral"],
-                Rotation2d(self.pivot_relative_target.rotation().radians()
-                + self.use_algae * coral_algae_pickup_angle),
+                Rotation2d(
+                    self.pivot_relative_target.rotation().radians()
+                    + self.use_algae * coral_algae_pickup_angle
+                ),
             )
-            target_to_p_1_norm = self.pivot_relative_target.translation() - wrist_position
+            target_to_p_1_norm = (
+                self.pivot_relative_target.translation() - wrist_position
+            )
             target_to_p_1_norm /= target_to_p_1_norm.norm()
             claw_bounds = (
                 Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
@@ -100,43 +105,46 @@ class Arm(Subsystem):
                 self._target_outofbounds = True
             if min_point.y + pivot_offset.y < ik_floor:
                 wrist_position = Translation2d(
-                    wrist_position.x, wrist_position.y - (min_point.y + pivot_offset.y - ik_floor)
+                    wrist_position.x,
+                    wrist_position.y - (min_point.y + pivot_offset.y - ik_floor),
                 )
                 self._target_outofbounds = True
 
-            # self.pivot.target_angle = max(min(p_1.angle().radians(), 50), 110)
+            target_pivot = clamp(
+                degreesToRadians(50),
+                degreesToRadians(100),
+                wrist_position.angle().radians(),
+            )
+
             SmartDashboard.putNumber(
                 "IK pivot angle",
-                radiansToDegrees(
-                    # clamp(
-                    #     degreesToRadians(50),
-                    #     degreesToRadians(100),
-                        wrist_position.angle().radians(),
-                    # )
+                radiansToDegrees(target_pivot),
+            )
+            self.pivot.target_angle = target_pivot
+
+            target_wrist = clamp(
+                # wrist_limits[0],
+                degreesToRadians(89),
+                wrist_limits[1],
+                pi
+                - (
+                    wrist_position.angle().radians()
+                    - self.pivot_relative_target.rotation().radians()
+                    + float(self.use_algae) * coral_algae_pickup_angle
                 ),
             )
-            # self.wrist.target_angle = pi - (
-            #     p_1.angle().radians()
-            #     - self.pivot_relative_target.rotation().radians()
-            #     + float(self.use_algae) * coral_algae_pickup_angle
-            # )
             SmartDashboard.putNumber(
                 "IK wrist angle",
-                radiansToDegrees(
-                    pi
-                    - (
-                        wrist_position.angle().radians()
-                        - self.pivot_relative_target.rotation().radians()
-                        + float(self.use_algae) * coral_algae_pickup_angle
-                    )
-                ),
+                radiansToDegrees(target_wrist),
             )
+            self.wrist.target_angle = target_wrist
+
             if self.should_extend:
-                # self.elevator.target_extension = p_1.norm()
-                SmartDashboard.putNumber("IK elevator extension", wrist_position.norm())
+                target_elevator = wrist_position.norm()
             else:
-                # self.elevator.target_extension = extension_range[0]
-                SmartDashboard.putNumber("IK elevator extension", extension_range[0])
+                target_elevator = extension_range[0]
+            SmartDashboard.putNumber("IK elevator extension", target_elevator)
+            self.elevator.target_extension = target_elevator
         else:
             match self.pivot_relative_target:
                 case (float(_), float(_), float(_)):
@@ -155,12 +163,18 @@ class Arm(Subsystem):
 
     # TODO: Target is not necessarily a transform2d
     @property
-    def pivot_relative_target(self) -> Optional[Transform2d | Tuple[float, float, float]]:
+    def pivot_relative_target(
+        self,
+    ) -> Optional[Transform2d | Tuple[float, float, float]]:
         match self.target:
             case None:
                 return None
             case Transform2d():
-                return Transform2d(self.target.x - pivot_offset.x, self.target.y - pivot_offset.y, self.target.rotation().radians())
+                return Transform2d(
+                    self.target.x - pivot_offset.x,
+                    self.target.y - pivot_offset.y,
+                    self.target.rotation().radians(),
+                )
             case (float(_), float(_), float(_)):
                 return self.target
             case _:

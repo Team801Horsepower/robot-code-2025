@@ -134,9 +134,15 @@ extension_range = (units.inchesToMeters(29), units.inchesToMeters(75.375))  # m
 extension_ratio = units.inchesToMeters(0.22557 * pi)  # m / revolution
 
 # -- Wrist --
-wrist_pid_constants = (0.1, 0, 0)
+wrist_pid_constants = (0.8, 0, 0)
 wrist_motor_id = 50  # TODO: change to actual motor id
 wrist_limits = (
-    -20,
-    33.2,
+    units.degreesToRadians(20),
+    units.degreesToRadians(280),
 )  # TODO: change to the range of angles attainable by the wrist
+# Starting angle, with claw against back beam
+wrist_neutral_angle = units.degreesToRadians(88.31974)
+
+# wrist_gear_ratio = 62.5 * 2 * pi
+# Weird measured thing; TODO: find out why
+wrist_gear_ratio = 11.45

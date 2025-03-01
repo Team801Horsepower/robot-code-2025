@@ -63,7 +63,8 @@ class Robot(wpilib.TimedRobot):
             "elevator extension", self.periscope.arm.elevator.get_extension()
         )
         SmartDashboard.putNumber(
-            "wrist pos", self.periscope.arm.wrist.wrist_encoder.getPosition()
+            "wrist pos",
+            units.radiansToDegrees(self.periscope.arm.wrist.angle()),
         )
 
     def disabledInit(self):
@@ -111,6 +112,10 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber(
             "new elevator target", self.periscope.arm.elevator.target_extension
         )
+        SmartDashboard.putNumber(
+            "new wrist target",
+            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        )
 
     def testPeriodic(self):
         # target = SmartDashboard.getNumber("elevator_extension", 0)
@@ -134,6 +139,10 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber(
             "elevator target", self.periscope.arm.elevator.target_extension
         )
+        SmartDashboard.putNumber(
+            "wrist target",
+            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        )
 
         new_pivot_target = units.degreesToRadians(
             SmartDashboard.getNumber(
@@ -143,6 +152,12 @@ class Robot(wpilib.TimedRobot):
         )
         new_extension_target = SmartDashboard.getNumber(
             "new elevator target", self.periscope.arm.pivot.target_angle
+        )
+        new_wrist_target = units.degreesToRadians(
+            SmartDashboard.getNumber(
+                "new wrist target",
+                units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+            )
         )
 
         # self.periscope.arm.pivot.target_angle = pi / 2 - (
@@ -163,6 +178,7 @@ class Robot(wpilib.TimedRobot):
             # self.pivot.theta_pid.setConstraints(TrapezoidProfile.Constraints(1000, acc_lim))
             self.periscope.arm.pivot.target_angle = new_pivot_target
             self.periscope.arm.elevator.target_extension = new_extension_target
+            self.periscope.arm.wrist.target_angle = new_wrist_target
 
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:
@@ -172,7 +188,8 @@ class Robot(wpilib.TimedRobot):
         ik_input = Transform2d(
             0.06846 + 0.5 * deadzone(self.driver_controller.getLeftX()),
             0.97244 + 0.5 * deadzone(-self.driver_controller.getLeftY()),
-            units.degreesToRadians(3.31974) + (pi / 3) * deadzone(-self.driver_controller.getRightX()),
+            units.degreesToRadians(3.31974)
+            + (pi / 3) * deadzone(-self.driver_controller.getRightX()),
         )
         self.periscope.arm.target = ik_input
         self.periscope.arm.should_extend ^= self.driver_controller.getBButtonPressed()
