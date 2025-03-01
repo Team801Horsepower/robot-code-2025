@@ -79,7 +79,7 @@ ik_floor = 1
 # -- Pivot --
 
 # TODO: Get real (y)
-pivot_offset = Translation2d(-0.19671, 0.2177)
+pivot_offset = Translation2d(-0.2284, 0.2177)
 pivot_range = (pi / 4, pi / 2)  # TODO: Insert correct angle values
 
 pivot_motor_ids = [30, 32, 31, 33]
