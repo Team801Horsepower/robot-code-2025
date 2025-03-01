@@ -67,15 +67,29 @@ class Pivot(Subsystem):
     def periodic(self):
         self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()
+        new_constants = lerp_over_table(
+            pivot_pid_constants, self.elevator.get_extension()
+        )
+        self.theta_pid.setP(new_constants[0])
+        self.theta_pid.setI(new_constants[1])
+        self.theta_pid.setD(new_constants[2])
+        SmartDashboard.putNumber("kP", new_constants[0])
+        SmartDashboard.putNumber("kI", new_constants[1])
+        SmartDashboard.putNumber("kD", new_constants[2])
         self.theta_pid.setConstraints(
             TrapezoidProfile.Constraints(
                 1000, lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0]
             )
         )
+        SmartDashboard.putNumber(
+            "pivot acc limit",
+            lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0],
+        )
+        SmartDashboard.putNumber("ff torque", self.pivot_ff_torque())
 
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
-        pid_output = pid_output * (1 + (self.elevator.get_extension() * 2 / 65))
+        # pid_output = pid_output * (1 + (self.elevator.get_extension() * 2 / 65))
         self.set_power(pid_output + self.pivot_ff_torque())
         # self.set_power(self.pivot_ff_torque())
 
@@ -107,7 +121,8 @@ class Pivot(Subsystem):
 
     def pivot_ff_torque(self):
         t_g = (
-            self.elevator.get_extension()
+            # self.elevator.get_extension()
+            self.elevator.ff_scaler
             * cos(self.get_angle() - pivot_com_offset_for_feedforward)
             * g
         )

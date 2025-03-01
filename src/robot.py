@@ -119,7 +119,9 @@ class Robot(wpilib.TimedRobot):
             "deviation", self.pivot.target_angle - self.pivot.get_angle()
         )
 
-        self.pivot.target_angle = 1.57 - (
+        SmartDashboard.putNumber("pivot target", self.pivot.target_angle)
+
+        self.pivot.target_angle = pi / 2 - (
             self.driver_controller.getLeftTriggerAxis() * 0.7
         )
 

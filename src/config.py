@@ -8,38 +8,6 @@ from math import pi
 
 from utils import format_table
 
-# TODO: Get real
-pivot_offset = Translation2d(1, 1)
-pivot_range = (0.295, 0.100)  # TODO: Insert correct angle values
-
-pivot_motor_ids = [30, 32, 31, 33]
-# pivot_pid_constants = (0.65, 0, 0)
-pivot_pid_constraint_constants = (100, 15)
-
-pivot_encoder_id = 0
-pivot_angle_offset = 0.407 * 2 * pi
-pivot_com_offset_for_feedforward = 0.1742036732  # for claw at zero
-pivot_epsilon_pos = 0.05
-pivot_epsilon_v = 0.05
-
-# fmt: off
-pivot_pid_constants: List[Tuple[float, ...]] = format_table([
-    (00, 0.65, 0, 0),
-    (10, 0.55, 0, 0),
-    (30, 0.30, 0, 0),
-    (50, 0.15, 0, 0),
-    (65, 0.10, 0, 0),
-])
-
-pivot_acc_lim: List[Tuple[float, ...]] = format_table([
-    (00, 10),
-    (10, 8),
-    (30, 3),
-    (50, 1.5),
-    (65, 0),
-])
-# fmt: on
-
 # -- General --
 
 g = 9.81
@@ -109,6 +77,38 @@ ik_boundary_distance = units.feetToMeters(1.5)
 ik_floor = 1
 
 # -- Pivot --
+
+# TODO: Get real
+pivot_offset = Translation2d(1, 1)
+pivot_range = (0.295, 0.100)  # TODO: Insert correct angle values
+
+pivot_motor_ids = [30, 32, 31, 33]
+# pivot_pid_constants = (0.65, 0, 0)
+pivot_pid_constraint_constants = (100, 15)
+
+pivot_encoder_id = 0
+pivot_angle_offset = 0.407 * 2 * pi
+pivot_com_offset_for_feedforward = 0.1742036732  # for claw at zero
+pivot_epsilon_pos = 0.05
+pivot_epsilon_v = 0.05
+
+# fmt: off
+pivot_pid_constants: List[Tuple[float, ...]] = format_table([
+    ( 0, 0.65, 0, 0),
+    (10, 0.55, 0, 0),
+    (30, 0.30, 0, 0),
+    (50, 0.15, 0, 0),
+    (65, 0.10, 0, 0),
+])
+
+pivot_acc_lim: List[Tuple[float, ...]] = format_table([
+    ( 0, 10),
+    (10, 8),
+    (30, 3),
+    (50, 1.5),
+    (65, 0),
+])
+# fmt: on
 
 # -- Elevator --
 
