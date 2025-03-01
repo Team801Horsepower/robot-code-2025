@@ -12,7 +12,6 @@ from config import (
     elevator_ff_power,
 )
 from utils import lerp_over_table
-# from subsystems.pivot import Pivot
 
 
 class Elevator(Subsystem):
@@ -22,7 +21,7 @@ class Elevator(Subsystem):
         # self.pivot: Pivot = pivot
 
         self.mass = elevator_mass
-        self.target_extension = 0.0
+        self.target_extension = extension_range[0]
 
         self.extension_motors = [
             SparkFlex(motor_id, SparkFlex.MotorType.kBrushless)
