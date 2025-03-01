@@ -74,7 +74,7 @@ claw_up_down_lengths = (units.inchesToMeters(5), units.inchesToMeters(22))
 # TODO: Get real :()
 ik_boundary_distance = units.feetToMeters(1.5)
 # TODO: SET THIS; IK will not be able to put the claw below this point
-ik_floor = 1
+ik_floor = 0.2
 
 # -- Pivot --
 

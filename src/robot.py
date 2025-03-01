@@ -170,9 +170,9 @@ class Robot(wpilib.TimedRobot):
             return activation
 
         ik_input = Transform2d(
-            config.ik_floor + 0.5 + 0.5 * deadzone(-self.driver_controller.getLeftY()),
-            0.5 + 0.5 * deadzone(-self.driver_controller.getLeftX()),
-            (pi / 3) * deadzone(-self.driver_controller.getRightX()),
+            0.06846 + 0.5 * deadzone(-self.driver_controller.getLeftX()),
+            0.97244 + 0.5 * deadzone(-self.driver_controller.getLeftY()),
+            units.degreesToRadians(3.31974) + (pi / 3) * deadzone(-self.driver_controller.getRightX()),
         )
         self.periscope.arm.target = ik_input
         self.periscope.arm.should_extend ^= self.driver_controller.getBButtonPressed()

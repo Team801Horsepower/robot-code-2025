@@ -42,23 +42,23 @@ class Arm(Subsystem):
         scheduler.registerSubsystem(self)
 
     def periodic(self):
-        if isinstance(self.target, Transform2d):
+        if isinstance(self.pivot_relative_target, Transform2d):
             self._target_outofbounds = False
             # Position of the wrist pivot in 2D arm space
-            p_1 = Translation2d(
+            wrist_position = Translation2d(
                 claw_to_wrist_lengths["algae" if self.use_algae else "coral"],
-                self.target.rotation().radians()
+                self.pivot_relative_target.rotation().radians()
                 + self.use_algae * coral_algae_pickup_angle,
             )
-            target_to_p_1_norm = self.target.translation() - p_1
+            target_to_p_1_norm = self.pivot_relative_target.translation() - wrist_position
             target_to_p_1_norm /= target_to_p_1_norm.norm()
             claw_bounds = (
                 Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
                 * claw_up_down_lengths[0]
-                + self.target.translation(),
+                + self.pivot_relative_target.translation(),
                 Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
                 * claw_up_down_lengths[1]
-                + self.target.translation(),
+                + self.pivot_relative_target.translation(),
             )
             max_point = Translation2d(
                 max(claw_bounds[0].x, claw_bounds[1].x),
@@ -71,8 +71,8 @@ class Arm(Subsystem):
             if max_point.x + pivot_offset.x > (
                 robot_dimensions.x / 2 + bumper_distance + ik_boundary_distance
             ):
-                p_1 = Translation2d(
-                    p_1.x
+                wrist_position = Translation2d(
+                    wrist_position.x
                     - (
                         max_point.x
                         + pivot_offset.x
@@ -80,14 +80,14 @@ class Arm(Subsystem):
                         - bumper_distance
                         - ik_boundary_distance
                     ),
-                    p_1.y,
+                    wrist_position.y,
                 )
                 self._target_outofbounds = True
             elif min_point.x + pivot_offset.x < (
                 -robot_dimensions.x / 2 - bumper_distance - ik_boundary_distance
             ):
-                p_1 = Translation2d(
-                    p_1.x
+                wrist_position = Translation2d(
+                    wrist_position.x
                     + (
                         min_point.x
                         + pivot_offset.x
@@ -95,12 +95,12 @@ class Arm(Subsystem):
                         + bumper_distance
                         + ik_boundary_distance
                     ),
-                    p_1.y,
+                    wrist_position.y,
                 )
                 self._target_outofbounds = True
             if min_point.y + pivot_offset.y < ik_floor:
-                p_1 = Translation2d(
-                    p_1.x, p_1.y - (min_point.y + pivot_offset.y - ik_floor)
+                wrist_position = Translation2d(
+                    wrist_position.x, wrist_position.y - (min_point.y + pivot_offset.y - ik_floor)
                 )
                 self._target_outofbounds = True
 
@@ -110,14 +110,14 @@ class Arm(Subsystem):
                 radiansToDegrees(
                     clamp(
                         degreesToRadians(50),
-                        degreesToRadians(110),
-                        p_1.angle().radians(),
+                        degreesToRadians(100),
+                        wrist_position.angle().radians(),
                     )
                 ),
             )
             # self.wrist.target_angle = pi - (
             #     p_1.angle().radians()
-            #     - self.target.rotation().radians()
+            #     - self.pivot_relative_target.rotation().radians()
             #     + float(self.use_algae) * coral_algae_pickup_angle
             # )
             SmartDashboard.putNumber(
@@ -125,24 +125,24 @@ class Arm(Subsystem):
                 radiansToDegrees(
                     pi
                     - (
-                        p_1.angle().radians()
-                        - self.target.rotation().radians()
+                        wrist_position.angle().radians()
+                        - self.pivot_relative_target.rotation().radians()
                         + float(self.use_algae) * coral_algae_pickup_angle
                     )
                 ),
             )
             if self.should_extend:
                 # self.elevator.target_extension = p_1.norm()
-                SmartDashboard.putNumber("IK elevator extension", p_1.norm())
+                SmartDashboard.putNumber("IK elevator extension", wrist_position.norm())
             else:
                 # self.elevator.target_extension = extension_range[0]
                 SmartDashboard.putNumber("IK elevator extension", extension_range[0])
         else:
-            match self.target:
+            match self.pivot_relative_target:
                 case (float(_), float(_), float(_)):
-                    self.pivot.target_angle = self.target[0]
-                    self.elevator.target_extension = self.target[1]
-                    self.wrist.target_angle = self.target[2]
+                    self.pivot.target_angle = self.pivot_relative_target[0]
+                    self.elevator.target_extension = self.pivot_relative_target[1]
+                    self.wrist.target_angle = self.pivot_relative_target[2]
                 case _:
                     pass
 
@@ -152,6 +152,19 @@ class Arm(Subsystem):
             and self.elevator.at_extension()
             and self.wrist.at_angle()
         )
+
+    # TODO: Target is not necessarily a transform2d
+    @property
+    def pivot_relative_target(self) -> Optional[Transform2d | Tuple[float, float, float]]:
+        match self.target:
+            case None:
+                return None
+            case Transform2d():
+                return Transform2d(self.target.x - pivot_offset.x, self.target.y - pivot_offset.y, self.target.rotation().radians())
+            case (float(_), float(_), float(_)):
+                return self.target
+            case _:
+                return
 
     def target_attainable(self) -> bool:
         return (
