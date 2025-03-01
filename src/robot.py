@@ -60,8 +60,12 @@ class Robot(wpilib.TimedRobot):
     def robotPeriodic(self):
         self.scheduler.run()
         SmartDashboard.putNumber("pivot angle", self.periscope.arm.pivot.get_angle())
-        SmartDashboard.putNumber("elevator extension", self.periscope.arm.elevator.get_extension())
-        SmartDashboard.putNumber("wrist pos", self.periscope.arm.wrist.wrist_encoder.getPosition())
+        SmartDashboard.putNumber(
+            "elevator extension", self.periscope.arm.elevator.get_extension()
+        )
+        SmartDashboard.putNumber(
+            "wrist pos", self.periscope.arm.wrist.wrist_encoder.getPosition()
+        )
 
     def disabledInit(self):
         pass
@@ -85,12 +89,17 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopPeriodic(self):
-        # drive_input = Transform2d(
-        #     deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
-        #     deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
-        #     deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
-        # )
-        # self.drive.drive(drive_input)
+        def deadzone(activation: float) -> float:
+            if abs(activation) < 0.01:
+                return 0.0
+            return activation
+
+        drive_input = Transform2d(
+            deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
+            deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
+            deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
+        )
+        self.drive.drive(drive_input)
 
     def teleopExit(self):
         pass
@@ -108,7 +117,9 @@ class Robot(wpilib.TimedRobot):
         acc_lim = SmartDashboard.getNumber("acc_lim", 15)
 
         SmartDashboard.putNumber(
-            "deviation", self.periscope.arm.pivot.target_angle - self.periscope.arm.pivot.get_angle()
+            "deviation",
+            self.periscope.arm.pivot.target_angle
+            - self.periscope.arm.pivot.get_angle(),
         )
 
         SmartDashboard.putNumber("pivot target", self.periscope.arm.pivot.target_angle)
@@ -129,15 +140,16 @@ class Robot(wpilib.TimedRobot):
             # self.pivot.theta_pid.setI(kI)
             # self.pivot.theta_pid.setD(kD)
             # self.pivot.theta_pid.setConstraints(TrapezoidProfile.Constraints(1000, acc_lim))
+
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:
                 return 0.0
             return activation
 
         ik_input = Transform2d(
-            config.ik_floor + 0.5 + 0.5*deadzone(-self.driver_controller.getLeftY()),
-            0.5 + 0.5*deadzone(-self.driver_controller.getLeftX()),
-            (pi/3)*deadzone(-self.driver_controller.getRightX()),
+            config.ik_floor + 0.5 + 0.5 * deadzone(-self.driver_controller.getLeftY()),
+            0.5 + 0.5 * deadzone(-self.driver_controller.getLeftX()),
+            (pi / 3) * deadzone(-self.driver_controller.getRightX()),
         )
         self.periscope.arm.target = ik_input
 
