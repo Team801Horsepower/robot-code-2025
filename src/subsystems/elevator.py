@@ -10,6 +10,7 @@ from config import (
     extension_motor_ids,
     extension_pid_constants,
     elevator_ff_power,
+    wrist_passthrough_min_extension,
 )
 from utils import lerp_over_table
 
@@ -53,8 +54,14 @@ class Elevator(Subsystem):
 
         self.extension: float = extension_range[0]
 
+        # Whether the wrist position is high enough to allow the elevator to lower
+        self.wrist_up = True
+
     def periodic(self):
-        self.target_target_extension(self.target_extension)
+        target = self.target_extension
+        if not self.wrist_up:
+            target = max(target, wrist_passthrough_min_extension)
+        self.target_target_extension(target)
         self.extension = self.update_extension()
 
     def target_target_extension(self, target):

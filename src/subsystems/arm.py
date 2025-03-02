@@ -21,6 +21,8 @@ from config import (
     ik_floor,
     extension_range,
     wrist_limits,
+    wrist_neutral_angle,
+    wrist_passthrough_min_extension,
 )
 from utils import clamp
 
@@ -43,6 +45,14 @@ class Arm(Subsystem):
         scheduler.registerSubsystem(self)
 
     def periodic(self):
+        self.wrist.passthrough_allowed = (
+            self.elevator.get_extension() > wrist_passthrough_min_extension
+            and self.elevator.target_extension > wrist_passthrough_min_extension
+        )
+        self.elevator.wrist_up = self.wrist.angle() > wrist_neutral_angle
+        self.seek_target()
+
+    def seek_target(self):
         if isinstance(self.pivot_relative_target, Transform2d):
             self._target_outofbounds = False
             # Position of the wrist pivot in 2D arm space

@@ -1,6 +1,7 @@
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
+from wpimath import units
 from wpilib import SmartDashboard
 
 from config import (
@@ -32,6 +33,9 @@ class Wrist(Subsystem):
         )  # TODO: Change to actual constants
         self.target_angle = wrist_neutral_angle
         self.tolerance = 0.05
+        # Whether the elevator is high enough for the wrist to pivot downward
+        self.passthrough_allowed = False
+
         scheduler.registerSubsystem(self)
 
     def angle(self) -> float:
@@ -41,13 +45,20 @@ class Wrist(Subsystem):
         self.wrist_encoder.setPosition(angle * wrist_gear_ratio)
 
     def periodic(self):
-        self.wrist_motor.set(
-            self.pid.calculate(
-                self.angle(),
-                clamp(wrist_limits[0], wrist_limits[1], self.target_angle),
-            )
+        power = self.pid.calculate(
+            self.angle(),
+            clamp(self.lower_limit, wrist_limits[1], self.target_angle),
         )
+        self.wrist_motor.set(power)
         SmartDashboard.putNumber("wrist encoder", self.wrist_encoder.getPosition())
+
+    @property
+    def lower_limit(self) -> float:
+        return (
+            wrist_limits[0]
+            if self.passthrough_allowed
+            else wrist_neutral_angle + units.degreesToRadians(5)
+        )
 
     def fold(self):
         self.target = 0.0  # TODO: change to preferred folding position
