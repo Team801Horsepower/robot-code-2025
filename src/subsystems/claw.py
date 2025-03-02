@@ -3,16 +3,16 @@ from rev import SparkFlex, SparkFlexConfig
 from wpilib import AnalogInput, DigitalInput, SmartDashboard
 import time
 
-from config import claw_motor_id
+import config
 
 
 class Claw(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
-        self.motor = SparkFlex(claw_motor_id, SparkFlex.MotorType.kBrushless)
-        config = SparkFlexConfig().inverted(True)
-        config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
+        self.motor = SparkFlex(config.claw_motor_id, SparkFlex.MotorType.kBrushless)
+        motor_config = SparkFlexConfig().inverted(True)
+        motor_config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
         self.motor.configure(
-            config,
+            motor_config,
             SparkFlex.ResetMode.kResetSafeParameters,
             SparkFlex.PersistMode.kNoPersistParameters,
         )

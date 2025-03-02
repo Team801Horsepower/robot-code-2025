@@ -10,20 +10,7 @@ from subsystems.pivot import Pivot
 from subsystems.elevator import Elevator
 from subsystems.wrist import Wrist
 
-from config import (
-    claw_to_wrist_lengths,
-    coral_algae_pickup_angle,
-    claw_up_down_lengths,
-    bumper_distance,
-    pivot_offset,
-    robot_dimensions,
-    ik_boundary_distance,
-    ik_floor,
-    extension_range,
-    wrist_limits,
-    wrist_neutral_angle,
-    wrist_passthrough_min_extension,
-)
+import config
 from utils import clamp
 
 
@@ -50,10 +37,10 @@ class Arm(Subsystem):
     def periodic(self):
         self.wrist.passthrough_allowed = (
             self.wrist_passthrough_allowed_by_algae
-            and self.elevator.get_extension() > wrist_passthrough_min_extension
-            and self.elevator.target_extension > wrist_passthrough_min_extension
+            and self.elevator.get_extension() > config.wrist_passthrough_min_extension
+            and self.elevator.target_extension > config.wrist_passthrough_min_extension
         )
-        self.elevator.wrist_up = self.wrist.angle() > wrist_neutral_angle
+        self.elevator.wrist_up = self.wrist.angle() > config.wrist_neutral_angle
         self.seek_target()
 
     def seek_target(self):
@@ -61,10 +48,10 @@ class Arm(Subsystem):
             self._target_outofbounds = False
             # Position of the wrist pivot in 2D arm space
             wrist_position = self.pivot_relative_target.translation() - Translation2d(
-                claw_to_wrist_lengths["algae" if self.use_algae else "coral"],
+                config.claw_to_wrist_lengths["algae" if self.use_algae else "coral"],
                 Rotation2d(
                     self.pivot_relative_target.rotation().radians()
-                    + self.use_algae * coral_algae_pickup_angle
+                    + self.use_algae * config.coral_algae_pickup_angle
                 ),
             )
             target_to_p_1_norm = (
@@ -73,10 +60,10 @@ class Arm(Subsystem):
             target_to_p_1_norm /= target_to_p_1_norm.norm()
             claw_bounds = (
                 Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
-                * claw_up_down_lengths[0]
+                * config.claw_up_down_lengths[0]
                 + self.pivot_relative_target.translation(),
                 Translation2d(*target_to_p_1_norm).rotateBy(Rotation2d(pi / 2))
-                * claw_up_down_lengths[1]
+                * config.claw_up_down_lengths[1]
                 + self.pivot_relative_target.translation(),
             )
             max_point = Translation2d(
@@ -87,40 +74,45 @@ class Arm(Subsystem):
                 min(claw_bounds[0].x, claw_bounds[1].x),
                 min(claw_bounds[0].y, claw_bounds[1].y),
             )
-            if max_point.x + pivot_offset.x > (
-                robot_dimensions.x / 2 + bumper_distance + ik_boundary_distance
+            if max_point.x + config.pivot_offset.x > (
+                config.robot_dimensions.x / 2
+                + config.bumper_distance
+                + config.ik_boundary_distance
             ):
                 wrist_position = Translation2d(
                     wrist_position.x
                     - (
                         max_point.x
-                        + pivot_offset.x
-                        - robot_dimensions.x / 2
-                        - bumper_distance
-                        - ik_boundary_distance
+                        + config.pivot_offset.x
+                        - config.robot_dimensions.x / 2
+                        - config.bumper_distance
+                        - config.ik_boundary_distance
                     ),
                     wrist_position.y,
                 )
                 self._target_outofbounds = True
-            elif min_point.x + pivot_offset.x < (
-                -robot_dimensions.x / 2 - bumper_distance - ik_boundary_distance
+            elif min_point.x + config.pivot_offset.x < (
+                -config.robot_dimensions.x / 2
+                - config.bumper_distance
+                - config.ik_boundary_distance
             ):
                 wrist_position = Translation2d(
                     wrist_position.x
                     + (
                         min_point.x
-                        + pivot_offset.x
-                        + robot_dimensions.x / 2
-                        + bumper_distance
-                        + ik_boundary_distance
+                        + config.pivot_offset.x
+                        + config.robot_dimensions.x / 2
+                        + config.bumper_distance
+                        + config.ik_boundary_distance
                     ),
                     wrist_position.y,
                 )
                 self._target_outofbounds = True
-            if min_point.y + pivot_offset.y < ik_floor:
+            if min_point.y + config.pivot_offset.y < config.ik_floor:
                 wrist_position = Translation2d(
                     wrist_position.x,
-                    wrist_position.y - (min_point.y + pivot_offset.y - ik_floor),
+                    wrist_position.y
+                    - (min_point.y + config.pivot_offset.y - config.ik_floor),
                 )
                 self._target_outofbounds = True
 
@@ -137,13 +129,13 @@ class Arm(Subsystem):
             self.pivot.target_angle = target_pivot
 
             target_wrist = clamp(
-                wrist_limits[0],
-                wrist_limits[1],
+                config.wrist_limits[0],
+                config.wrist_limits[1],
                 pi
                 - (
                     wrist_position.angle().radians()
                     - self.pivot_relative_target.rotation().radians()
-                    + float(self.use_algae) * coral_algae_pickup_angle
+                    + float(self.use_algae) * config.coral_algae_pickup_angle
                 ),
             )
             SmartDashboard.putNumber(
@@ -154,10 +146,12 @@ class Arm(Subsystem):
 
             if self.should_extend:
                 target_elevator = clamp(
-                    extension_range[0], extension_range[1], wrist_position.norm()
+                    config.extension_range[0],
+                    config.extension_range[1],
+                    wrist_position.norm(),
                 )
             else:
-                target_elevator = extension_range[0]
+                target_elevator = config.extension_range[0]
             SmartDashboard.putNumber("IK elevator extension", target_elevator)
             self.elevator.target_extension = target_elevator
         else:
@@ -186,8 +180,8 @@ class Arm(Subsystem):
                 return None
             case Transform2d():
                 return Transform2d(
-                    self.target.x - pivot_offset.x,
-                    self.target.y - pivot_offset.y,
+                    self.target.x - config.pivot_offset.x,
+                    self.target.y - config.pivot_offset.y,
                     self.target.rotation().radians(),
                 )
             case (float(_), float(_), float(_)):

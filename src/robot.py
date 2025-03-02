@@ -8,13 +8,8 @@ from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler
 from wpimath import units
 
-from math import pi
-
 import config
-from subsystems import drive, claw, elevator, pivot, wrist, periscope
-
-from config import pivot_pid_constraint_constants
-from wpimath.trajectory import TrapezoidProfile
+from subsystems import drive, periscope
 
 
 class Robot(wpilib.TimedRobot):
