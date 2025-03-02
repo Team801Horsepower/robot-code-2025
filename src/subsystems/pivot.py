@@ -73,19 +73,19 @@ class Pivot(Subsystem):
         self.theta_pid.setP(new_constants[0])
         self.theta_pid.setI(new_constants[1])
         self.theta_pid.setD(new_constants[2])
-        SmartDashboard.putNumber("kP", new_constants[0])
-        SmartDashboard.putNumber("kI", new_constants[1])
-        SmartDashboard.putNumber("kD", new_constants[2])
+        # SmartDashboard.putNumber("kP", new_constants[0])
+        # SmartDashboard.putNumber("kI", new_constants[1])
+        # SmartDashboard.putNumber("kD", new_constants[2])
         self.theta_pid.setConstraints(
             TrapezoidProfile.Constraints(
                 1000, lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0]
             )
         )
-        SmartDashboard.putNumber(
-            "pivot acc limit",
-            lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0],
-        )
-        SmartDashboard.putNumber("ff torque", self.pivot_ff_power())
+        # SmartDashboard.putNumber(
+        #     "pivot acc limit",
+        #     lerp_over_table(pivot_acc_lim, self.elevator.get_extension())[0],
+        # )
+        # SmartDashboard.putNumber("ff torque", self.pivot_ff_power())
 
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
@@ -95,7 +95,7 @@ class Pivot(Subsystem):
 
     def set_power(self, power: float):
         power = clamp(-0.1, 0.1, power)
-        SmartDashboard.putNumber("pvt pwr", power)
+        # SmartDashboard.putNumber("pvt pwr", power)
         for motor in self.pivot_motors:
             motor.set(power)
 

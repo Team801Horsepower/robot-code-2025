@@ -39,13 +39,13 @@ auto_turn_speed = 0.5
 # drive id, turn id, cancoder id
 swerves = [
     (10, 11, 12),
-    (20, 21, 22),
     (15, 16, 17),
+    (20, 21, 22),
     (25, 26, 27),
 ]
 
 # front left, back left, front right, back right
-swerve_ids = [1, 2, 0, 3]  # TODO: this is probably wrong now
+swerve_ids = [0, 2, 1, 3]
 
 drive_pid = (0.15, 0, 0)
 turn_pid = (0.5, 0, 0)
@@ -75,6 +75,10 @@ claw_up_down_lengths = (units.inchesToMeters(5), units.inchesToMeters(22))
 ik_boundary_distance = units.feetToMeters(1.5)
 # TODO: SET THIS; IK will not be able to put the claw below this point
 ik_floor = 0.2
+
+ik_neutral_x = 0.06846
+ik_neutral_y = 0.97244
+ik_neutral_wrist = units.degreesToRadians(3.31974)
 
 # -- Pivot --
 
