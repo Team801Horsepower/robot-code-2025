@@ -94,23 +94,24 @@ class Robot(wpilib.TimedRobot):
         self.periscope.arm.target = Transform2d(
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         )
+
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
         SmartDashboard.putNumber(
             "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
         )
 
-        # SmartDashboard.putNumber(
-        #     "new pivot target",
-        #     units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
-        # )
-        # SmartDashboard.putNumber(
-        #     "new elevator target", self.periscope.arm.elevator.target_extension
-        # )
-        # SmartDashboard.putNumber(
-        #     "new wrist target",
-        #     units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
-        # )
+        SmartDashboard.putNumber(
+            "new pivot target",
+            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+        )
+        SmartDashboard.putNumber(
+            "new elevator target", self.periscope.arm.elevator.target_extension
+        )
+        SmartDashboard.putNumber(
+            "new wrist target",
+            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        )
 
     def teleopPeriodic(self):
         def deadzone(activation: float) -> float:
@@ -129,40 +130,8 @@ class Robot(wpilib.TimedRobot):
         if self.driver_controller.getBackButtonPressed():
             self.drive.chassis.zero_swerves()
 
-        new_ik_x = SmartDashboard.getNumber("new IK x", config.ik_neutral_x)
-        new_ik_y = SmartDashboard.getNumber("new IK y", config.ik_neutral_y)
-        new_ik_wrist = units.degreesToRadians(
-            SmartDashboard.getNumber(
-                "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
-            )
-        )
-
-        # new_pivot_target = units.degreesToRadians(
-        #     SmartDashboard.getNumber(
-        #         "new pivot target",
-        #         units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
-        #     )
-        # )
-        # new_extension_target = SmartDashboard.getNumber(
-        #     "new elevator target", self.periscope.arm.pivot.target_angle
-        # )
-        # new_wrist_target = units.degreesToRadians(
-        #     SmartDashboard.getNumber(
-        #         "new wrist target",
-        #         units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
-        #     )
-        # )
-
         if self.driver_controller.getAButtonPressed():
-            self.periscope.arm.target = Transform2d(new_ik_x, new_ik_y, new_ik_wrist)
-            SmartDashboard.putNumber("IK x", self.periscope.arm.target.x)
-            SmartDashboard.putNumber("IK y", self.periscope.arm.target.y)
-            SmartDashboard.putNumber(
-                "IK wrist", self.periscope.arm.target.rotation().degrees()
-            )
-            # self.periscope.arm.pivot.target_angle = new_pivot_target
-            # self.periscope.arm.elevator.target_extension = new_extension_target
-            # self.periscope.arm.wrist.target_angle = new_wrist_target
+            self.read_typed_ik_input()
 
         self.periscope.arm.should_extend ^= self.driver_controller.getXButtonPressed()
 
@@ -176,70 +145,15 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testInit(self):
-        # SmartDashboard.putNumber(
-        #     "new pivot target",
-        #     units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
-        # )
-        # SmartDashboard.putNumber(
-        #     "new elevator target", self.periscope.arm.elevator.target_extension
-        # )
-        # SmartDashboard.putNumber(
-        #     "new wrist target",
-        #     units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
-        # )
-
-        self.periscope.arm.target = Transform2d(
-            config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
-        )
-        SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
-        SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
-        SmartDashboard.putNumber(
-            "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
-        )
+        pass
 
     def testPeriodic(self):
-        # target = SmartDashboard.getNumber("elevator_extension", 0)
+        pass
 
-        # kP = SmartDashboard.getNumber("kP", 0)
-        # kI = SmartDashboard.getNumber("kI", 0)
-        # kD = SmartDashboard.getNumber("kD", 0)
+    def testExit(self):
+        pass
 
-        # acc_lim = SmartDashboard.getNumber("acc_lim", 15)
-
-        SmartDashboard.putNumber(
-            "deviation",
-            self.periscope.arm.pivot.target_angle
-            - self.periscope.arm.pivot.get_angle(),
-        )
-
-        SmartDashboard.putNumber(
-            "pivot target",
-            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
-        )
-        SmartDashboard.putNumber(
-            "elevator target", self.periscope.arm.elevator.target_extension
-        )
-        SmartDashboard.putNumber(
-            "wrist target",
-            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
-        )
-
-        # new_pivot_target = units.degreesToRadians(
-        #     SmartDashboard.getNumber(
-        #         "new pivot target",
-        #         units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
-        #     )
-        # )
-        # new_extension_target = SmartDashboard.getNumber(
-        #     "new elevator target", self.periscope.arm.pivot.target_angle
-        # )
-        # new_wrist_target = units.degreesToRadians(
-        #     SmartDashboard.getNumber(
-        #         "new wrist target",
-        #         units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
-        #     )
-        # )
-
+    def read_typed_ik_input(self):
         new_ik_x = SmartDashboard.getNumber("new IK x", config.ik_neutral_x)
         new_ik_y = SmartDashboard.getNumber("new IK y", config.ik_neutral_y)
         new_ik_wrist = units.degreesToRadians(
@@ -247,55 +161,29 @@ class Robot(wpilib.TimedRobot):
                 "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
             )
         )
+        self.periscope.arm.target = Transform2d(new_ik_x, new_ik_y, new_ik_wrist)
 
-        # self.periscope.arm.pivot.target_angle = pi / 2 - (
-        #     self.driver_controller.getLeftTriggerAxis() * 0.7
-        # )
-
-        # self.periscope.arm.elevator.target_extension = (
-        #     self.driver_controller.getRightTriggerAxis()
-        #     * (config.extension_range[1] - config.extension_range[0])
-        #     + config.extension_range[0]
-        # )
-
-        if self.driver_controller.getAButtonPressed():
-            # self.periscope.arm.elevator.target_extension = target
-            # self.pivot.theta_pid.setP(kP)
-            # self.pivot.theta_pid.setI(kI)
-            # self.pivot.theta_pid.setD(kD)
-            # self.pivot.theta_pid.setConstraints(TrapezoidProfile.Constraints(1000, acc_lim))
-
-            # self.periscope.arm.pivot.target_angle = new_pivot_target
-            # self.periscope.arm.elevator.target_extension = new_extension_target
-            # self.periscope.arm.wrist.target_angle = new_wrist_target
-
-            self.periscope.arm.target = Transform2d(new_ik_x, new_ik_y, new_ik_wrist)
-            SmartDashboard.putNumber("IK x", self.periscope.arm.target.x)
-            SmartDashboard.putNumber("IK y", self.periscope.arm.target.y)
-            SmartDashboard.putNumber(
-                "IK wrist", self.periscope.arm.target.rotation().degrees()
+    def read_typed_arm_input(self):
+        new_pivot_target = units.degreesToRadians(
+            SmartDashboard.getNumber(
+                "new pivot target",
+                units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
             )
-
-        # def deadzone(activation: float) -> float:
-        #     if abs(activation) < 0.01:
-        #         return 0.0
-        #     return activation
-
-        # ik_input = Transform2d(
-        #     0.06846 + 0.5 * deadzone(self.driver_controller.getLeftX()),
-        #     0.97244 + 0.5 * deadzone(-self.driver_controller.getLeftY()),
-        #     units.degreesToRadians(3.31974)
-        #     + (pi / 3) * deadzone(-self.driver_controller.getRightX()),
-        # )
-        # self.periscope.arm.target = ik_input
-        self.periscope.arm.should_extend ^= self.driver_controller.getBButtonPressed()
-
-        # SmartDashboard.putNumber("IK target x", ik_input.x)
-        # SmartDashboard.putNumber("IK target y", ik_input.y)
-        # SmartDashboard.putNumber("IK target wrist", ik_input.rotation().degrees())
-
-    def testExit(self):
-        pass
+        )
+        new_extension_target = SmartDashboard.getNumber(
+            "new elevator target", self.periscope.arm.pivot.target_angle
+        )
+        new_wrist_target = units.degreesToRadians(
+            SmartDashboard.getNumber(
+                "new wrist target",
+                units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+            )
+        )
+        self.periscope.arm.target = (
+            new_pivot_target,
+            new_extension_target,
+            new_wrist_target,
+        )
 
 
 if __name__ == "__main__":
