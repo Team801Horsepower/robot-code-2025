@@ -100,6 +100,18 @@ class Robot(wpilib.TimedRobot):
             "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
         )
 
+        # SmartDashboard.putNumber(
+        #     "new pivot target",
+        #     units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+        # )
+        # SmartDashboard.putNumber(
+        #     "new elevator target", self.periscope.arm.elevator.target_extension
+        # )
+        # SmartDashboard.putNumber(
+        #     "new wrist target",
+        #     units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        # )
+
     def teleopPeriodic(self):
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:
@@ -125,6 +137,22 @@ class Robot(wpilib.TimedRobot):
             )
         )
 
+        # new_pivot_target = units.degreesToRadians(
+        #     SmartDashboard.getNumber(
+        #         "new pivot target",
+        #         units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+        #     )
+        # )
+        # new_extension_target = SmartDashboard.getNumber(
+        #     "new elevator target", self.periscope.arm.pivot.target_angle
+        # )
+        # new_wrist_target = units.degreesToRadians(
+        #     SmartDashboard.getNumber(
+        #         "new wrist target",
+        #         units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        #     )
+        # )
+
         if self.driver_controller.getAButtonPressed():
             self.periscope.arm.target = Transform2d(new_ik_x, new_ik_y, new_ik_wrist)
             SmartDashboard.putNumber("IK x", self.periscope.arm.target.x)
@@ -132,6 +160,10 @@ class Robot(wpilib.TimedRobot):
             SmartDashboard.putNumber(
                 "IK wrist", self.periscope.arm.target.rotation().degrees()
             )
+            # self.periscope.arm.pivot.target_angle = new_pivot_target
+            # self.periscope.arm.elevator.target_extension = new_extension_target
+            # self.periscope.arm.wrist.target_angle = new_wrist_target
+
         self.periscope.arm.should_extend ^= self.driver_controller.getXButtonPressed()
 
         claw_power = (

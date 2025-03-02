@@ -39,6 +39,9 @@ class Arm(Subsystem):
         self.use_algae = False
         self.should_extend = False
         self._target_outofbounds = False
+
+        self.wrist_passthrough_allowed_by_algae = True
+
         # SmartDashboard.putNumber("Pivot Angle", 0)
         # SmartDashboard.putNumber("Elevator Extension", 0)
         # SmartDashboard.putNumber("Wrist Angle", 0)
@@ -46,7 +49,8 @@ class Arm(Subsystem):
 
     def periodic(self):
         self.wrist.passthrough_allowed = (
-            self.elevator.get_extension() > wrist_passthrough_min_extension
+            self.wrist_passthrough_allowed_by_algae
+            and self.elevator.get_extension() > wrist_passthrough_min_extension
             and self.elevator.target_extension > wrist_passthrough_min_extension
         )
         self.elevator.wrist_up = self.wrist.angle() > wrist_neutral_angle
@@ -133,8 +137,7 @@ class Arm(Subsystem):
             self.pivot.target_angle = target_pivot
 
             target_wrist = clamp(
-                # wrist_limits[0],
-                degreesToRadians(89),
+                wrist_limits[0],
                 wrist_limits[1],
                 pi
                 - (
@@ -150,7 +153,9 @@ class Arm(Subsystem):
             self.wrist.target_angle = target_wrist
 
             if self.should_extend:
-                target_elevator = wrist_position.norm()
+                target_elevator = clamp(
+                    extension_range[0], extension_range[1], wrist_position.norm()
+                )
             else:
                 target_elevator = extension_range[0]
             SmartDashboard.putNumber("IK elevator extension", target_elevator)

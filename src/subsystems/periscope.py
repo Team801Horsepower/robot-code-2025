@@ -16,4 +16,4 @@ class Periscope(Subsystem):
         scheduler.registerSubsystem(self)
 
     def periodic(self):
-        pass
+        self.arm.wrist_passthrough_allowed_by_algae = not self.claw.algae_detected()

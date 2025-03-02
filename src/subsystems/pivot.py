@@ -94,7 +94,7 @@ class Pivot(Subsystem):
         # self.set_power(self.pivot_ff_torque())
 
     def set_power(self, power: float):
-        power = clamp(-0.1, 0.1, power)
+        power = clamp(-0.15, 0.15, power)
         # SmartDashboard.putNumber("pvt pwr", power)
         for motor in self.pivot_motors:
             motor.set(power)

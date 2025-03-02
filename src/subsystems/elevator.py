@@ -12,7 +12,7 @@ from config import (
     elevator_ff_power,
     wrist_passthrough_min_extension,
 )
-from utils import lerp_over_table
+from utils import lerp_over_table, clamp
 
 
 class Elevator(Subsystem):
@@ -65,11 +65,11 @@ class Elevator(Subsystem):
         self.extension = self.update_extension()
 
     def target_target_extension(self, target):
+        target = clamp(extension_range[0] + 0.01, extension_range[1], target)
         pid_output = self.extension_pid.calculate(self.extension, target)
         self.set_power(pid_output + elevator_ff_power)
 
     def set_power(self, power: float):
-        # return  # remove when elevator is fixed
         for motor in self.extension_motors:
             motor.set(power)
 
