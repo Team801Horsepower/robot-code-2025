@@ -14,34 +14,14 @@ from subsystems import drive, periscope
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
-        # SmartDashboard.putNumber("elevator_extension", 0)
-
-        # SmartDashboard.putNumber("kP", 0)
-        # SmartDashboard.putNumber("kI", 0)
-        # SmartDashboard.putNumber("kD", 0)
-
-        # SmartDashboard.putNumber("acc_lim", 15)
-
         self.scheduler = CommandScheduler()
 
         # Subsystem initialization
         self.scheduler.unregisterAllSubsystems()
 
         self.drive = drive.Drive(self.scheduler)
-        # self.scheduler.registerSubsystem(self.drive)
 
         self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
-        # self.arm = arm.Arm(self.scheduler)
-        # self.wrist = wrist.Wrist(self.scheduler)
-        # self.scheduler.registerSubsystem(self.claw)
-        # self.climber = climber.Climber(self.scheduler)
-        # self.elevator = elevator.Elevator(self.scheduler)
-        # self.scheduler.registerSubsystem(self.elevator)
-        # self.pivot = pivot.Pivot(
-        #     self.scheduler, self.elevator, self.drive.odometry.ahrs
-        # )
-        # self.scheduler.registerSubsystem(self.pivot)
-        # self.turn_signals = turn_signals.TurnSignals(self.scheduler)
 
         self.driver_controller = wpilib.XboxController(0)
         self.manip_controller = wpilib.XboxController(1)
@@ -49,6 +29,8 @@ class Robot(wpilib.TimedRobot):
         self.drive.chassis.set_swerves()
 
         self.field_oriented = True
+
+        self.manip_setpoint = config.reef_setpoints[1]
 
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
@@ -114,7 +96,8 @@ class Robot(wpilib.TimedRobot):
                 return 0.0
             return activation
 
-        self.field_oriented ^= self.driver_controller.getBButtonPressed()
+        # Driving
+        self.field_oriented ^= self.driver_controller.getStartButtonPressed()
         drive_input = Transform2d(
             deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
             deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
@@ -125,10 +108,43 @@ class Robot(wpilib.TimedRobot):
         if self.driver_controller.getBackButtonPressed():
             self.drive.chassis.zero_swerves()
 
-        if self.driver_controller.getAButtonPressed():
-            self.read_typed_ik_input()
+        # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
 
-        self.periscope.arm.should_extend ^= self.driver_controller.getXButtonPressed()
+        if self.manip_controller.getAButtonPressed():
+            self.manip_setpoint = config.reef_setpoints[0]
+        elif self.manip_controller.getBButtonPressed():
+            self.manip_setpoint = config.reef_setpoints[1]
+        elif self.manip_controller.getXButtonPressed():
+            self.manip_setpoint = config.reef_setpoints[2]
+        elif self.manip_controller.getYButtonPressed():
+            self.manip_setpoint = config.reef_setpoints[3]
+        elif self.manip_controller.getStartButtonPressed():
+            self.manip_setpoint = config.processor_setpoint
+        elif self.manip_controller.getBackButtonPressed():
+            self.manip_setpoint = config.barge_setpoint
+
+        if self.driver_controller.getRightBumper():
+            if (
+                self.driver_controller.getXButton()
+                or self.driver_controller.getBButton()
+            ):
+                setpoint = config.source_setpoint
+            else:
+                setpoint = self.manip_setpoint
+            self.periscope.arm.target = setpoint
+            self.periscope.arm.should_extend = True
+        elif self.driver_controller.getLeftBumper():
+            self.periscope.arm.target = config.algae_reef_setpoints[1]
+            self.periscope.arm.should_extend = True
+        else:
+            self.periscope.arm.target = config.transit_setpoint
+            self.periscope.arm.should_extend = False
+
+        # if self.driver_controller.getAButtonPressed():
+        #     self.read_typed_ik_input()
+        # self.periscope.arm.should_extend ^= (
+        #     self.driver_controller.getRightBumperPressed()
+        # )
 
         claw_power = (
             self.driver_controller.getLeftTriggerAxis()

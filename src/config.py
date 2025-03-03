@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 from wpimath import units
-from wpimath.geometry import Translation2d
+from wpimath.geometry import Translation2d, Transform2d
 from wpilib import DriverStation
 from os import path
 from math import pi
@@ -153,3 +153,35 @@ wrist_passthrough_min_extension = 1.8
 # wrist_gear_ratio = 62.5 * 2 * pi
 # Weird measured thing; TODO: find out why
 wrist_gear_ratio = 11.45
+
+# -- Setpoints --
+
+reef_setpoints = [
+    Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
+    Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
+    Transform2d(0.4, 1.29416, units.degreesToRadians(-7)),
+    Transform2d(0.3, 1.988, units.degreesToRadians(-20)),
+]
+barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
+source_setpoint = Transform2d(-0.45, 0.87, units.degreesToRadians(143))
+
+ground_pickup_setpoint = (
+    units.degreesToRadians(35),
+    extension_range[0],
+    units.degreesToRadians(118),
+)
+algae_reef_setpoints = [
+    Transform2d(0.5, 1.1, units.degreesToRadians(35)),
+    Transform2d(0.5, 1.6, units.degreesToRadians(35)),
+]
+
+transit_setpoint = (
+    units.degreesToRadians(68.7),
+    extension_range[0],
+    units.degreesToRadians(114.6),
+)
+processor_setpoint = (
+    units.degreesToRadians(35),
+    extension_range[0],
+    units.degreesToRadians(166),
+)

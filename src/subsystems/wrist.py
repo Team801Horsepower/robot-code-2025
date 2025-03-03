@@ -47,7 +47,7 @@ class Wrist(Subsystem):
             self.angle(),
             clamp(self.lower_limit, config.wrist_limits[1], self.target_angle),
         )
-        self.wrist_motor.set(power)
+        self.wrist_motor.set(clamp(-0.5, 0.5, power))
         SmartDashboard.putNumber("wrist encoder", self.wrist_encoder.getPosition())
 
     @property
