@@ -21,14 +21,14 @@ code_path = path.dirname(__file__) + "/"
 
 robot_dimensions = Translation2d(units.inchesToMeters(20.5), units.inchesToMeters(20.5))
 
+robot_frame_dimensions = Translation2d(units.inchesToMeters(28), units.inchesToMeters(30))
+
 # -- Drive --
 
 drive_gear_ratio = 4.4
 turn_gear_ratio = 41.25
 
 wheel_diameter = units.inchesToMeters(3)
-
-bumper_distance = 0.5
 
 drive_speed = 2
 turn_speed = 4

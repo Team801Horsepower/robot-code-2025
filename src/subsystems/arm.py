@@ -75,8 +75,7 @@ class Arm(Subsystem):
                 min(claw_bounds[0].y, claw_bounds[1].y),
             )
             if max_point.x + config.pivot_offset.x > (
-                config.robot_dimensions.x / 2
-                + config.bumper_distance
+                config.robot_frame_dimensions.x / 2
                 + config.ik_boundary_distance
             ):
                 wrist_position = Translation2d(
@@ -84,16 +83,14 @@ class Arm(Subsystem):
                     - (
                         max_point.x
                         + config.pivot_offset.x
-                        - config.robot_dimensions.x / 2
-                        - config.bumper_distance
+                        - config.robot_frame_dimensions.x / 2
                         - config.ik_boundary_distance
                     ),
                     wrist_position.y,
                 )
                 self._target_outofbounds = True
             elif min_point.x + config.pivot_offset.x < (
-                -config.robot_dimensions.x / 2
-                - config.bumper_distance
+                -config.robot_frame_dimensions.x / 2
                 - config.ik_boundary_distance
             ):
                 wrist_position = Translation2d(
@@ -101,8 +98,7 @@ class Arm(Subsystem):
                     + (
                         min_point.x
                         + config.pivot_offset.x
-                        + config.robot_dimensions.x / 2
-                        + config.bumper_distance
+                        + config.robot_frame_dimensions.x / 2
                         + config.ik_boundary_distance
                     ),
                     wrist_position.y,

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from math import atan2, floor, pi
 
 import wpilib
 
@@ -151,6 +152,8 @@ class Robot(wpilib.TimedRobot):
             - self.driver_controller.getRightTriggerAxis()
         )
         self.periscope.claw.set(claw_power)
+        fullcircle = lambda x : (2*pi - abs(x)) if x < 0 else x
+        SmartDashboard.putNumber("reef selection", floor(6*fullcircle(atan2(self.manip_controller.getLeftY(), self.manip_controller.getLeftX())+pi/24)/pi))
 
     def teleopExit(self):
         pass
