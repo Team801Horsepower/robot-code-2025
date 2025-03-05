@@ -24,7 +24,7 @@ class Robot(wpilib.TimedRobot):
         self.drive = drive.Drive(self.scheduler)
         self.vision = vision.Vision(self.scheduler)
         self.odometry = odometry.Odometry(self.scheduler)
-        
+
         self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
 
         self.driver_controller = wpilib.XboxController(0)
@@ -74,7 +74,6 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopInit(self):
-        self.odometry.reset()
         self.sts_cmd.initialize()
         self.periscope.arm.target = Transform2d(
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
@@ -162,7 +161,10 @@ class Robot(wpilib.TimedRobot):
             - self.driver_controller.getRightTriggerAxis()
         )
         self.periscope.claw.set(claw_power)
-        fullcircle = lambda x: (2 * pi - abs(x)) if x < 0 else x
+
+        def fullcircle(x: float) -> float:
+            return (2 * pi - abs(x)) if x < 0 else x
+
         SmartDashboard.putNumber(
             "reef selection",
             floor(
@@ -183,7 +185,7 @@ class Robot(wpilib.TimedRobot):
 
     def teleopExit(self):
         self.sts_cmd.end(True)
-        
+
     def testInit(self):
         pass
 
