@@ -52,7 +52,8 @@ turn_pid_constants = (0.5, 0, 0)
 
 # -- Vision --
 
-front_camera_height = 0.2  # TODO: filler val
+front_camera_height = 0.27491
+front_camera_pitch = units.degreesToRadians(20)
 score_atag_height = 0.305
 
 # -- Periscope --

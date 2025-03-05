@@ -3,7 +3,6 @@ from wpimath.geometry import Translation2d, Transform3d, Rotation3d, Translation
 from typing import Tuple, List, Optional
 from photonlibpy.photonCamera import PhotonCamera
 from wpimath import units
-from math import pi
 
 import config
 
@@ -14,23 +13,41 @@ class Vision(Subsystem):
 
         self.cameras: List[Tuple[PhotonCamera, Transform3d]] = [
             (
-                PhotonCamera("FrontCamera"),
+                PhotonCamera("FrontLeft"),
                 Transform3d(
                     # Translation3d(0.60880625, 0.29845, 0.428625),
                     # Translation3d(0, 0, 0.428625),
-                    Translation3d(0.29880625, 0, 0.428625),
-                    Rotation3d(0, units.degreesToRadians(-5), 0),
+                    Translation3d(-0.11146, 0.23460, 0.27491),
+                    Rotation3d(
+                        0, units.degreesToRadians(20), units.degreesToRadians(340)
+                    ),
                 ),
             ),
             (
-                PhotonCamera("RearCamera"),
+                PhotonCamera("FrontRight"),
                 Transform3d(
-                    # Translation3d(0.52466875, 0.29845, 0.428625),
-                    # Translation3d(-0.0841375, 0, 0.428625),
-                    Translation3d(0.21466875, 0.29845, 0.428625),
-                    Rotation3d(0, units.degreesToRadians(-5.9), pi),
+                    Translation3d(-0.11146, -0.23460, 0.428625),
+                    Rotation3d(
+                        0, units.degreesToRadians(20), units.degreesToRadians(20)
+                    ),
                 ),
             ),
+            (
+                PhotonCamera("BackLeft"),
+                Transform3d(
+                    Translation3d(-0.16406, 0.25998, 0.277),
+                    Rotation3d(
+                        0, units.degreesToRadians(25), units.degreesToRadians(150)
+                    ),
+                ),
+            ),
+            # (
+            #     PhotonCamera("BackRight"),
+            #     Transform3d(
+            #         Translation3d(-0.16406, -0.25998, 0.277),
+            #         Rotation3d(0, units.degreesToRadians(25), units.degreesToRadians(210)),
+            #     ),
+            # ),
         ]
         scheduler.registerSubsystem(self)
 

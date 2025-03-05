@@ -32,23 +32,25 @@ class StrafeToScore(Command):
     def execute(self):
         cur_rot = self.drive.odometry.rotation().radians()
         score_atag_cam1 = self.vision.cur_atag(
-            1,
+            0,
             self.red_tags[int(self.score_pos / 2)],
             self.blue_tags[int(self.score_pos / 2)],
         )
         score_atag_cam2 = self.vision.cur_atag(
-            2,
+            1,
             self.red_tags[int(self.score_pos / 2)],
             self.blue_tags[int(self.score_pos / 2)],
         )
 
-        score_vec = Translation2d(0, -1)
-        score_vec = score_vec.rotateBy(Rotation2d(int(self.score_pos / 2) * pi / 3))
+        side_offset = Translation2d(0, -1)
+        side_offset = side_offset.rotateBy(Rotation2d(int(self.score_pos / 2) * pi / 3))
+        front_offset = Translation2d(1, 0)
+        front_offset = side_offset.rotateBy(Rotation2d(int(self.score_pos / 2) * pi / 3))
 
         if self.score_pos % 2:
-            score_vec = score_vec * -0.1524
+            side_offset = side_offset * -0.1524
         else:
-            score_vec = score_vec * 0.1524
+            side_offset = side_offset * 0.1524
 
         target_atag = None
         if score_atag_cam1 is not None and score_atag_cam2 is not None:
@@ -61,7 +63,7 @@ class StrafeToScore(Command):
             atag_pitch, atag_yaw = target_atag
 
             robot_dist = (config.score_atag_height - config.front_camera_height) / tan(
-                atag_pitch  # + config.camera_angle
+                atag_pitch + config.front_camera_pitch
             )
             # robot_dist = cam_dist + config.camera_center_distance
 
@@ -78,12 +80,17 @@ class StrafeToScore(Command):
         if not self.should_run:
             return
 
+        target_x = 0
+        target_y = 0
+
         if self.atag_pos is not None:
+            target_x = self.atag_pos.x + side_offset.x + front_offset.x
+            target_y = self.atag_pos.y + side_offset.y + front_offset.y
             strafe_power = self.strafe_pid.calculate(
-                self.drive.odometry.pose().x, self.atag_pos.x + score_vec.x
+                self.drive.odometry.pose().x, target_x
             )
             drive_power = self.drive_pid.calculate(
-                self.drive.odometry.pose().y, self.atag_pos.y + score_vec.y
+                self.drive.odometry.pose().y, target_y
             )
 
         else:
@@ -100,9 +107,12 @@ class StrafeToScore(Command):
         while target_yaw - cur_rot < -pi:
             target_yaw += 2 * pi
 
-        yaw_power = self.yaw_pid.calculate(cur_rot, target_yaw)
-        drive_input = Transform2d(drive_power, strafe_power, yaw_power)
-        self.drive.drive(drive_input)
+        if self.atag_pos is not None:
+            if abs(target_yaw-cur_rot) < .1 and abs(self.drive.odometry.pose().x - target_x) < .1 and abs(self.drive.odometry.pose().y - target_y) < .1:
+                self.should_run = False
+            yaw_power = self.yaw_pid.calculate(cur_rot, target_yaw)
+            drive_input = Transform2d(drive_power, strafe_power, yaw_power)
+            self.drive.drive(drive_input)
 
     def isFinished(self):
         return self.should_run
