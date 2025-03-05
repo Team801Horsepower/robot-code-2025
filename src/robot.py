@@ -98,7 +98,7 @@ class Robot(wpilib.TimedRobot):
             return activation
 
         # Driving
-        self.field_oriented ^= self.driver_controller.getStartButtonPressed()
+        self.field_oriented ^= self.driver_controller.getBackButtonPressed()
         drive_input = Transform2d(
             deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
             deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
@@ -106,7 +106,7 @@ class Robot(wpilib.TimedRobot):
         )
         self.drive.drive(drive_input, self.field_oriented)
 
-        if self.driver_controller.getBackButtonPressed():
+        if self.driver_controller.getLeftStickButtonPressed():
             self.drive.chassis.zero_swerves()
 
         if self.driver_controller.getStartButtonPressed():
