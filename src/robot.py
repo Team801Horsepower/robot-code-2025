@@ -109,6 +109,9 @@ class Robot(wpilib.TimedRobot):
         if self.driver_controller.getBackButtonPressed():
             self.drive.chassis.zero_swerves()
 
+        if self.driver_controller.getStartButtonPressed():
+            self.drive.odometry.reset()
+
         # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
 
         if self.manip_controller.getAButtonPressed():
@@ -152,8 +155,21 @@ class Robot(wpilib.TimedRobot):
             - self.driver_controller.getRightTriggerAxis()
         )
         self.periscope.claw.set(claw_power)
-        fullcircle = lambda x : (2*pi - abs(x)) if x < 0 else x
-        SmartDashboard.putNumber("reef selection", floor(6*fullcircle(atan2(self.manip_controller.getLeftY(), self.manip_controller.getLeftX())+pi/24)/pi))
+        fullcircle = lambda x: (2 * pi - abs(x)) if x < 0 else x
+        SmartDashboard.putNumber(
+            "reef selection",
+            floor(
+                6
+                * fullcircle(
+                    atan2(
+                        self.manip_controller.getLeftY(),
+                        self.manip_controller.getLeftX(),
+                    )
+                    + pi / 24
+                )
+                / pi
+            ),
+        )
 
     def teleopExit(self):
         pass
