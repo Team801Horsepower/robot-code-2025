@@ -15,9 +15,9 @@ class StrafeToScore(Command):
         self.vision = vision
         self.score_pos = score_pos
 
-        self.strafe_pid = PIDController(*config.drive_pid_constants)
-        self.yaw_pid = PIDController(*config.turn_pid_constants)
-        self.drive_pid = PIDController(*config.drive_pid_constants)
+        self.strafe_pid = PIDController(5.0, 0, 0)
+        self.yaw_pid = PIDController(5.0, 0, 0)
+        self.drive_pid = PIDController(5.0, 0, 0.03)
 
         self.atag_pos = None
 
@@ -45,7 +45,9 @@ class StrafeToScore(Command):
         side_offset = Translation2d(0, -1)
         side_offset = side_offset.rotateBy(Rotation2d(int(self.score_pos / 2) * pi / 3))
         front_offset = Translation2d(1, 0)
-        front_offset = side_offset.rotateBy(Rotation2d(int(self.score_pos / 2) * pi / 3))
+        front_offset = side_offset.rotateBy(
+            Rotation2d(int(self.score_pos / 2) * pi / 3)
+        )
 
         if self.score_pos % 2:
             side_offset = side_offset * -0.1524
@@ -108,7 +110,11 @@ class StrafeToScore(Command):
             target_yaw += 2 * pi
 
         if self.atag_pos is not None:
-            if abs(target_yaw-cur_rot) < .1 and abs(self.drive.odometry.pose().x - target_x) < .1 and abs(self.drive.odometry.pose().y - target_y) < .1:
+            if (
+                abs(target_yaw - cur_rot) < 0.1
+                and abs(self.drive.odometry.pose().x - target_x) < 0.1
+                and abs(self.drive.odometry.pose().y - target_y) < 0.1
+            ):
                 self.should_run = False
             yaw_power = self.yaw_pid.calculate(cur_rot, target_yaw)
             drive_input = Transform2d(drive_power, strafe_power, yaw_power)

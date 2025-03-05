@@ -10,7 +10,8 @@ from commands2 import CommandScheduler
 from wpimath import units
 
 import config
-from subsystems import drive, periscope
+from subsystems import drive, periscope, vision
+from commands.aim_to_score import StrafeToScore
 
 
 class Robot(wpilib.TimedRobot):
@@ -21,7 +22,8 @@ class Robot(wpilib.TimedRobot):
         self.scheduler.unregisterAllSubsystems()
 
         self.drive = drive.Drive(self.scheduler)
-
+        self.vision = vision.Vision(self.scheduler)
+        
         self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
 
         self.driver_controller = wpilib.XboxController(0)
@@ -35,6 +37,8 @@ class Robot(wpilib.TimedRobot):
 
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
+
+        self.sts_cmd = StrafeToScore(self.drive, self.vision, 9)
 
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
@@ -170,6 +174,9 @@ class Robot(wpilib.TimedRobot):
                 / pi
             ),
         )
+
+        if self.driver_controller.getBButtonPressed():
+            self.scheduler.schedule(self.sts_cmd)
 
     def teleopExit(self):
         pass
