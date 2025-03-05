@@ -11,6 +11,7 @@ from wpimath import units
 
 import config
 from subsystems import drive, periscope
+from commands.place_coral import PlaceCoral
 
 
 class Robot(wpilib.TimedRobot):
@@ -60,7 +61,8 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousInit(self):
-        pass
+        pc_cmd = PlaceCoral(self.periscope, 2)
+        self.scheduler.schedule(pc_cmd)
 
     def autonomousPeriodic(self):
         pass

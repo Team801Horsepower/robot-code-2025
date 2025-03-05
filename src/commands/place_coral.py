@@ -16,7 +16,7 @@ class PlaceCoral(Command):
     def execute(self):
         if self.periscope.claw.has_coral():
             if self.periscope.arm.at_target():
-                self.periscope.claw.set(-1)
+                self.periscope.claw.set(1)
         else:
             self.periscope.arm.target = config.transit_setpoint
 
