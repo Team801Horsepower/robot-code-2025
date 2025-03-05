@@ -10,7 +10,8 @@ from commands2 import CommandScheduler
 from wpimath import units
 
 import config
-from subsystems import drive, periscope
+from subsystems import drive, periscope, vision, odometry
+from commands.aim_to_score import StrafeToScore
 
 
 class Robot(wpilib.TimedRobot):
@@ -21,6 +22,8 @@ class Robot(wpilib.TimedRobot):
         self.scheduler.unregisterAllSubsystems()
 
         self.drive = drive.Drive(self.scheduler)
+        self.vision = vision.Vision(self.scheduler)
+        self.odometry = odometry.Odometry(self.scheduler)
 
         self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
 
@@ -35,6 +38,8 @@ class Robot(wpilib.TimedRobot):
 
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
+
+        self.sts_cmd = StrafeToScore(self.drive, self.vision, 10)
 
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
@@ -69,6 +74,7 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopInit(self):
+        self.sts_cmd.initialize()
         self.periscope.arm.target = Transform2d(
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         )
@@ -155,7 +161,10 @@ class Robot(wpilib.TimedRobot):
             - self.driver_controller.getRightTriggerAxis()
         )
         self.periscope.claw.set(claw_power)
-        fullcircle = lambda x: (2 * pi - abs(x)) if x < 0 else x
+
+        def fullcircle(x: float) -> float:
+            return (2 * pi - abs(x)) if x < 0 else x
+
         SmartDashboard.putNumber(
             "reef selection",
             floor(
@@ -171,8 +180,11 @@ class Robot(wpilib.TimedRobot):
             ),
         )
 
+        self.sts_cmd.should_run = self.driver_controller.getAButton()
+        self.sts_cmd.execute()
+
     def teleopExit(self):
-        pass
+        self.sts_cmd.end(True)
 
     def testInit(self):
         pass

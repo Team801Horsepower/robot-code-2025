@@ -43,7 +43,7 @@ class Chassis(Subsystem):
             ).positionConversionFactor(
                 pi * config.wheel_diameter / config.drive_gear_ratio
             )
-            drive_config.closedLoop.pid(*config.drive_pid)
+            drive_config.closedLoop.pid(*config.drive_pid_constants)
             swerve.drive_motor.configure(
                 drive_config,
                 SparkBase.ResetMode.kResetSafeParameters,
@@ -59,7 +59,7 @@ class Chassis(Subsystem):
             turn_config.encoder.positionConversionFactor(
                 2 * pi / config.turn_gear_ratio
             )
-            turn_config.closedLoop.pid(*config.turn_pid)
+            turn_config.closedLoop.pid(*config.turn_pid_constants)
             swerve.turn_motor.configure(
                 turn_config,
                 SparkBase.ResetMode.kResetSafeParameters,
