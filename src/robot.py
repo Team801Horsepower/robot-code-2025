@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from math import atan2, floor, pi
+from math import atan2, floor, pi, sqrt
 
 import wpilib
 
@@ -10,7 +10,7 @@ from commands2 import CommandScheduler
 from wpimath import units
 
 import config
-from subsystems import drive, periscope
+from subsystems import drive, periscope, vision
 
 
 class Robot(wpilib.TimedRobot):
@@ -23,6 +23,8 @@ class Robot(wpilib.TimedRobot):
         self.drive = drive.Drive(self.scheduler)
 
         self.periscope = periscope.Periscope(self.scheduler, self.drive.odometry.ahrs)
+
+        self.vision = vision.Vision(self.scheduler)
 
         self.driver_controller = wpilib.XboxController(0)
         self.manip_controller = wpilib.XboxController(1)
@@ -49,6 +51,46 @@ class Robot(wpilib.TimedRobot):
             "wrist pos",
             units.radiansToDegrees(self.periscope.arm.wrist.angle()),
         )
+
+        SmartDashboard.putNumber("heading", self.drive.odometry.rotation().degrees())
+
+        heading = self.drive.odometry.rotation().radians()
+        ntags, estimates = self.vision.estimate_multitag_pos(heading)
+        for i, ((id1, id2), (pos, conf)) in enumerate(estimates):
+            SmartDashboard.putNumber(f"x {i}", units.metersToInches(pos.x))
+            SmartDashboard.putNumber(f"y {i}", units.metersToInches(pos.y))
+            SmartDashboard.putNumber(f"confidence {i}", conf)
+            SmartDashboard.putString(f"pair {i}", f"{id1}–{id2}")
+
+        ntags = pos = conf = dev = heading_correction = None
+
+        ntags, report = self.vision.pos_report(heading)
+        if report is not None:
+            pos, conf, dev = report
+            SmartDashboard.putNumber("avg x", units.metersToInches(pos.x))
+            SmartDashboard.putNumber("avg y", units.metersToInches(pos.y))
+            SmartDashboard.putNumber("composite conf", conf)
+            SmartDashboard.putNumber("deviation", dev)
+
+            heading_correction = self.vision.heading_correction(heading)
+            if heading_correction is not None:
+                SmartDashboard.putNumber(
+                    "corrected heading", units.radiansToDegrees(heading_correction)
+                )
+            speeds = self.drive.chassis.chassis_speeds()
+            speed = sqrt(speeds.vx**2 + speeds.vy**2)
+            if conf >= 0.25 and speed < 0.15:
+                # if conf >= 0.2:
+                if heading_correction is not None and abs(
+                    heading_correction - heading
+                ) < units.degreesToRadians(5):
+                    # self.drive.odometry.reset_heading(Rotation2d(heading_correction))
+                    pass
+                self.drive.odometry.reset_translation(pos)
+
+        robot_pos = self.drive.odometry.pose().translation()
+        SmartDashboard.putNumber("robot x", robot_pos.x)
+        SmartDashboard.putNumber("robot y", robot_pos.y)
 
     def disabledInit(self):
         pass
