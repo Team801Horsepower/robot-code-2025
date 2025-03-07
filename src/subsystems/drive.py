@@ -1,5 +1,6 @@
 from subsystems.chassis import Chassis
 from subsystems.odometry import Odometry
+from subsystems.turn_signals import TurnSignals
 
 from wpimath.geometry import Transform2d
 from commands2 import CommandScheduler, Subsystem
@@ -7,8 +8,9 @@ from commands2 import CommandScheduler, Subsystem
 
 class Drive(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
-        self.chassis = Chassis()
-        self.odometry = Odometry()
+        self.chassis = Chassis(scheduler)
+        self.odometry = Odometry(scheduler)
+        self.turn_signals = TurnSignals(scheduler)
 
         scheduler.registerSubsystem(self)
 

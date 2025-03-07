@@ -7,14 +7,17 @@ from typing import Tuple
 
 import rev
 from rev import SparkMax, SparkFlex, SparkBaseConfig, SparkBase
+from commands2 import CommandScheduler, Subsystem
 from wpimath.geometry import Translation2d, Transform2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 from phoenix6.hardware.cancoder import CANcoder
 
 
 # pylint: disable=missing-docstring, too-few-public-methods
-class Chassis:
-    def __init__(self) -> None:
+class Chassis(Subsystem):
+    def __init__(self, scheduler: CommandScheduler) -> None:
+        scheduler.registerSubsystem(self)
+
         def make_swerve(t: Tuple[int, Tuple[int, int, int]]) -> Swerve:
             i, (drive_id, turn_id, cancoder_id) = t
             positional_offset = [-1 / 4, 1 / 2, 0, 1 / 4][i]
@@ -33,7 +36,7 @@ class Chassis:
             drive_config = (
                 SparkBaseConfig()
                 .inverted(False)
-                .setIdleMode(SparkBaseConfig.IdleMode.kBrake)
+                .setIdleMode(SparkBaseConfig.IdleMode.kCoast)
             )
             drive_config.encoder.velocityConversionFactor(
                 pi * config.wheel_diameter / 60 / config.drive_gear_ratio
@@ -65,6 +68,7 @@ class Chassis:
 
             # Prevs must be updated again after conversion factors were changed
             swerve.update_prevs()
+        scheduler.registerSubsystem(self)
 
     def set_swerves(self):
         for swerve in self.swerves:
