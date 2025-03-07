@@ -22,12 +22,12 @@ class Odometry(Subsystem):
         return Pose2d(self.translation.x, self.translation.y, self.rotation())
 
     def reset(self, pose: Pose2d = Pose2d()):
-        self.translation = pose.translation()
-        self.ahrs.setAngleAdjustment(0)
-        self.ahrs.setAngleAdjustment(
-            self.rotation().degrees() - pose.rotation().degrees()
-        )
-        self.ahrs.resetDisplacement()
+        # self.translation = pose.translation()
+        # self.ahrs.setAngleAdjustment(0)
+        # self.ahrs.setAngleAdjustment(
+        #     self.rotation().degrees() - pose.rotation().degrees()
+        # )
+        # self.ahrs.resetDisplacement()
         self.reset_translation(pose.translation())
         self.reset_heading(pose.rotation())
 
@@ -55,4 +55,6 @@ class Odometry(Subsystem):
             count += 1
 
         avg = total / count
-        self.translation += avg
+        # self.translation += avg
+        # Empirical scale factor lol
+        self.translation += avg / 1.028099649

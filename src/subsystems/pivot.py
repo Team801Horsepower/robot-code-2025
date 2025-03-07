@@ -1,5 +1,5 @@
 from commands2 import CommandScheduler, Subsystem
-from wpilib import DutyCycleEncoder
+from wpilib import DutyCycleEncoder, SmartDashboard
 from wpimath.controller import ProfiledPIDController
 from math import pi
 from wpimath.trajectory import TrapezoidProfile
@@ -72,6 +72,7 @@ class Pivot(Subsystem):
         self.set_power(pid_output + self.pivot_ff_power())
 
     def set_power(self, power: float):
+        SmartDashboard.putNumber("pivot power", power)
         power = clamp(-0.15, 0.15, power)
         for motor in self.pivot_motors:
             motor.set(power)

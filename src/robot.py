@@ -5,12 +5,16 @@ import wpilib
 
 from wpilib import SmartDashboard
 
-from wpimath.geometry import Transform2d
+from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
 from commands2 import CommandScheduler
 from wpimath import units
+import time
 
 import config
 from subsystems import drive, periscope, vision
+from commands.drive_to_pose import DriveToPose
+from commands.graph_pathfind import GraphPathfind
+from commands.target_reef import TargetReef
 
 
 class Robot(wpilib.TimedRobot):
@@ -35,8 +39,12 @@ class Robot(wpilib.TimedRobot):
 
         self.manip_setpoint = config.reef_setpoints[1]
 
+        self.last_loop = time.time()
+
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
+
+        SmartDashboard.putNumber("approach P", 15.0)
 
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
@@ -55,16 +63,17 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("heading", self.drive.odometry.rotation().degrees())
 
         heading = self.drive.odometry.rotation().radians()
-        ntags, estimates = self.vision.estimate_multitag_pos(heading)
-        for i, ((id1, id2), (pos, conf)) in enumerate(estimates):
-            SmartDashboard.putNumber(f"x {i}", units.metersToInches(pos.x))
-            SmartDashboard.putNumber(f"y {i}", units.metersToInches(pos.y))
-            SmartDashboard.putNumber(f"confidence {i}", conf)
-            SmartDashboard.putString(f"pair {i}", f"{id1}–{id2}")
+        # ntags, estimates = self.vision.estimate_multitag_pos(heading)
+        # for i, ((id1, id2), (pos, conf)) in enumerate(estimates):
+        # SmartDashboard.putNumber(f"x {i}", units.metersToInches(pos.x))
+        # SmartDashboard.putNumber(f"y {i}", units.metersToInches(pos.y))
+        # SmartDashboard.putNumber(f"confidence {i}", conf)
+        # SmartDashboard.putString(f"pair {i}", f"{id1}–{id2}")
 
-        ntags = pos = conf = dev = heading_correction = None
+        # ntags = pos = conf = dev = heading_correction = None
+        # pos = conf = dev = heading_correction = None
 
-        ntags, report = self.vision.pos_report(heading)
+        n_ests, report = self.vision.pos_report(heading)
         if report is not None:
             pos, conf, dev = report
             SmartDashboard.putNumber("avg x", units.metersToInches(pos.x))
@@ -72,25 +81,60 @@ class Robot(wpilib.TimedRobot):
             SmartDashboard.putNumber("composite conf", conf)
             SmartDashboard.putNumber("deviation", dev)
 
-            heading_correction = self.vision.heading_correction(heading)
-            if heading_correction is not None:
-                SmartDashboard.putNumber(
-                    "corrected heading", units.radiansToDegrees(heading_correction)
-                )
-            speeds = self.drive.chassis.chassis_speeds()
-            speed = sqrt(speeds.vx**2 + speeds.vy**2)
-            if conf >= 0.25 and speed < 0.15:
-                # if conf >= 0.2:
-                if heading_correction is not None and abs(
-                    heading_correction - heading
-                ) < units.degreesToRadians(5):
-                    # self.drive.odometry.reset_heading(Rotation2d(heading_correction))
-                    pass
+            SmartDashboard.putNumberArray("vision pose", [pos.x, pos.y, heading])
+
+            # heading_correction = self.vision.heading_correction(heading)
+            # if heading_correction is not None:
+            #     SmartDashboard.putNumber(
+            #         "corrected heading", units.radiansToDegrees(heading_correction)
+            #     )
+            # speeds = self.drive.chassis.chassis_speeds()
+            # speed = sqrt(speeds.vx**2 + speeds.vy**2)
+            # if conf >= 0.25 and speed < 0.15:
+            #     # if conf >= 0.2:
+            if n_ests > 1 and conf >= 0.35 and dev < 0.1:
+                # if heading_correction is not None and abs(
+                #     heading_correction - heading
+                # ) < units.degreesToRadians(5):
+                #     # self.drive.odometry.reset_heading(Rotation2d(heading_correction))
+                #     pass
                 self.drive.odometry.reset_translation(pos)
 
-        robot_pos = self.drive.odometry.pose().translation()
+        robot_pose = self.drive.odometry.pose()
+        robot_pos = robot_pose.translation()
         SmartDashboard.putNumber("robot x", robot_pos.x)
         SmartDashboard.putNumber("robot y", robot_pos.y)
+
+        SmartDashboard.putNumberArray("robot pose", [robot_pos.x, robot_pos.y, heading])
+
+        now = time.time()
+        took = now - self.last_loop
+        self.last_loop = now
+        SmartDashboard.putNumber("loop time (cs)", took * 100)
+
+        tag8_pose = self.vision.layout.getTagPose(8)
+        if tag8_pose is not None:
+            tag8_pos = tag8_pose.toPose2d().translation()
+            fr_swerve_pos = robot_pos + Translation2d(
+                config.robot_dimensions.x, -config.robot_dimensions.y
+            ).rotateBy(robot_pose.rotation())
+            dist = (fr_swerve_pos - tag8_pos).norm()
+            SmartDashboard.putNumber("tag8-FR swerve (in)", units.metersToInches(dist))
+
+        def get_yaw(i: int) -> float | None:
+            targets = self.vision.results[i].getTargets()
+            for target in targets:
+                if target.getFiducialId() == 8:
+                    return units.degreesToRadians(target.getYaw())
+            return None
+
+        left_yaw = get_yaw(0)
+        right_yaw = get_yaw(2)
+
+        if left_yaw is not None and right_yaw is not None:
+            SmartDashboard.putNumber(
+                "rp diff", units.radiansToDegrees(left_yaw - right_yaw)
+            )
 
     def disabledInit(self):
         pass
@@ -102,7 +146,20 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousInit(self):
-        pass
+        # dtp = DriveToPose(Pose2d(14.108, 6.0818, Rotation2d()), self.drive)
+        # dtp = DriveToPose(
+        #     Pose2d(16.485, 7.164, Rotation2d.fromDegrees(230)), self.drive
+        # )
+        # pose = self.drive.odometry.pose().transformBy(
+        #     Transform2d(units.inchesToMeters(-60), 0, 0)
+        # )
+        # dtp = DriveToPose(pose, self.drive)
+        # self.scheduler.schedule(dtp)
+        # self.periscope.arm.target = config.source_setpoint
+
+        self.periscope.arm.target = config.reef_setpoints[1]
+        tr = TargetReef(self.drive, self.vision, 9)
+        self.scheduler.schedule(tr)
 
     def autonomousPeriodic(self):
         pass
@@ -148,7 +205,7 @@ class Robot(wpilib.TimedRobot):
         )
         self.drive.drive(drive_input, self.field_oriented)
 
-        if self.driver_controller.getLeftStickButtonPressed():
+        if self.driver_controller.getYButtonPressed():
             self.drive.chassis.zero_swerves()
 
         if self.driver_controller.getStartButtonPressed():
