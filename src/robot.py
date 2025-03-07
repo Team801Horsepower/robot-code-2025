@@ -33,6 +33,9 @@ class Robot(wpilib.TimedRobot):
 
         self.manip_setpoint = config.reef_setpoints[1]
 
+        # TODO: this should not necessarily be the case
+        self.periscope.arm.should_extend = True
+
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
 
@@ -69,9 +72,11 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopInit(self):
-        self.periscope.arm.target = Transform2d(
-            config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
-        )
+        # self.periscope.arm.target = Transform2d(
+        #     config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
+        # )
+
+        self.periscope.arm.target = config.transit_setpoint
 
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
@@ -127,22 +132,36 @@ class Robot(wpilib.TimedRobot):
         elif self.manip_controller.getBackButtonPressed():
             self.manip_setpoint = config.barge_setpoint
 
-        if self.driver_controller.getRightBumper():
-            if (
-                self.driver_controller.getXButton()
-                or self.driver_controller.getBButton()
-            ):
-                setpoint = config.source_setpoint
-            else:
-                setpoint = self.manip_setpoint
-            self.periscope.arm.target = setpoint
-            self.periscope.arm.should_extend = True
-        elif self.driver_controller.getLeftBumper():
+        # if self.driver_controller.getRightBumper():
+        #     if (
+        #         self.driver_controller.getXButton()
+        #         or self.driver_controller.getBButton()
+        #     ):
+        #         setpoint = config.source_setpoint
+        #     else:
+        #         setpoint = self.manip_setpoint
+        #     self.periscope.arm.target = setpoint
+        #     self.periscope.arm.should_extend = True
+        # elif self.driver_controller.getLeftBumper():
+        #     self.periscope.arm.target = config.algae_reef_setpoints[1]
+        #     self.periscope.arm.should_extend = True
+        # else:
+        #     self.periscope.arm.target = config.transit_setpoint
+        #     self.periscope.arm.should_extend = False
+
+        if self.driver_controller.getRightBumperButtonPressed():
+            self.periscope.arm.target = self.manip_setpoint
+        elif (
+            self.driver_controller.getXButtonPressed()
+            or self.driver_controller.getBButtonPressed()
+        ):
+            self.periscope.arm.target = config.source_setpoint
+        elif self.driver_controller.getYButtonPressed():
+            self.periscope.arm.target = config.algae_reef_setpoints[0]
+        elif self.driver_controller.getLeftBumperButtonPressed():
             self.periscope.arm.target = config.algae_reef_setpoints[1]
-            self.periscope.arm.should_extend = True
-        else:
+        elif self.driver_controller.getAButtonPressed():
             self.periscope.arm.target = config.transit_setpoint
-            self.periscope.arm.should_extend = False
 
         # if self.driver_controller.getAButtonPressed():
         #     self.read_typed_ik_input()
