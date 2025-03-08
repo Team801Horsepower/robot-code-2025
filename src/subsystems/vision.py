@@ -32,16 +32,16 @@ class Vision(Subsystem):
                 Transform3d(
                     Translation3d(-0.11146, 0.2346, 0.27491),
                     Rotation3d(
-                        0, units.degreesToRadians(20), units.degreesToRadians(340)
+                        0, units.degreesToRadians(10), units.degreesToRadians(340)
                     ),
                 ),
             ),
             (
                 PhotonCamera("BackLeft"),
                 Transform3d(
-                    Translation3d(-0.16406, 0.25998, 0.277),
+                    Translation3d(-0.24952, -0.29624, 0.18149),
                     Rotation3d(
-                        0, units.degreesToRadians(25), units.degreesToRadians(150)
+                        0, units.degreesToRadians(45), units.degreesToRadians(150)
                     ),
                 ),
             ),
@@ -50,16 +50,16 @@ class Vision(Subsystem):
                 Transform3d(
                     Translation3d(-0.11146, -0.2346, 0.27491),
                     Rotation3d(
-                        0, units.degreesToRadians(20), units.degreesToRadians(20)
+                        0, units.degreesToRadians(10), units.degreesToRadians(20)
                     ),
                 ),
             ),
             (
                 PhotonCamera("BackRight"),
                 Transform3d(
-                    Translation3d(-0.16406, -0.25998, 0.277),
+                    Translation3d(0.24952, -0.29624, 0.10149),
                     Rotation3d(
-                        0, units.degreesToRadians(25), units.degreesToRadians(210)
+                        0, units.degreesToRadians(45), units.degreesToRadians(210)
                     ),
                 ),
             ),
@@ -113,7 +113,7 @@ class Vision(Subsystem):
 
     def estimate_multitag_pos(
         self,
-        robot_angle: float
+        robot_angle: float,
         # ) -> Tuple[int, List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]]:
     ) -> List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]:
         tag_info = []

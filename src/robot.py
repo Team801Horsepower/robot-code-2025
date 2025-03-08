@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from math import atan2, floor, pi, sqrt
+from math import atan2, floor, pi, sqrt, pow
 
 import wpilib
 
@@ -172,6 +172,8 @@ class Robot(wpilib.TimedRobot):
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         )
 
+        self.reef_selection = 0
+
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
         SmartDashboard.putNumber(
@@ -254,21 +256,23 @@ class Robot(wpilib.TimedRobot):
             - self.driver_controller.getRightTriggerAxis()
         )
         self.periscope.claw.set(claw_power)
-        fullcircle = lambda x: (2 * pi - abs(x)) if x < 0 else x
-        SmartDashboard.putNumber(
-            "reef selection",
-            floor(
+        if (
+            abs(self.manip_controller.getLeftX()) > 0.5
+            or abs(self.manip_controller.getLeftY()) > 0.5
+        ):
+            fullcircle = lambda x: (2 * pi - abs(x)) if x < 0 else x
+            self.reef_selection = floor(
                 6
                 * fullcircle(
                     atan2(
-                        self.manip_controller.getLeftY(),
+                        -self.manip_controller.getLeftY(),
                         self.manip_controller.getLeftX(),
                     )
                     + pi / 24
                 )
                 / pi
-            ),
-        )
+            )
+        SmartDashboard.putNumber("reef selection", self.reef_selection)
 
     def teleopExit(self):
         pass

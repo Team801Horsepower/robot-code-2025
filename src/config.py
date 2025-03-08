@@ -164,9 +164,9 @@ wrist_gear_ratio = 11.45
 
 reef_setpoints = [
     Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
-    Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
-    Transform2d(0.4, 1.29416, units.degreesToRadians(-7)),
-    Transform2d(0.3, 1.988, units.degreesToRadians(-20)),
+    Transform2d(0.45, 0.90237, units.degreesToRadians(-7)),
+    Transform2d(0.4, 1.31416, units.degreesToRadians(-7)),
+    Transform2d(0.32, 1.988, units.degreesToRadians(-15)),
 ]
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
 source_setpoint = Transform2d(-0.45, 0.87, units.degreesToRadians(143))

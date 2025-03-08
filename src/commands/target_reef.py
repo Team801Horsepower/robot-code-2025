@@ -27,9 +27,8 @@ class TargetReef(Command):
         self.strafe_pid = PIDController(3.0, 0, 0)
         self.theta_pid = PIDController(5.0, 5.0, 0.3)
 
-        # TODO: after front cameras are pitched down, remeasure these values
-        a = units.degreesToRadians(12.3)
-        b = units.degreesToRadians(11.8)
+        a = units.degreesToRadians(12.69)
+        b = units.degreesToRadians(10.04)
         # a = units.degreesToRadians(0)
         # b = units.degreesToRadians(13.9)
         left_stalk = stalk_i % 2 == 0
