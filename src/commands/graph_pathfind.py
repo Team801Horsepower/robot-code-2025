@@ -1,6 +1,6 @@
 from commands2 import Command
 from wpimath.geometry import Pose2d, Transform2d, Rotation2d, Translation2d
-from typing import Optional
+from typing import Optional, List
 
 from commands.drive_to_pose import DriveToPose
 

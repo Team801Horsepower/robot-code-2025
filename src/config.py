@@ -36,10 +36,10 @@ turn_gear_ratio = 41.25
 
 wheel_diameter = units.inchesToMeters(3)
 
-drive_speed = 2
-turn_speed = 4
-auto_drive_speed = 1
-auto_turn_speed = 3
+drive_speed = 4
+turn_speed = 6
+auto_drive_speed = 2
+auto_turn_speed = 4
 
 
 # drive id, turn id, cancoder id
@@ -77,9 +77,7 @@ claw_to_wrist_lengths = {
 coral_algae_pickup_angle = 1  # TODO: get real
 
 claw_up_down_lengths = (units.inchesToMeters(5), units.inchesToMeters(22))
-# TODO: Get real :()
 ik_boundary_distance = units.feetToMeters(1.5)
-# TODO: SET THIS; IK will not be able to put the claw below this point
 ik_floor = 0.2
 
 ik_neutral_x = 0.06846
@@ -169,7 +167,7 @@ reef_setpoints = [
     Transform2d(0.32, 1.988, units.degreesToRadians(-15)),
 ]
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
-source_setpoint = Transform2d(-0.45, 0.87, units.degreesToRadians(143))
+source_setpoint = Transform2d(-0.50, 0.87, units.degreesToRadians(160))
 
 ground_pickup_setpoint = (
     units.degreesToRadians(35),

@@ -21,10 +21,13 @@ class Claw(Subsystem):
         scheduler.registerSubsystem(self)
 
         self.coral_detected_time = time.time()
+        self.algae_detected_time = time.time()
 
     def periodic(self):
         if not self.coral_detected():
             self.coral_detected_time = time.time()
+        if not self.algae_detected():
+            self.algae_detected_time = time.time()
 
         SmartDashboard.putNumber("algae sensor value", self.algae_sensor.getValue())
         SmartDashboard.putBoolean("algae detected", self.algae_detected())
@@ -45,3 +48,6 @@ class Claw(Subsystem):
 
     def has_coral(self) -> bool:
         return time.time() - self.coral_detected_time > 0.025
+
+    def has_algae(self) -> bool:
+        return time.time() - self.algae_detected_time > 0.025

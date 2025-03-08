@@ -20,7 +20,7 @@ class TargetReef(Command):
 
         tag_ids = [10, 11, 6, 7, 8, 9] if config.is_red() else [21, 20, 19, 18, 17, 22]
         self.tag_id = tag_ids[int(stalk_i / 2)]
-        self.target_angle = 0 if config.is_red else pi
+        self.target_angle = pi if config.is_red else 0
         self.target_angle += pi / 3 * int(stalk_i / 2)
 
         self.approach_pid = PIDController(15.0, 0, 0)
@@ -104,9 +104,7 @@ class TargetReef(Command):
                 left_yaw + right_yaw - (self.left_target + self.right_target)
             ) < units.degreesToRadians(2) and abs(
                 left_yaw - right_yaw - (self.left_target - self.right_target)
-            ) < units.degreesToRadians(
-                2
-            )
+            ) < units.degreesToRadians(2)
 
         norm = drive_speed.norm()
         if norm > config.auto_drive_speed:
