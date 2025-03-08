@@ -12,9 +12,11 @@ import time
 
 import config
 from subsystems import drive, periscope, vision
+
 from commands.drive_to_pose import DriveToPose
 from commands.graph_pathfind import GraphPathfind
 from commands.target_reef import TargetReef
+from commands.place_coral import PlaceCoral
 
 
 class Robot(wpilib.TimedRobot):
@@ -157,9 +159,12 @@ class Robot(wpilib.TimedRobot):
         # self.scheduler.schedule(dtp)
         # self.periscope.arm.target = config.source_setpoint
 
-        self.periscope.arm.target = config.reef_setpoints[1]
-        tr = TargetReef(self.drive, self.vision, 9)
-        self.scheduler.schedule(tr)
+        # self.periscope.arm.target = config.reef_setpoints[1]
+        self.periscope.arm.target = config.transit_setpoint
+        tr = TargetReef(self.drive, self.vision, 8)
+        pc = PlaceCoral(self.periscope, 1)
+        self.scheduler.schedule(tr.andThen(pc))
+        # self.scheduler.schedule(pc)
 
     def autonomousPeriodic(self):
         pass
@@ -211,7 +216,9 @@ class Robot(wpilib.TimedRobot):
             self.drive.chassis.zero_swerves()
 
         if self.driver_controller.getStartButtonPressed():
-            self.drive.odometry.reset()
+            self.drive.odometry.reset(
+                Pose2d(Translation2d(), Rotation2d.fromDegrees(-120))
+            )
 
         # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
 

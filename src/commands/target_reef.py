@@ -24,16 +24,33 @@ class TargetReef(Command):
         self.target_angle += pi / 3 * int(stalk_i / 2)
 
         self.approach_pid = PIDController(15.0, 0, 0)
-        self.strafe_pid = PIDController(3.0, 0, 0)
-        self.theta_pid = PIDController(5.0, 5.0, 0.3)
+        self.strafe_pid = PIDController(10.0, 0, 0)
+        self.theta_pid = PIDController(6.0, 5.0, 0.3)
 
-        a = units.degreesToRadians(12.69)
-        b = units.degreesToRadians(10.04)
+        self.within_threshold = False
+
+        # a = units.degreesToRadians(11.66)
+        # b = units.degreesToRadians(12.11)
+        # a = units.degreesToRadians(11.37)
+        # b = units.degreesToRadians(10.35)
+        # a = units.degreesToRadians(12.69)
+        # b = units.degreesToRadians(10.04)
         # a = units.degreesToRadians(0)
         # b = units.degreesToRadians(13.9)
         left_stalk = stalk_i % 2 == 0
-        self.left_target = a if left_stalk else -b
-        self.right_target = b if left_stalk else -a
+        # self.left_target = a if left_stalk else -b
+        # self.right_target = b if left_stalk else -a
+
+        self.left_target = (
+            units.degreesToRadians(13.6)
+            if left_stalk
+            else units.degreesToRadians(-12.11)
+        )
+        self.right_target = (
+            units.degreesToRadians(13.75)
+            if left_stalk
+            else units.degreesToRadians(-11.66)
+        )
 
     def execute(self):
         new_p = SmartDashboard.getNumber("approach P", 15.0)
@@ -49,15 +66,8 @@ class TargetReef(Command):
         if abs(omega) > config.auto_turn_speed:
             omega = omega * config.auto_turn_speed / abs(omega)
 
-        def get_yaw(i: int) -> Optional[float]:
-            targets = self.vision.results[i].getTargets()
-            for target in targets:
-                if target.getFiducialId() == self.tag_id:
-                    return units.degreesToRadians(target.getYaw())
-            return None
-
-        left_yaw = get_yaw(0)
-        right_yaw = get_yaw(2)
+        left_yaw = self.get_yaw(0)
+        right_yaw = self.get_yaw(2)
 
         if left_yaw is None or right_yaw is None:
             drive_speed = Translation2d(0, 0)
@@ -69,7 +79,7 @@ class TargetReef(Command):
 
             left_power = self.strafe_pid.calculate(left_yaw, self.left_target)
             right_power = self.strafe_pid.calculate(right_yaw, self.right_target)
-            strafe_speed = (left_power + right_power) / 2
+            strafe_speed = left_power + right_power
             SmartDashboard.putNumber("strafe speed", strafe_speed)
 
             diff = left_yaw - right_yaw
@@ -81,14 +91,41 @@ class TargetReef(Command):
 
             drive_speed = Translation2d(approach_speed, strafe_speed)
 
+            SmartDashboard.putNumber("tr sum", left_yaw + right_yaw)
+            SmartDashboard.putNumber(
+                "tr sum target", self.left_target + self.right_target
+            )
+            SmartDashboard.putNumber("tr diff", left_yaw - right_yaw)
+            SmartDashboard.putNumber(
+                "tr diff target", self.left_target - self.right_target
+            )
+
+            self.within_threshold = abs(
+                left_yaw + right_yaw - (self.left_target + self.right_target)
+            ) < units.degreesToRadians(2) and abs(
+                left_yaw - right_yaw - (self.left_target - self.right_target)
+            ) < units.degreesToRadians(
+                2
+            )
+
         norm = drive_speed.norm()
         if norm > config.auto_drive_speed:
             drive_speed = drive_speed * config.auto_drive_speed / norm
 
-        drive_input = Transform2d(drive_speed, Rotation2d(omega))
+        if self.within_threshold:
+            drive_input = Transform2d()
+        else:
+            drive_input = Transform2d(drive_speed, Rotation2d(omega))
 
         self.drive.drive(drive_input)
 
     def isFinished(self) -> bool:
         # TODO
-        return False
+        return self.within_threshold
+
+    def get_yaw(self, i: int) -> Optional[float]:
+        targets = self.vision.results[i].getTargets()
+        for target in targets:
+            if target.getFiducialId() == self.tag_id:
+                return units.degreesToRadians(target.getYaw())
+        return None

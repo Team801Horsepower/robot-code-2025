@@ -68,7 +68,7 @@ class Elevator(Subsystem):
             motor.set(power)
 
     def at_extension(self) -> bool:
-        return False
+        return abs(self.get_extension() - self.target_extension) < 0.02
 
     def target_attainable(self) -> bool:
         return (
