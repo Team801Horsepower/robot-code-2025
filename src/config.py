@@ -18,7 +18,7 @@ def is_red() -> bool:
 
 
 def flip_red(pos: Translation2d) -> Translation2d:
-    return Translation2d(17.548, 8.0518) - pos
+    return Translation2d(17.548, 8.0518) - pos if is_red() else pos
 
 
 code_path = path.dirname(__file__) + "/"

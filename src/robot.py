@@ -46,7 +46,7 @@ class Robot(wpilib.TimedRobot):
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
 
-        SmartDashboard.putNumber("approach P", 15.0)
+        # SmartDashboard.putNumber("approach P", 15.0)
 
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
@@ -177,7 +177,7 @@ class Robot(wpilib.TimedRobot):
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         )
         self.reef_selection = 0
-        self.target_align_command = None
+        self.target_align_cmd = None
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
         self.setpoint = config.transit_setpoint
@@ -210,12 +210,16 @@ class Robot(wpilib.TimedRobot):
         # Driving
         self.field_oriented ^= self.driver_controller.getBackButtonPressed()
         if not (
-            self.target_align_command is not None
-            and self.target_align_command.isScheduled()
+            self.target_align_cmd is not None and self.target_align_cmd.isScheduled()
         ):
+            drive_speed = (
+                -config.drive_speed
+                if config.is_red() and self.field_oriented
+                else config.drive_speed
+            )
             drive_input = Transform2d(
-                deadzone(-self.driver_controller.getLeftY()) * config.drive_speed,
-                deadzone(-self.driver_controller.getLeftX()) * config.drive_speed,
+                deadzone(-self.driver_controller.getLeftY()) * drive_speed,
+                deadzone(-self.driver_controller.getLeftX()) * drive_speed,
                 deadzone(-self.driver_controller.getRightX()) * config.turn_speed,
             )
             self.drive.drive(drive_input, self.field_oriented)
@@ -225,7 +229,7 @@ class Robot(wpilib.TimedRobot):
 
         if self.driver_controller.getStartButtonPressed():
             self.drive.odometry.reset(
-                Pose2d(Translation2d(), Rotation2d.fromDegrees(0))
+                Pose2d(Translation2d(), Rotation2d(pi if config.is_red() else 0))
             )
         # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
         if self.manip_controller.getAButtonPressed():
@@ -243,32 +247,48 @@ class Robot(wpilib.TimedRobot):
         elif self.manip_controller.getLeftBumperButtonPressed():
             self.manip_setpoint = config.ground_pickup_setpoint
         elif self.manip_controller.getRightBumperButtonPressed():
-            self.manip_setpoint = config.algae_reef_setpoints[int(self.reef_selection/2)%2]
-        
+            self.manip_setpoint = config.algae_reef_setpoints[
+                int(self.reef_selection / 2) % 2
+            ]
+
         if self.driver_controller.getAButtonPressed():
             self.setpoint = config.transit_setpoint
         elif self.driver_controller.getRightStickButtonPressed():
             self.setpoint = config.source_setpoint
         elif self.driver_controller.getYButtonPressed():
-            self.setpoint = Transform2d(config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist)
+            self.setpoint = Transform2d(
+                config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
+            )
         elif self.driver_controller.getRightBumperButtonPressed():
             self.setpoint = self.manip_setpoint
-        elif self.driver_controller.getLeftBumperButtonPressed() and self.reef_selection is not None:
-            self.target_align_command = TargetReef(
+        elif (
+            self.driver_controller.getLeftBumperButtonPressed()
+            and self.reef_selection is not None
+        ):
+            self.target_align_cmd = TargetReef(
                 self.drive, self.vision, self.reef_selection
             )
-            self.scheduler.schedule(self.target_align_command)
-        elif self.driver_controller.getLeftBumperButtonReleased() and self.target_align_command is not None:
-            self.target_align_command.cancel()
+            self.scheduler.schedule(self.target_align_cmd)
+        elif (
+            self.driver_controller.getLeftBumperButtonReleased()
+            and self.target_align_cmd is not None
+        ):
+            self.target_align_cmd.cancel()
+            self.target_align_cmd = None
 
-        if (self.periscope.claw.has_algae() != self.algae_last) or (self.periscope.claw.has_coral() != self.coral_last):
-            self.scheduler.schedule(WaitCommand(1).andThen(InstantCommand(self.autolower)))
+        if (
+            self.periscope.claw.has_algae() != self.algae_last
+            or self.periscope.claw.has_coral() != self.coral_last
+        ):
+            self.scheduler.schedule(
+                WaitCommand(1).andThen(InstantCommand(self.autolower))
+            )
             self.coral_last = self.periscope.claw.has_coral()
             self.algae_last = self.periscope.claw.has_algae()
-        
+
         self.periscope.arm.target = self.setpoint
         self.periscope.arm.should_extend = True
-        
+
         # if self.right_bumper_toggle:
         #     setpoint = self.manip_setpoint
         #     if self.source_toggle:
@@ -312,17 +332,20 @@ class Robot(wpilib.TimedRobot):
             abs(self.manip_controller.getLeftX()) > 0.5
             or abs(self.manip_controller.getLeftY()) > 0.5
         ):
-            fullcircle = lambda x: (2 * pi - abs(x)) if x < 0 else x
+            # fullcircle = lambda x: 2 * pi - abs(x) if x < 0 else x
             self.reef_selection = floor(
                 6
-                * fullcircle(
-                    atan2(
-                        -self.manip_controller.getLeftY(),
-                        self.manip_controller.getLeftX(),
-                    )
-                    + ((7*pi) / 12)
-                )
                 / pi
+                * (
+                    (
+                        atan2(
+                            -self.manip_controller.getLeftY(),
+                            self.manip_controller.getLeftX(),
+                        )
+                        + 7 * pi / 12
+                    )
+                    % (2 * pi)
+                )
             )
         SmartDashboard.putNumber("reef selection", self.reef_selection)
 
