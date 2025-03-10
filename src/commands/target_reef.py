@@ -78,6 +78,10 @@ class TargetReef(Command):
             target_diff = self.left_target - self.right_target
             approach_speed = self.approach_pid.calculate(diff, target_diff)
 
+            # TODO: test this; not sure if the tan needs to be added or subtracted
+            diag_angle = (self.left_target + self.right_target) / 2
+            strafe_speed += approach_speed * tan(diag_angle)
+
             SmartDashboard.putNumber("strafe speed", strafe_speed)
             SmartDashboard.putNumber("approach speed", approach_speed)
 
