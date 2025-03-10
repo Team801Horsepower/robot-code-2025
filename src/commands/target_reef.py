@@ -70,9 +70,9 @@ class TargetReef(Command):
             SmartDashboard.putNumber("left target", self.left_target)
             SmartDashboard.putNumber("right target", self.right_target)
 
-            left_power = self.strafe_pid.calculate(left_yaw, self.left_target)
-            right_power = self.strafe_pid.calculate(right_yaw, self.right_target)
-            strafe_speed = left_power + right_power
+            strafe_speed = self.strafe_pid.calculate(
+                left_yaw + right_yaw, self.left_target + self.right_target
+            )
 
             diff = left_yaw - right_yaw
             target_diff = self.left_target - self.right_target
