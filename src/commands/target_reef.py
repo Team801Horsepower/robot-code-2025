@@ -10,6 +10,7 @@ from subsystems.drive import Drive
 from subsystems.vision import Vision
 
 import config
+from utils import clamp
 
 
 class TargetReef(Command):
@@ -20,7 +21,7 @@ class TargetReef(Command):
         tag_ids = [10, 11, 6, 7, 8, 9] if config.is_red() else [21, 20, 19, 18, 17, 22]
         face_i = int(stalk_i / 2)
         self.tag_id = tag_ids[face_i]
-        self.target_angle = 0 if config.is_red() else pi
+        self.target_angle = 0.0 if config.is_red() else pi
         self.target_angle += pi / 3 * face_i
 
         self.approach_pid = PIDController(15.0, 0, 0)
@@ -29,6 +30,12 @@ class TargetReef(Command):
         self.theta_pid = PIDController(6.0, 5.0, 0.3)
 
         self.within_threshold = False
+
+        # Camera frame yaw magnitude to use when determining when to
+        # restrict rotation to keep the target april tag in frame
+        self.camera_bound_yaw = units.degreesToRadians(25)
+        # P value with which to attempt to bound the rotation speed to keep the tag in frame
+        self.camera_bound_p = 3.0
 
         # a = units.degreesToRadians(11.66)
         # b = units.degreesToRadians(12.11)
@@ -56,8 +63,6 @@ class TargetReef(Command):
         while target_rot < rot - pi:
             target_rot += 2 * pi
         omega = self.theta_pid.calculate(rot, target_rot)
-        if abs(omega) > config.auto_turn_speed:
-            omega = omega * config.auto_turn_speed / abs(omega)
 
         left_yaw = self.get_yaw(0)
         right_yaw = self.get_yaw(2)
@@ -96,6 +101,22 @@ class TargetReef(Command):
                 "tr diff target", self.left_target - self.right_target
             )
 
+            # Restrict rotation if it would cause the tag to exit the frame
+            # TODO: is the sign right?
+            omega = clamp(
+                max(
+                    left_yaw - self.camera_bound_yaw,
+                    right_yaw - self.camera_bound_yaw,
+                )
+                * self.camera_bound_p,
+                min(
+                    left_yaw + self.camera_bound_yaw,
+                    right_yaw + self.camera_bound_yaw,
+                )
+                * self.camera_bound_p,
+                omega,
+            )
+
             sum_within_threshold = abs(
                 left_yaw + right_yaw - (self.left_target + self.right_target)
             ) < units.degreesToRadians(2)
@@ -107,6 +128,8 @@ class TargetReef(Command):
         norm = drive_speed.norm()
         if norm > config.auto_drive_speed:
             drive_speed = drive_speed * config.auto_drive_speed / norm
+        if abs(omega) > config.auto_turn_speed:
+            omega = omega * config.auto_turn_speed / abs(omega)
 
         if self.within_threshold:
             drive_input = Transform2d()
@@ -123,5 +146,11 @@ class TargetReef(Command):
         targets = self.vision.results[i].getTargets()
         for target in targets:
             if target.getFiducialId() == self.tag_id:
-                return units.degreesToRadians(target.getYaw())
+                return (
+                    units.degreesToRadians(target.getYaw())
+                    # Approximately correct for heading error
+                    # TODO: this correction element is not tested
+                    + self.drive.odometry.rotation().radians()
+                    - self.target_angle
+                )
         return None
