@@ -95,24 +95,22 @@ class TargetTag(Command):
             target_rot += 2 * pi
         omega = self.theta_pid.calculate(rot, target_rot)
 
-        # left_yaw = self.get_yaw(0)
-        # right_yaw = self.get_yaw(2)
-        left_yaw = self.get_param(self.left_i, self.get_left)
-        right_yaw = self.get_param(self.right_i, self.get_right)
+        left_param = self.get_param(self.left_i, self.get_left)
+        right_param = self.get_param(self.right_i, self.get_right)
 
-        if left_yaw is None or right_yaw is None:
+        if left_param is None or right_param is None:
             drive_speed = Translation2d(0, 0)
         else:
-            SmartDashboard.putNumber("left yaw", left_yaw)
-            SmartDashboard.putNumber("right yaw", right_yaw)
+            SmartDashboard.putNumber("left yaw", left_param)
+            SmartDashboard.putNumber("right yaw", right_param)
             SmartDashboard.putNumber("left target", self.left_target)
             SmartDashboard.putNumber("right target", self.right_target)
 
             strafe_speed = self.strafe_pid.calculate(
-                left_yaw + right_yaw, self.left_target + self.right_target
+                left_param + right_param, self.left_target + self.right_target
             )
 
-            diff = left_yaw - right_yaw
+            diff = left_param - right_param
             target_diff = self.left_target - self.right_target
             approach_speed = self.approach_pid.calculate(diff, target_diff)
 
@@ -127,14 +125,14 @@ class TargetTag(Command):
             drive_speed = Translation2d(approach_speed, strafe_speed)
 
             SmartDashboard.putNumber(
-                "tt sum", units.radiansToDegrees(left_yaw + right_yaw)
+                "tt sum", units.radiansToDegrees(left_param + right_param)
             )
             SmartDashboard.putNumber(
                 "tt sum target",
                 units.radiansToDegrees(self.left_target + self.right_target),
             )
             SmartDashboard.putNumber(
-                "tt diff", units.radiansToDegrees(left_yaw - right_yaw)
+                "tt diff", units.radiansToDegrees(left_param - right_param)
             )
             SmartDashboard.putNumber(
                 "tt diff target",
@@ -142,24 +140,24 @@ class TargetTag(Command):
             )
 
             # Restrict rotation if it would cause the tag to exit the frame
-            # TODO: is the sign right?
+            # TODO: only use this for yaw angles, not pitch angles
             omega_min = self.camera_bound_p * max(
-                -self.camera_bound_yaw - left_yaw,
-                -self.camera_bound_yaw - right_yaw,
+                -self.camera_bound_yaw - left_param,
+                -self.camera_bound_yaw - right_param,
             )
             omega_max = self.camera_bound_p * min(
-                self.camera_bound_yaw - left_yaw,
-                self.camera_bound_yaw - right_yaw,
+                self.camera_bound_yaw - left_param,
+                self.camera_bound_yaw - right_param,
             )
             SmartDashboard.putNumber("omega min", omega_min)
             SmartDashboard.putNumber("omega max", omega_max)
             omega = clamp(omega_min, omega_max, omega)
 
             sum_within_threshold = abs(
-                left_yaw + right_yaw - (self.left_target + self.right_target)
+                left_param + right_param - (self.left_target + self.right_target)
             ) < units.degreesToRadians(0.5)
             diff_within_threshold = abs(
-                left_yaw - right_yaw - (self.left_target - self.right_target)
+                left_param - right_param - (self.left_target - self.right_target)
             ) < units.degreesToRadians(0.5)
             self.within_threshold = sum_within_threshold and diff_within_threshold
 
