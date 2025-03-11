@@ -10,21 +10,29 @@ from commands.target_tag import TargetTag
 import config
 
 
-class TargetReef(TargetTag):
-    def __init__(self, drive: Drive, vision: Vision, stalk_i: int):
+class TargetHPS(TargetTag):
+    def __init__(self, drive: Drive, vision: Vision, left_hps: bool):
         self.drive_ = drive
         self.vision_ = vision
 
-        tag_ids = [10, 11, 6, 7, 8, 9] if config.is_red() else [21, 20, 19, 18, 17, 22]
-        face_i = int(stalk_i / 2)
-        self.tag_id_ = tag_ids[face_i]
-        self.target_angle_ = 0.0 if config.is_red() else pi
-        self.target_angle_ += pi / 3 * face_i
+        self.target_angle_ = units.degreesToRadians(48)
+        if left_hps:
+            self.target_angle_ *= -1
+        if config.is_red():
+            self.target_angle_ += pi
 
-        left_stalk = stalk_i % 2 == 0
+        match (left_hps, config.is_red()):
+            case (False, False):
+                self.tag_id_ = 12
+            case (False, True):
+                self.tag_id_ = 2
+            case (True, False):
+                self.tag_id_ = 13
+            case (True, True):
+                self.tag_id_ = 1
 
-        self.left_target_ = units.degreesToRadians(13.6 if left_stalk else -12.11)
-        self.right_target_ = units.degreesToRadians(13.75 if left_stalk else -11.66)
+        self.left_target_ = units.degreesToRadians(9.4)
+        self.right_target_ = units.degreesToRadians(12.234)
 
         super().__init__()
 
@@ -54,20 +62,20 @@ class TargetReef(TargetTag):
 
     @property
     def left_i(self) -> int:
-        return 0
+        return 1
 
     @property
     def right_i(self) -> int:
-        return 2
+        return self.left_i
 
     @property
     def get_left(self) -> Callable[[PhotonTrackedTarget], float]:
-        return lambda target: target.getYaw()
+        return lambda target: -target.getYaw()
 
     @property
     def get_right(self) -> Callable[[PhotonTrackedTarget], float]:
-        return self.get_left
+        return lambda target: target.getPitch()
 
     @property
     def use_diag(self) -> bool:
-        return True
+        return False

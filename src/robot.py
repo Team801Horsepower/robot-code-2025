@@ -15,7 +15,10 @@ from subsystems import drive, periscope, vision
 
 from commands.drive_to_pose import DriveToPose
 from commands.graph_pathfind import GraphPathfind
+
+# from commands.target_reef import TargetReef
 from commands.target_reef import TargetReef
+from commands.target_hps import TargetHPS
 from commands.place_coral import PlaceCoral
 
 
@@ -173,9 +176,6 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopInit(self):
-        self.periscope.arm.target = Transform2d(
-            config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
-        )
         self.reef_selection = 0
         self.target_align_cmd = None
         self.right_bumper_toggle = False
@@ -224,9 +224,6 @@ class Robot(wpilib.TimedRobot):
             )
             self.drive.drive(drive_input, self.field_oriented)
 
-        if self.driver_controller.getYButtonPressed():
-            self.drive.chassis.zero_swerves()
-
         if self.driver_controller.getStartButtonPressed():
             self.drive.odometry.reset(
                 Pose2d(Translation2d(), Rotation2d(pi if config.is_red() else 0))
@@ -265,9 +262,10 @@ class Robot(wpilib.TimedRobot):
             self.driver_controller.getLeftBumperButtonPressed()
             and self.reef_selection is not None
         ):
-            self.target_align_cmd = TargetReef(
-                self.drive, self.vision, self.reef_selection
-            )
+            # self.target_align_cmd = TargetReef(
+            #     self.drive, self.vision, self.reef_selection
+            # )
+            self.target_align_cmd = TargetHPS(self.drive, self.vision, False)
             self.scheduler.schedule(self.target_align_cmd)
         elif (
             self.driver_controller.getLeftBumperButtonReleased()
@@ -276,15 +274,15 @@ class Robot(wpilib.TimedRobot):
             self.target_align_cmd.cancel()
             self.target_align_cmd = None
 
-        if (
-            self.periscope.claw.has_algae() != self.algae_last
-            or self.periscope.claw.has_coral() != self.coral_last
-        ):
-            self.scheduler.schedule(
-                WaitCommand(1).andThen(InstantCommand(self.autolower))
-            )
-            self.coral_last = self.periscope.claw.has_coral()
-            self.algae_last = self.periscope.claw.has_algae()
+        # if (
+        #     self.periscope.claw.has_algae() != self.algae_last
+        #     or self.periscope.claw.has_coral() != self.coral_last
+        # ):
+        #     self.scheduler.schedule(
+        #         WaitCommand(1).andThen(InstantCommand(self.autolower))
+        #     )
+        #     self.coral_last = self.periscope.claw.has_coral()
+        #     self.algae_last = self.periscope.claw.has_algae()
 
         self.periscope.arm.target = self.setpoint
         self.periscope.arm.should_extend = True
