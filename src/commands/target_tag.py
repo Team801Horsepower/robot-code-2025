@@ -27,9 +27,10 @@ class TargetTag(Command):
 
         # Camera frame yaw magnitude to use when determining when to
         # restrict rotation to keep the target april tag in frame
-        self.camera_bound_yaw = units.degreesToRadians(25)
+        # self.camera_bound_yaw = units.degreesToRadians(25)
+        self.camera_bound_yaw = units.degreesToRadians(28)
         # P value with which to attempt to bound the rotation speed to keep the tag in frame
-        self.camera_bound_p = 5.0
+        self.camera_bound_p = 15.0
 
     @property
     @abstractmethod
@@ -166,6 +167,8 @@ class TargetTag(Command):
             drive_speed = drive_speed * config.auto_drive_speed / norm
         if abs(omega) > config.auto_turn_speed:
             omega = omega * config.auto_turn_speed / abs(omega)
+
+        SmartDashboard.putNumber("omega", omega)
 
         if self.within_threshold:
             drive_input = Transform2d()

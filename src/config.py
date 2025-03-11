@@ -39,7 +39,7 @@ wheel_diameter = units.inchesToMeters(3)
 drive_speed = 4
 turn_speed = 6
 auto_drive_speed = 2
-auto_turn_speed = 4
+auto_turn_speed = 6
 
 
 # drive id, turn id, cancoder id

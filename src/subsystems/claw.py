@@ -4,6 +4,7 @@ from wpilib import AnalogInput, DigitalInput, SmartDashboard
 import time
 
 import config
+from utils import clamp
 
 
 class Claw(Subsystem):
@@ -38,6 +39,7 @@ class Claw(Subsystem):
     def set(self, power: float):
         if self.has_coral():
             power = max(power, 0)
+        power = clamp(-0.75, 1, power)
         self.motor.set(power)
 
     def algae_detected(self) -> bool:

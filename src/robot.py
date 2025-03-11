@@ -15,11 +15,10 @@ from subsystems import drive, periscope, vision
 
 from commands.drive_to_pose import DriveToPose
 from commands.graph_pathfind import GraphPathfind
-
-# from commands.target_reef import TargetReef
 from commands.target_reef import TargetReef
 from commands.target_hps import TargetHPS
 from commands.place_coral import PlaceCoral
+from commands.collect_coral import CollectCoral
 
 
 class Robot(wpilib.TimedRobot):
@@ -164,10 +163,22 @@ class Robot(wpilib.TimedRobot):
 
         # self.periscope.arm.target = config.reef_setpoints[1]
         self.periscope.arm.target = config.transit_setpoint
-        tr = TargetReef(self.drive, self.vision, 8)
-        pc = PlaceCoral(self.periscope, 1)
-        self.scheduler.schedule(tr.andThen(pc))
+        # tr = TargetReef(self.drive, self.vision, 8)
+        # pc = PlaceCoral(self.periscope, 1)
+        # self.scheduler.schedule(tr.andThen(pc))
         # self.scheduler.schedule(pc)
+
+        def transit():
+            self.periscope.arm.target = config.transit_setpoint
+
+        cmd = (
+            CollectCoral(self.periscope, False)
+            .deadlineWith(TargetHPS(self.drive, self.vision, False))
+            .andThen(InstantCommand(transit))
+            .andThen(TargetReef(self.drive, self.vision, 8))
+            .andThen(PlaceCoral(self.periscope, 1))
+        )
+        self.scheduler.schedule(cmd)
 
     def autonomousPeriodic(self):
         pass
