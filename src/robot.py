@@ -176,7 +176,8 @@ class Robot(wpilib.TimedRobot):
             .deadlineWith(TargetHPS(self.drive, self.vision, False))
             .andThen(InstantCommand(transit))
             .andThen(TargetReef(self.drive, self.vision, 8))
-            .andThen(PlaceCoral(self.periscope, 1))
+            # .andThen(PlaceCoral(self.periscope, 1))
+            .andThen(PlaceCoral(self.periscope))
         )
         self.scheduler.schedule(cmd)
 
@@ -296,7 +297,7 @@ class Robot(wpilib.TimedRobot):
         #     self.algae_last = self.periscope.claw.has_algae()
 
         self.periscope.arm.target = self.setpoint
-        self.periscope.arm.should_extend = True
+        # self.periscope.arm.should_extend = True
 
         # if self.right_bumper_toggle:
         #     setpoint = self.manip_setpoint

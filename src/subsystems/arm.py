@@ -24,7 +24,7 @@ class Arm(Subsystem):
 
         self.target: Optional[Transform2d | Tuple[float, float, float]] = None
         self.use_algae = False
-        self.should_extend = False
+        # self.should_extend = False
         self._target_outofbounds = False
 
         self.wrist_passthrough_allowed_by_algae = True
@@ -138,14 +138,19 @@ class Arm(Subsystem):
             )
             self.wrist.target_angle = target_wrist
 
-            if self.should_extend:
-                target_elevator = clamp(
-                    config.extension_range[0],
-                    config.extension_range[1],
-                    wrist_position.norm(),
-                )
-            else:
-                target_elevator = config.extension_range[0]
+            # if self.should_extend:
+            #     target_elevator = clamp(
+            #         config.extension_range[0],
+            #         config.extension_range[1],
+            #         wrist_position.norm(),
+            #     )
+            # else:
+            #     target_elevator = config.extension_range[0]
+            target_elevator = clamp(
+                config.extension_range[0],
+                config.extension_range[1],
+                wrist_position.norm(),
+            )
             SmartDashboard.putNumber("IK elevator extension", target_elevator)
             self.elevator.target_extension = target_elevator
         else:
