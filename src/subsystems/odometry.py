@@ -4,6 +4,7 @@ from commands2 import CommandScheduler, Subsystem
 
 
 from subsystems.chassis import Chassis
+import config
 
 
 class Odometry(Subsystem):
@@ -58,3 +59,12 @@ class Odometry(Subsystem):
         # self.translation += avg
         # Empirical scale factor lol
         self.translation += avg / 1.028099649
+
+    def near_reef(self):
+        return (self.pose().translation() - config.flip_red(Translation2d(4.5, 4))).norm() < 2 #center of reef
+
+    def near_source(self):
+        return (
+        (self.pose().translation() - config.flip_red(Translation2d(0.85, 0.65))).norm() < 1.5
+            or (self.pose().translation() - config.flip_red(Translation2d(0.85, 7.35))).norm() < 1.5
+        )

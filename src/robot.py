@@ -11,7 +11,7 @@ from wpimath import units
 import time
 
 import config
-from subsystems import drive, periscope, vision
+from subsystems import drive, odometry, periscope, vision
 
 from commands.drive_to_pose import DriveToPose
 from commands.graph_pathfind import GraphPathfind
@@ -48,6 +48,12 @@ class Robot(wpilib.TimedRobot):
         self.manip_setpoint = config.transit_setpoint
 
         self.last_loop = time.time()
+        
+        # Change variables = -1 if we left the zone, 1 if we entered
+        self.last_near_reef = False
+        self.near_reef_change = 0
+        self.last_near_source = False
+        self.near_source_change = 0
 
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
@@ -58,6 +64,11 @@ class Robot(wpilib.TimedRobot):
         # This line must always be present in robotPeriodic, or else
         # commands and subsystem periodic methods will not run
         self.scheduler.run()
+
+        self.near_reef_change = self.drive.odometry.near_reef() - self.last_near_reef
+        self.last_near_reef = self.drive.odometry.near_reef()
+        self.near_source_change = self.drive.odometry.near_source() - self.last_near_source
+        self.last_near_source = self.drive.odometry.near_source()
 
         SmartDashboard.putNumber("pivot angle", self.periscope.arm.pivot.get_angle())
         SmartDashboard.putNumber(
@@ -203,8 +214,6 @@ class Robot(wpilib.TimedRobot):
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
         self.setpoint = config.transit_setpoint
-        self.coral_last = False
-        self.algae_last = False
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
         SmartDashboard.putNumber(
@@ -296,17 +305,14 @@ class Robot(wpilib.TimedRobot):
             self.target_align_cmd.cancel()
             self.target_align_cmd = None
 
-        # if (
-        #     self.periscope.claw.has_algae() != self.algae_last
-        #     or self.periscope.claw.has_coral() != self.coral_last
-        # ):
-        #     self.scheduler.schedule(
-        #         WaitCommand(1).andThen(InstantCommand(self.autolower))
-        #     )
-        #     self.coral_last = self.periscope.claw.has_coral()
-        #     self.algae_last = self.periscope.claw.has_algae()
+            self.setpoint = config.transit_setpoint
 
+        if self.should_autolower() and self.setpoint != Transform2d(config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist):
+            self.setpoint = config.transit_setpoint
+            
         self.periscope.arm.target = self.setpoint
+
+
         # self.periscope.arm.should_extend = True
 
         # if self.right_bumper_toggle:
@@ -413,9 +419,8 @@ class Robot(wpilib.TimedRobot):
             new_wrist_target,
         )
 
-    def autolower(self):
-        self.setpoint = config.transit_setpoint
-
+    def should_autolower(self):
+        return (self.near_reef_change == -1 or self.near_source_change == -1)
 
 if __name__ == "__main__":
     wpilib.run(Robot)
