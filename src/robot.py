@@ -420,7 +420,7 @@ class Robot(wpilib.TimedRobot):
         )
 
     def should_autolower(self):
-        return (self.near_reef_change == -1 or self.near_source_change == -1)
+        return ((self.near_reef_change == -1 and not (self.periscope.claw.has_algae() or self.periscope.claw.has_coral())) or (self.near_source_change == -1 and self.periscope.claw.has_coral()))
 
 if __name__ == "__main__":
     wpilib.run(Robot)
