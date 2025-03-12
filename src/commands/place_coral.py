@@ -25,12 +25,7 @@ class PlaceCoral(Command):
             self.periscope.claw.set(1)
             if self.score_time is None:
                 self.score_time = time.time()
-        # TODO: I think replacing the else with the following
-        #       will fix the issue where it wasn't fully scoring
-        #       the coral, but I'm writing this after the meeting
-        #       ended and so it's not tested.
-        # elif self.score_time is None or self.finished:
-        else:
+        elif self.score_time is None or self.finished:
             self.periscope.claw.set(0)
 
     def isFinished(self) -> bool:
