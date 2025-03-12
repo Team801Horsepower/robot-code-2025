@@ -20,6 +20,7 @@ class GraphPathfind(Command):
         # note_vision: NoteVision,
         # chase_note: bool = False,
         target_rot_override: Optional[Rotation2d] = None,
+        final_passthrough: float = 0.1,
     ):
         self.target = target
         self.graph = graph
@@ -27,9 +28,10 @@ class GraphPathfind(Command):
         # self.note_vision = note_vision
         self.path: Optional[List[Translation2d]] = None
         self.dtp: Optional[DriveToPose] = None
-        self.target_rot: Optional[Rotation2d] = None
+        self.target_rot: Rotation2d = Rotation2d()
         # self.chase_note = chase_note
         self.target_rot_override = target_rot_override
+        self.final_passthrough = final_passthrough
 
     def initialize(self):
         self.path = self.graph.create_path(
@@ -45,7 +47,7 @@ class GraphPathfind(Command):
             return
         # cur_pos = self.drive.odometry.pose().translation()
         if self.dtp is None:
-            passthrough = 0.1 if len(self.path) == 1 else 0.4
+            passthrough = self.final_passthrough if len(self.path) == 1 else 0.4
             target_pose = Pose2d(self.path[0], self.target_rot)
             dtp = DriveToPose(target_pose, self.drive, passthrough=passthrough)
             # if self.chase_note and len(self.path) == 1:

@@ -11,6 +11,8 @@ from utils import format_table
 # -- General --
 
 g = 9.81
+field_width = 8.0518
+field_length = 17.548
 
 
 def is_red() -> bool:
@@ -18,7 +20,7 @@ def is_red() -> bool:
 
 
 def flip_red(pos: Translation2d) -> Translation2d:
-    return Translation2d(17.548, 8.0518) - pos if is_red() else pos
+    return Translation2d(field_length, field_width) - pos if is_red() else pos
 
 
 code_path = path.dirname(__file__) + "/"

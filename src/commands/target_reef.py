@@ -16,10 +16,10 @@ class TargetReef(TargetTag):
         self.vision_ = vision
 
         tag_ids = [10, 11, 6, 7, 8, 9] if config.is_red() else [21, 20, 19, 18, 17, 22]
-        face_i = int(stalk_i / 2)
-        self.tag_id_ = tag_ids[face_i]
+        self.face_i = int(stalk_i / 2)
+        self.tag_id_ = tag_ids[self.face_i]
         self.target_angle_ = 0.0 if config.is_red() else pi
-        self.target_angle_ += pi / 3 * face_i
+        self.target_angle_ += pi / 3 * self.face_i
 
         left_stalk = stalk_i % 2 == 0
 

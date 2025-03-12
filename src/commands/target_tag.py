@@ -87,6 +87,12 @@ class TargetTag(Command):
     def use_diag(self) -> bool:
         pass
 
+    def get_left_param(self) -> Optional[float]:
+        return self.get_param(self.left_i, self.get_left)
+
+    def get_right_param(self) -> Optional[float]:
+        return self.get_param(self.right_i, self.get_right)
+
     def execute(self):
         rot = self.drive.odometry.rotation().radians()
         target_rot = self.target_angle
@@ -96,8 +102,8 @@ class TargetTag(Command):
             target_rot += 2 * pi
         omega = self.theta_pid.calculate(rot, target_rot)
 
-        left_param = self.get_param(self.left_i, self.get_left)
-        right_param = self.get_param(self.right_i, self.get_right)
+        left_param = self.get_left_param()
+        right_param = self.get_right_param()
 
         if left_param is None or right_param is None:
             drive_speed = Translation2d(0, 0)

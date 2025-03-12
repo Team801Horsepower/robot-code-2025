@@ -19,6 +19,10 @@ from commands.target_reef import TargetReef
 from commands.target_hps import TargetHPS
 from commands.place_coral import PlaceCoral
 from commands.collect_coral import CollectCoral
+from commands.approach_reef import ApproachReef
+from commands.approach_hps import ApproachHPS
+
+from utils.graph import Graph
 
 
 class Robot(wpilib.TimedRobot):
@@ -150,6 +154,9 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousInit(self):
+        graph_path = config.code_path + "graph.json"
+        graph = Graph(graph_path)
+
         # dtp = DriveToPose(Pose2d(14.108, 6.0818, Rotation2d()), self.drive)
         # dtp = DriveToPose(
         #     Pose2d(16.485, 7.164, Rotation2d.fromDegrees(230)), self.drive
@@ -173,10 +180,13 @@ class Robot(wpilib.TimedRobot):
 
         cmd = (
             CollectCoral(self.periscope, False)
-            .deadlineWith(TargetHPS(self.drive, self.vision, False))
+            .deadlineWith(
+                ApproachHPS(self.drive, self.vision, self.periscope.arm, graph, False)
+            )
             .andThen(InstantCommand(transit))
-            .andThen(TargetReef(self.drive, self.vision, 8))
-            # .andThen(PlaceCoral(self.periscope, 1))
+            .andThen(
+                ApproachReef(self.drive, self.vision, self.periscope.arm, graph, 11, 1)
+            )
             .andThen(PlaceCoral(self.periscope))
         )
         self.scheduler.schedule(cmd)
