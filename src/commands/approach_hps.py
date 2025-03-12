@@ -64,8 +64,8 @@ class ApproachHPS(Command):
                 self.current_cmd = self.th_cmd
                 self.current_cmd.initialize()
         elif isinstance(self.current_cmd, TargetHPS):
-            # TODO: change to condition of near reef
-            if True:
+            # TODO: Test this
+            if self.drive.odometry.near_source():
                 self.arm.target = config.source_setpoint
 
             # if self.current_cmd.isFinished():

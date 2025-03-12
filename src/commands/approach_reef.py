@@ -62,8 +62,8 @@ class ApproachReef(Command):
                 self.current_cmd = self.tr_cmd
                 self.current_cmd.initialize()
         elif isinstance(self.current_cmd, TargetReef):
-            # TODO: change to condition of near reef
-            if True:
+            # TODO: Test this
+            if self.drive.odometry.near_reef():
                 self.arm.target = config.reef_setpoints[self.target_level]
 
         self.current_cmd.execute()
