@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from math import atan2, floor, pi, sqrt, pow
+from math import sin, atan2, floor, pi
 
 import wpilib
 
@@ -71,6 +71,10 @@ class Robot(wpilib.TimedRobot):
         # This line must always be present in robotPeriodic, or else
         # commands and subsystem periodic methods will not run
         self.scheduler.run()
+
+        self.drive.elevator_height = self.periscope.arm.elevator.get_extension() * sin(
+            self.periscope.arm.pivot.get_angle()
+        )
 
         self.near_reef_change = self.drive.odometry.near_reef() - self.last_near_reef
         self.last_near_reef = self.drive.odometry.near_reef()

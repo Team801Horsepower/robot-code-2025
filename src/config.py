@@ -43,6 +43,15 @@ turn_speed = 6
 auto_drive_speed = 2
 auto_turn_speed = 6
 
+drive_acc_lim: List[Tuple[float, ...]] = format_table(
+    [
+        (0, 1),
+        (1, 1),
+        (2, 1),
+        (3, 1),
+        (4, 1),
+    ]
+)
 
 # drive id, turn id, cancoder id
 swerves = [
