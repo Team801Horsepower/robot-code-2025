@@ -382,10 +382,25 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testInit(self):
-        pass
+        SmartDashboard.putNumber(
+            "new pivot target",
+            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+        )
+        SmartDashboard.putNumber(
+            "new elevator target", self.periscope.arm.elevator.target_extension
+        )
+        SmartDashboard.putNumber(
+            "new wrist target",
+            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        )
+        SmartDashboard.putNumber("hff", 0.0065)
 
     def testPeriodic(self):
-        pass
+        if self.driver_controller.getAButtonPressed():
+            self.read_typed_arm_input()
+            entry = list(config.elevator_dynamics_table[5])
+            entry[1] = SmartDashboard.getNumber("hff", 0.0065)
+            config.elevator_dynamics_table[5] = tuple(entry)
 
     def testExit(self):
         pass
@@ -408,7 +423,7 @@ class Robot(wpilib.TimedRobot):
             )
         )
         new_extension_target = SmartDashboard.getNumber(
-            "new elevator target", self.periscope.arm.pivot.target_angle
+            "new elevator target", self.periscope.arm.elevator.target_extension
         )
         new_wrist_target = units.degreesToRadians(
             SmartDashboard.getNumber(

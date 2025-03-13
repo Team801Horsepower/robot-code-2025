@@ -73,7 +73,7 @@ class Pivot(Subsystem):
 
     def set_power(self, power: float):
         SmartDashboard.putNumber("pivot power", power)
-        power = clamp(-0.15, 0.15, power)
+        power = clamp(-0.25, 0.25, power)
         for motor in self.pivot_motors:
             motor.set(power)
 
