@@ -162,10 +162,10 @@ class TargetTag(Command):
 
             sum_within_threshold = abs(
                 left_param + right_param - (self.left_target + self.right_target)
-            ) < units.degreesToRadians(0.8)
+            ) < units.degreesToRadians(1.0)
             diff_within_threshold = abs(
                 left_param - right_param - (self.left_target - self.right_target)
-            ) < units.degreesToRadians(0.8)
+            ) < units.degreesToRadians(1.0)
             self.within_threshold = sum_within_threshold and diff_within_threshold
 
         norm = drive_speed.norm()

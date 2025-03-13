@@ -108,8 +108,8 @@ pivot_pid_constants: List[Tuple[float, ...]] = format_table([
     (0.7366, 0.65, 0, 0),
     (0.9165968599, 0.55, 0, 0),
     (1.276590580, 0.30, 0, 0),
-    (1.636584300, 0.15, 0, 0),
-    (1.906579590, 0.10, 0, 0),
+    (1.636584300, 0.25, 0, 0),
+    (1.906579590, 0.2, 0, 0),
 ])
 
 # (extension, acc)
@@ -167,7 +167,8 @@ reef_setpoints = [
     Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
     Transform2d(0.45, 0.90237, units.degreesToRadians(-7)),
     Transform2d(0.4, 1.31416, units.degreesToRadians(-7)),
-    Transform2d(0.32, 1.988, units.degreesToRadians(-15)),
+    # Transform2d(0.32, 1.988, units.degreesToRadians(-15)),
+    Transform2d(0.58, 1.988, units.degreesToRadians(-26)),
 ]
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
 source_setpoint = Transform2d(-0.50, 0.87, units.degreesToRadians(160))

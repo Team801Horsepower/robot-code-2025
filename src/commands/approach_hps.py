@@ -1,9 +1,10 @@
 from commands2 import Command
 from wpimath.geometry import Rotation2d, Translation2d
+from wpimath import units
 
 from subsystems.drive import Drive
 from subsystems.vision import Vision
-from subsystems.arm import Arm
+from subsystems.periscope import Periscope
 
 from commands.graph_pathfind import GraphPathfind
 from commands.target_hps import TargetHPS
@@ -17,13 +18,13 @@ class ApproachHPS(Command):
         self,
         drive: Drive,
         vision: Vision,
-        arm: Arm,
+        periscope: Periscope,
         graph: Graph,
         left_hps: bool,
     ):
         self.drive = drive
         self.vision = vision
-        self.arm = arm
+        self.periscope = periscope
 
         self.left_hps = left_hps
 
@@ -58,7 +59,12 @@ class ApproachHPS(Command):
             tag_seen = (
                 self.th_cmd.get_left_param() is not None
                 and self.th_cmd.get_right_param() is not None
+                and abs(
+                    self.th_cmd.target_angle - self.drive.odometry.rotation().radians()
+                )
+                < units.degreesToRadians(6)
             )
+            self.periscope.claw.set(0)
             if self.current_cmd.isFinished() or tag_seen:
                 self.current_cmd.end(False)
                 self.current_cmd = self.th_cmd
@@ -66,7 +72,8 @@ class ApproachHPS(Command):
         elif isinstance(self.current_cmd, TargetHPS):
             # TODO: Test this
             if self.drive.odometry.near_source():
-                self.arm.target = config.source_setpoint
+                self.periscope.arm.target = config.source_setpoint
+                self.periscope.claw.set(-1)
 
             # if self.current_cmd.isFinished():
             #     self.current_cmd.end(False)
@@ -75,11 +82,12 @@ class ApproachHPS(Command):
         self.current_cmd.execute()
 
     def isFinished(self) -> bool:
-        return (
-            # isinstance(self.current_cmd, PlaceCoral) and self.current_cmd.isFinished()
-            isinstance(self.current_cmd, TargetHPS)
-            and self.current_cmd.isFinished()
-        )
+        # return (
+        #     # isinstance(self.current_cmd, PlaceCoral) and self.current_cmd.isFinished()
+        #     isinstance(self.current_cmd, TargetHPS)
+        #     and self.current_cmd.isFinished()
+        # )
+        return self.periscope.claw.has_coral()
 
     def end(self, interrupted: bool):
         self.current_cmd.end(interrupted)

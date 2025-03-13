@@ -6,8 +6,15 @@ import wpilib
 from wpilib import SmartDashboard
 
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
-from commands2 import CommandScheduler, FunctionalCommand, InstantCommand, WaitCommand
+from commands2 import (
+    CommandScheduler,
+    FunctionalCommand,
+    InstantCommand,
+    WaitCommand,
+    Command,
+)
 from wpimath import units
+from functools import reduce
 import time
 
 import config
@@ -72,7 +79,9 @@ class Robot(wpilib.TimedRobot):
         )
         self.last_near_source = self.drive.odometry.near_source()
 
-        SmartDashboard.putNumber("pivot angle", self.periscope.arm.pivot.get_angle())
+        SmartDashboard.putNumber(
+            "pivot angle", units.radiansToDegrees(self.periscope.arm.pivot.get_angle())
+        )
         SmartDashboard.putNumber(
             "elevator extension", self.periscope.arm.elevator.get_extension()
         )
@@ -191,18 +200,47 @@ class Robot(wpilib.TimedRobot):
         def transit():
             self.periscope.arm.target = config.transit_setpoint
 
-        cmd = (
-            CollectCoral(self.periscope, False)
-            .deadlineWith(
-                ApproachHPS(self.drive, self.vision, self.periscope.arm, graph, False)
+        branches = [
+            (8, 3),
+            (8, 2),
+            (8, 1),
+        ]
+
+        cmds = []
+        for branch in branches:
+            cmd = (
+                # CollectCoral(self.periscope, False)
+                # .deadlineWith(
+                #     ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
+                # )
+                InstantCommand(transit)
+                .andThen(
+                    ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
+                )
+                .andThen(InstantCommand(transit))
+                .andThen(
+                    ApproachReef(
+                        self.drive, self.vision, self.periscope.arm, graph, *branch
+                    )
+                )
+                .andThen(PlaceCoral(self.periscope))
             )
-            .andThen(InstantCommand(transit))
-            .andThen(
-                ApproachReef(self.drive, self.vision, self.periscope.arm, graph, 11, 2)
-            )
-            .andThen(PlaceCoral(self.periscope))
-        )
-        self.scheduler.schedule(cmd)
+            cmds.append(cmd)
+
+        self.scheduler.schedule(reduce(Command.andThen, cmds))
+
+        # cmd = (
+        #     CollectCoral(self.periscope, False)
+        #     .deadlineWith(
+        #         ApproachHPS(self.drive, self.vision, self.periscope.arm, graph, False)
+        #     )
+        #     .andThen(InstantCommand(transit))
+        #     .andThen(
+        #         ApproachReef(self.drive, self.vision, self.periscope.arm, graph, 11, 2)
+        #     )
+        #     .andThen(PlaceCoral(self.periscope))
+        # )
+        # self.scheduler.schedule(cmd)
 
     def autonomousPeriodic(self):
         pass
@@ -295,10 +333,10 @@ class Robot(wpilib.TimedRobot):
             self.driver_controller.getLeftBumperButtonPressed()
             and self.reef_selection is not None
         ):
-            # self.target_align_cmd = TargetReef(
-            #     self.drive, self.vision, self.reef_selection
-            # )
-            self.target_align_cmd = TargetHPS(self.drive, self.vision, False)
+            self.target_align_cmd = TargetReef(
+                self.drive, self.vision, self.reef_selection
+            )
+            # self.target_align_cmd = TargetHPS(self.drive, self.vision, False)
             self.scheduler.schedule(self.target_align_cmd)
         elif (
             self.driver_controller.getLeftBumperButtonReleased()
@@ -306,8 +344,6 @@ class Robot(wpilib.TimedRobot):
         ):
             self.target_align_cmd.cancel()
             self.target_align_cmd = None
-
-            self.setpoint = config.transit_setpoint
 
         if self.should_autolower() and self.setpoint != Transform2d(
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
@@ -393,14 +429,21 @@ class Robot(wpilib.TimedRobot):
             "new wrist target",
             units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
         )
+        SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
+        SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
+        units.degreesToRadians(
+            SmartDashboard.putNumber(
+                "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
+            )
+        )
         SmartDashboard.putNumber("hff", 0.0065)
 
     def testPeriodic(self):
         if self.driver_controller.getAButtonPressed():
-            self.read_typed_arm_input()
-            entry = list(config.elevator_dynamics_table[5])
-            entry[1] = SmartDashboard.getNumber("hff", 0.0065)
-            config.elevator_dynamics_table[5] = tuple(entry)
+            self.read_typed_ik_input()
+            # entry = list(config.elevator_dynamics_table[5])
+            # entry[1] = SmartDashboard.getNumber("hff", 0.0065)
+            # config.elevator_dynamics_table[5] = tuple(entry)
 
     def testExit(self):
         pass
