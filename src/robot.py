@@ -83,17 +83,6 @@ class Robot(wpilib.TimedRobot):
         )
         self.last_near_source = self.drive.odometry.near_source()
 
-        SmartDashboard.putNumber(
-            "pivot angle", units.radiansToDegrees(self.periscope.arm.pivot.get_angle())
-        )
-        SmartDashboard.putNumber(
-            "elevator extension", self.periscope.arm.elevator.get_extension()
-        )
-        SmartDashboard.putNumber(
-            "wrist pos",
-            units.radiansToDegrees(self.periscope.arm.wrist.angle()),
-        )
-
         SmartDashboard.putNumber("heading", self.drive.odometry.rotation().degrees())
 
         heading = self.drive.odometry.rotation().radians()

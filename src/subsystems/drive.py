@@ -23,7 +23,7 @@ class Drive(Subsystem):
     def drive(self, vel: Transform2d, field_oriented: bool = False):
         slew_rate_limit = utils.lerp_over_table(
             config.drive_acc_lim, self.elevator_height
-        )[1]
+        )[0]
         if field_oriented:
             translation = vel.translation().rotateBy(-self.odometry.rotation())
             vel = Transform2d(translation, vel.rotation())

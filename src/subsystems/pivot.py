@@ -3,6 +3,7 @@ from wpilib import DutyCycleEncoder, SmartDashboard
 from wpimath.controller import ProfiledPIDController
 from math import pi
 from wpimath.trajectory import TrapezoidProfile
+from wpimath import units
 from rev import SparkFlex, SparkBaseConfig
 from navx import AHRS
 
@@ -65,6 +66,13 @@ class Pivot(Subsystem):
                 1000,
                 lerp_over_table(config.pivot_acc_lim, self.elevator.get_extension())[0],
             )
+        )
+
+        SmartDashboard.putNumber(
+            "pivot angle", units.radiansToDegrees(self.get_angle())
+        )
+        SmartDashboard.putNumber(
+            "pivot target", units.radiansToDegrees(self.target_angle)
         )
 
     def target_target_angle(self, target: float):

@@ -1,6 +1,7 @@
 from commands2 import CommandScheduler, Subsystem
 from rev import SparkFlex, SparkFlexConfig
 from wpimath.controller import PIDController
+from wpilib import SmartDashboard
 
 import config
 from utils import lerp_over_table, clamp
@@ -56,12 +57,18 @@ class Elevator(Subsystem):
         self.target_target_extension(target)
         self.extension = self.update_extension()
 
+        SmartDashboard.putNumber("elevator extension", self.get_extension())
+        SmartDashboard.putNumber("elevator target", self.target_extension)
+
     def target_target_extension(self, target):
         target = clamp(
             config.extension_range[0] + 0.01, config.extension_range[1], target
         )
         pid_output = self.extension_pid.calculate(self.extension, target)
-        self.set_power(pid_output + config.elevator_ff_power)
+        power = pid_output + config.elevator_ff_power
+        self.set_power(power)
+
+        SmartDashboard.putNumber("elevator power", power)
 
     def set_power(self, power: float):
         for motor in self.extension_motors:
