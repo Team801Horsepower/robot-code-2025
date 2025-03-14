@@ -203,14 +203,7 @@ class Robot(wpilib.TimedRobot):
         cmds = []
         for branch in branches:
             cmd = (
-                # CollectCoral(self.periscope, False)
-                # .deadlineWith(
-                #     ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
-                # )
-                InstantCommand(transit)
-                .andThen(
-                    ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
-                )
+                ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
                 .andThen(InstantCommand(transit))
                 .andThen(
                     ApproachReef(
@@ -221,7 +214,8 @@ class Robot(wpilib.TimedRobot):
             )
             cmds.append(cmd)
 
-        self.scheduler.schedule(reduce(Command.andThen, cmds))
+        cmd = InstantCommand(transit).andThen(reduce(Command.andThen, cmds))
+        self.scheduler.schedule(cmd)
 
         # cmd = (
         #     CollectCoral(self.periscope, False)
@@ -237,7 +231,7 @@ class Robot(wpilib.TimedRobot):
         # self.scheduler.schedule(cmd)
 
     def autonomousPeriodic(self):
-        pass
+        self.autolower()
 
     def autonomousExit(self):
         pass
@@ -247,7 +241,7 @@ class Robot(wpilib.TimedRobot):
         self.target_align_cmd = None
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
-        self.setpoint = config.transit_setpoint
+        self.periscope.arm.target = config.transit_setpoint
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
         SmartDashboard.putNumber(
@@ -319,15 +313,15 @@ class Robot(wpilib.TimedRobot):
             ]
 
         if self.driver_controller.getAButtonPressed():
-            self.setpoint = config.transit_setpoint
+            self.periscope.arm.target = config.transit_setpoint
         elif self.driver_controller.getRightStickButtonPressed():
-            self.setpoint = config.source_setpoint
+            self.periscope.arm.target = config.source_setpoint
         elif self.driver_controller.getYButtonPressed():
-            self.setpoint = Transform2d(
+            self.periscope.arm.target = Transform2d(
                 config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
             )
         elif self.driver_controller.getRightBumperButtonPressed():
-            self.setpoint = self.manip_setpoint
+            self.periscope.arm.target = self.manip_setpoint
         elif (
             self.driver_controller.getLeftBumperButtonPressed()
             and self.reef_selection is not None
@@ -344,12 +338,7 @@ class Robot(wpilib.TimedRobot):
             self.target_align_cmd.cancel()
             self.target_align_cmd = None
 
-        if self.should_autolower() and self.setpoint != Transform2d(
-            config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
-        ):
-            self.setpoint = config.transit_setpoint
-
-        self.periscope.arm.target = self.setpoint
+        self.autolower()
 
         # self.periscope.arm.should_extend = True
 
@@ -484,6 +473,12 @@ class Robot(wpilib.TimedRobot):
             self.near_reef_change == -1
             and not (self.periscope.claw.has_algae() or self.periscope.claw.has_coral())
         ) or (self.near_source_change == -1 and self.periscope.claw.has_coral())
+
+    def autolower(self):
+        if self.should_autolower() and self.periscope.arm.target != Transform2d(
+            config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
+        ):
+            self.periscope.arm.target = config.transit_setpoint
 
 
 if __name__ == "__main__":

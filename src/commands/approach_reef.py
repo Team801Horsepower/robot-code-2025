@@ -57,10 +57,10 @@ class ApproachReef(Command):
             tag_seen = (
                 self.tr_cmd.get_left_param() is not None
                 and self.tr_cmd.get_right_param() is not None
-                and abs(
-                    self.tr_cmd.target_angle - self.drive.odometry.rotation().radians()
-                )
-                < units.degreesToRadians(6)
+                # and abs(
+                #     self.tr_cmd.target_angle - self.drive.odometry.rotation().radians()
+                # )
+                # < units.degreesToRadians(20)
             )
             if self.current_cmd.isFinished() or tag_seen:
                 self.current_cmd.end(False)
