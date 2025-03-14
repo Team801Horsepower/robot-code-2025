@@ -1,6 +1,8 @@
+from math import pi
 from navx import AHRS
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d
 from commands2 import CommandScheduler, Subsystem
+from wpimath.units import inchesToMeters
 
 
 from subsystems.chassis import Chassis
@@ -70,4 +72,22 @@ class Odometry(Subsystem):
             self.pose().translation() - config.flip_red(Translation2d(0.85, 0.65))
         ).norm() < 1.5 or (
             self.pose().translation() - config.flip_red(Translation2d(0.85, 7.35))
+        ).norm() < 1.5
+
+    def near_targeted_stalk(self, stalk: int):
+        # return (
+        #     (
+        #         self.pose().translation() -
+        #         config.flip_red(Translation2d(4.5, 4)) +
+        #                         Translation2d(inchesToMeters(32.75),
+        #                             Rotation2d((pi if config.is_red() else 0)
+        #                             + (pi/3)*int(stalk/2)))).norm() < 1.5
+        # )
+        return (
+            self.pose().translation()
+            - config.flip_red(Translation2d(4.5, 4))
+            + Translation2d(
+                inchesToMeters(32.75),
+                Rotation2d((pi if config.is_red() else 0) + pi / 3 * int(stalk / 2)),
+            )
         ).norm() < 1.5
