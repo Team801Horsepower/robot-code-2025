@@ -46,6 +46,7 @@ class Elevator(Subsystem):
         self.extension_pid = PIDController(*config.extension_pid_constants)
 
         self.extension: float = config.extension_range[0]
+        self.extension_vel: float = 0
 
         # Whether the wrist position is high enough to allow the elevator to lower
         self.wrist_up = True
@@ -55,7 +56,7 @@ class Elevator(Subsystem):
         if not self.wrist_up:
             target = max(target, config.wrist_passthrough_min_extension)
         self.target_target_extension(target)
-        self.extension = self.update_extension()
+        self.update_extension()
 
         SmartDashboard.putNumber("elevator extension", self.get_extension())
         SmartDashboard.putNumber("elevator target", self.target_extension)
@@ -65,7 +66,13 @@ class Elevator(Subsystem):
             config.extension_range[0] + 0.01, config.extension_range[1], target
         )
         pid_output = self.extension_pid.calculate(self.extension, target)
-        power = pid_output + config.elevator_ff_power
+
+        resist_component = (
+            -self.resist_coef * self.extension_vel * abs(self.extension_vel)
+        )
+
+        power = pid_output + config.elevator_ff_power + resist_component
+
         self.set_power(power)
 
         SmartDashboard.putNumber("elevator power", power)
@@ -83,10 +90,15 @@ class Elevator(Subsystem):
             and self.target_extension <= config.extension_range[1]
         )
 
-    def update_extension(self) -> float:
-        return (
+    def update_extension(self):
+        self.extension = (
             self.extension_motor_encoders[0].getPosition() * config.extension_ratio
             + config.extension_range[0]
+        )
+
+        # Why do encoders output velocity in RPM :(
+        self.extension_vel = (
+            self.extension_motor_encoders[0].getVelocity() / 60 * config.extension_ratio
         )
 
     def get_extension(self) -> float:
@@ -99,3 +111,7 @@ class Elevator(Subsystem):
     @property
     def moi(self):
         return lerp_over_table(config.elevator_dynamics_table, self.extension)[1]
+
+    @property
+    def resist_coef(self) -> float:
+        return 0.08

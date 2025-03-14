@@ -146,7 +146,7 @@ elevator_dynamics_table: List[Tuple[float, ...]] = format_table([
 ])
 # fmt: on
 extension_motor_ids = [40, 41]
-extension_pid_constants = (5.555652474, 0, 0)
+extension_pid_constants = (4, 0, 0)
 extension_pid_constraint_constants = (1, 10)
 elevator_ff_power = 0.02
 
