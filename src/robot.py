@@ -133,7 +133,7 @@ class Robot(wpilib.TimedRobot):
         now = time.time()
         took = now - self.last_loop
         self.last_loop = now
-        SmartDashboard.putNumber("loop time (cs)", took * 100)
+        SmartDashboard.putNumber("loop time", took)
 
         tag8_pose = self.vision.layout.getTagPose(8)
         if tag8_pose is not None:
@@ -292,6 +292,10 @@ class Robot(wpilib.TimedRobot):
             self.drive.odometry.reset(
                 Pose2d(Translation2d(), Rotation2d(pi if config.is_red() else 0))
             )
+
+        if self.driver_controller.getPOV() == 180:
+            self.drive.chassis.zero_swerves()
+
         # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
         if self.manip_controller.getAButtonPressed():
             self.manip_setpoint = config.reef_setpoints[0]

@@ -1,4 +1,7 @@
 from typing import List, Tuple
+import time
+
+from wpilib import SmartDashboard
 
 
 def lerp_over_table(table: List[Tuple[float, ...]], x: float) -> Tuple[float, ...]:
@@ -26,3 +29,16 @@ def format_table(table: List[Tuple[float, ...]]) -> List[Tuple[float, ...]]:
 
 def clamp(lower: float, upper: float, x: float) -> float:
     return max(lower, min(upper, x))
+
+
+def time_f(name: str):
+    def wrapper(f):
+        def new_f(*args):
+            start = time.time()
+            f(*args)
+            took = time.time() - start
+            SmartDashboard.putNumber(f"{name} took", took)
+
+        return new_f
+
+    return wrapper

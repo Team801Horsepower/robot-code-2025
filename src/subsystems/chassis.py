@@ -1,7 +1,7 @@
 from subsystems.swerve import Swerve
 import config
 
-from math import pi
+from math import pi, atan2, isfinite
 from functools import reduce
 from typing import Tuple
 
@@ -96,21 +96,24 @@ class Chassis(Subsystem):
                 )
             return
 
+        # Normalizing involves dividing by (radius * 2), but converting from
+        # angular velocity to linear velocity means multiplying by radius,
+        # leaving only a division by 2.
+        base_rot_vec = config.robot_dimensions / 2.0 * vel.rotation().radians()
+
         swerves = zip(
             self.swerves,
             [(1, 1), (-1, 1), (1, -1), (-1, -1)],
         )
         for swerve, pos in swerves:
-            # Normalizing involves dividing by (radius * 2), but converting from
-            # angular velocity to linear velocity means multiplying by radius,
-            # leaving only a division by 2.
-            rot_vec = config.robot_dimensions / 2.0 * vel.rotation().radians()
             # Negate components according to coordinates and rotate 90° counterclockwise.
-            rot_vec = Translation2d(-rot_vec.y * pos[1], rot_vec.x * pos[0])
+            rot_vec = Translation2d(-base_rot_vec.y * pos[1], base_rot_vec.x * pos[0])
 
             total_vec = rot_vec + vel.translation()
 
-            turn_angle = total_vec.angle().radians()
+            turn_angle = atan2(total_vec.y, total_vec.x)
+            if not isfinite(turn_angle):
+                turn_angle = 0
             drive_speed = total_vec.norm()
 
             cur_position = swerve.turn_encoder.getPosition()
