@@ -31,8 +31,7 @@ class Drive(Subsystem):
         )[0]
         filtered_vel = self.slew_rate_limiter(slew_rate_limit, vel.translation())
         self.last_filtered_vel = filtered_vel
-        # self.chassis.drive(Transform2d(filtered_vel, vel.rotation()))
-        self.chassis.drive(vel)
+        self.chassis.drive(Transform2d(filtered_vel, vel.rotation()))
 
     def slew_rate_limiter(self, limit: float, velocity: Translation2d) -> Translation2d:
         delta_time = time.time() - self.last_update_time

@@ -36,7 +36,7 @@ class Chassis(Subsystem):
             drive_config = (
                 SparkBaseConfig()
                 .inverted(False)
-                .setIdleMode(SparkBaseConfig.IdleMode.kCoast)
+                .setIdleMode(SparkBaseConfig.IdleMode.kBrake)
             )
             drive_config.encoder.velocityConversionFactor(
                 pi * config.wheel_diameter / 60 / config.drive_gear_ratio
