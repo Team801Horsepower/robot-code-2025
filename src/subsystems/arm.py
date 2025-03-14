@@ -3,7 +3,7 @@ from wpilib import SmartDashboard
 from wpimath.geometry import Rotation2d, Transform2d, Translation2d
 from wpimath.units import radiansToDegrees, degreesToRadians
 from typing import Optional, Tuple
-from math import pi
+from math import pi, atan2
 from navx import AHRS
 
 from subsystems.pivot import Pivot
@@ -110,10 +110,13 @@ class Arm(Subsystem):
                 )
                 self._target_outofbounds = True
 
+            angle_to_wrist = atan2(wrist_position.y, wrist_position.x)
+
             target_pivot = clamp(
                 degreesToRadians(50),
                 degreesToRadians(100),
-                wrist_position.angle().radians(),
+                # wrist_position.angle().radians(),
+                angle_to_wrist,
             )
 
             SmartDashboard.putNumber(
@@ -127,7 +130,8 @@ class Arm(Subsystem):
                 config.wrist_limits[1],
                 pi
                 - (
-                    wrist_position.angle().radians()
+                    # wrist_position.angle().radians()
+                    angle_to_wrist
                     - self.pivot_relative_target.rotation().radians()
                     + float(self.use_algae) * config.coral_algae_pickup_angle
                 ),

@@ -1,6 +1,7 @@
 from commands2 import Command
 from wpimath.geometry import Pose2d, Transform2d, Rotation2d, Translation2d
 from typing import Optional, List
+from math import atan2, isfinite
 
 from commands.drive_to_pose import DriveToPose
 
@@ -37,8 +38,15 @@ class GraphPathfind(Command):
         self.path = self.graph.create_path(
             self.drive.odometry.pose().translation(), self.target
         )
+        final_vec = self.path[-1] - self.path[-2]
+        final_vec_angle = atan2(final_vec.y, final_vec.x)
+        if not isfinite(final_vec_angle):
+            final_vec_angle = 0
+        # self.target_rot = self.target_rot_override or (
+        #     (self.path[-1] - self.path[-2]).angle() + Rotation2d.fromDegrees(180)
+        # )
         self.target_rot = self.target_rot_override or (
-            (self.path[-1] - self.path[-2]).angle() + Rotation2d.fromDegrees(180)
+            Rotation2d(final_vec_angle) + Rotation2d.fromDegrees(180)
         )
 
     def execute(self):
