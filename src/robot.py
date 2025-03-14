@@ -30,6 +30,7 @@ from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
 
 from utils.graph import Graph
+from utils import time_f
 
 
 class Robot(wpilib.TimedRobot):
@@ -265,6 +266,7 @@ class Robot(wpilib.TimedRobot):
             units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
         )
 
+    @time_f("teleop periodic")
     def teleopPeriodic(self):
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:
