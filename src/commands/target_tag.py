@@ -148,17 +148,17 @@ class TargetTag(Command):
 
             # Restrict rotation if it would cause the tag to exit the frame
             # TODO: only use this for yaw angles, not pitch angles
-            omega_min = self.camera_bound_p * max(
-                -self.camera_bound_yaw - left_param,
-                -self.camera_bound_yaw - right_param,
-            )
-            omega_max = self.camera_bound_p * min(
-                self.camera_bound_yaw - left_param,
-                self.camera_bound_yaw - right_param,
-            )
-            SmartDashboard.putNumber("omega min", omega_min)
-            SmartDashboard.putNumber("omega max", omega_max)
-            omega = clamp(omega_min, omega_max, omega)
+            # omega_min = self.camera_bound_p * max(
+            #     -self.camera_bound_yaw - left_param,
+            #     -self.camera_bound_yaw - right_param,
+            # )
+            # omega_max = self.camera_bound_p * min(
+            #     self.camera_bound_yaw - left_param,
+            #     self.camera_bound_yaw - right_param,
+            # )
+            # SmartDashboard.putNumber("omega min", omega_min)
+            # SmartDashboard.putNumber("omega max", omega_max)
+            # omega = clamp(omega_min, omega_max, omega)
 
             sum_within_threshold = abs(
                 left_param + right_param - (self.left_target + self.right_target)

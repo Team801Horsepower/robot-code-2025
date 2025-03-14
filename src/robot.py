@@ -32,6 +32,8 @@ from commands.approach_hps import ApproachHPS
 from utils.graph import Graph
 from utils import time_f
 
+from auto_actions import make_auto_methods
+
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
@@ -191,31 +193,31 @@ class Robot(wpilib.TimedRobot):
         # self.scheduler.schedule(tr.andThen(pc))
         # self.scheduler.schedule(pc)
 
-        def transit():
-            self.periscope.arm.target = config.transit_setpoint
+        # def transit():
+        #     self.periscope.arm.target = config.transit_setpoint
 
-        branches = [
-            (8, 3),
-            (8, 2),
-            (8, 1),
-        ]
+        # branches = [
+        #     (8, 3),
+        #     (8, 2),
+        #     (8, 1),
+        # ]
 
-        cmds = []
-        for branch in branches:
-            cmd = (
-                ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
-                .andThen(InstantCommand(transit))
-                .andThen(
-                    ApproachReef(
-                        self.drive, self.vision, self.periscope.arm, graph, *branch
-                    )
-                )
-                .andThen(PlaceCoral(self.periscope))
-            )
-            cmds.append(cmd)
+        # cmds = []
+        # for branch in branches:
+        #     cmd = (
+        #         ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
+        #         .andThen(InstantCommand(transit))
+        #         .andThen(
+        #             ApproachReef(
+        #                 self.drive, self.vision, self.periscope.arm, graph, *branch
+        #             )
+        #         )
+        #         .andThen(PlaceCoral(self.periscope))
+        #     )
+        #     cmds.append(cmd)
 
-        cmd = InstantCommand(transit).andThen(reduce(Command.andThen, cmds))
-        self.scheduler.schedule(cmd)
+        # cmd = InstantCommand(transit).andThen(reduce(Command.andThen, cmds))
+        # self.scheduler.schedule(cmd)
 
         # cmd = (
         #     CollectCoral(self.periscope, False)
@@ -229,6 +231,29 @@ class Robot(wpilib.TimedRobot):
         #     .andThen(PlaceCoral(self.periscope))
         # )
         # self.scheduler.schedule(cmd)
+
+        g, s = make_auto_methods(self.drive, self.vision, self.periscope, graph)
+        # cmds = [
+        #     s(11, 3),
+        #     g(False),
+        #     s(8, 3),
+        #     g(False),
+        #     s(8, 2),
+        # ]
+        cmds = [
+            s(11, 3),
+            g(False),
+            s(8, 3),
+            g(False),
+            s(11, 2),
+            g(False),
+            s(8, 2),
+            g(False),
+            s(11, 1),
+            g(False),
+            s(8, 1),
+        ]
+        self.scheduler.schedule(reduce(Command.andThen, cmds))
 
     def autonomousPeriodic(self):
         self.autolower()

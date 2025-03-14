@@ -53,6 +53,8 @@ class ApproachReef(Command):
         self.current_cmd.initialize()
 
     def execute(self):
+        near_reef = self.drive.odometry.near_reef()
+
         if isinstance(self.current_cmd, GraphPathfind):
             tag_seen = (
                 self.tr_cmd.get_left_param() is not None
@@ -62,13 +64,13 @@ class ApproachReef(Command):
                 # )
                 # < units.degreesToRadians(20)
             )
-            if self.current_cmd.isFinished() or tag_seen:
+            if self.current_cmd.isFinished() or (tag_seen and near_reef):
                 self.current_cmd.end(False)
                 self.current_cmd = self.tr_cmd
                 self.current_cmd.initialize()
         elif isinstance(self.current_cmd, TargetReef):
             # TODO: Test this
-            if self.drive.odometry.near_reef():
+            if near_reef:
                 self.arm.target = config.reef_setpoints[self.target_level]
 
         self.current_cmd.execute()
