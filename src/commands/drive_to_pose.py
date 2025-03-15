@@ -23,9 +23,9 @@ class DriveToPose(Command):
         self.speed = speed
         self.passthrough = passthrough
 
-        self.x_pid = PIDController(5.0, 0, 0)
-        self.y_pid = PIDController(5.0, 0, 0)
-        self.theta_pid = PIDController(5.0, 0, 0.03)
+        self.x_pid = PIDController(8.0, 0, 0)
+        self.y_pid = PIDController(8.0, 0, 0)
+        self.theta_pid = PIDController(6.0, 0, 0.03)
 
         self.vel_tolerance = 0.05
         self.theta_tolerance = 0.1
@@ -86,7 +86,9 @@ class DriveToPose(Command):
         self.drive.drive(drive_input, True)
 
         speeds = self.drive.chassis.chassis_speeds()
-        is_slow = sqrt(speeds.vx**2 + speeds.vy**2) < 0.05 and abs(speeds.omega) < 0.1
+        is_slow = (
+            sqrt(speeds.vx**2 + speeds.vy**2) < 0.05 and abs(speeds.omega) < 0.1
+        )
         now = time.time()
         if not is_slow:
             self.slow_time = now

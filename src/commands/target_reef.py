@@ -70,5 +70,4 @@ class TargetReef(TargetTag):
 
     @property
     def use_diag(self) -> bool:
-        # return True
         return False

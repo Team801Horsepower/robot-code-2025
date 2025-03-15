@@ -62,10 +62,16 @@ class Odometry(Subsystem):
         # Empirical scale factor lol
         self.translation += avg / 1.028099649
 
-    def near_reef(self):
+    def near_reef_dist(self, dist: float) -> bool:
         return (
             self.pose().translation() - config.flip_red(Translation2d(4.5, 4))
-        ).norm() < 2.3  # from center of reef
+        ).norm() < dist  # from center of reef
+
+    def near_reef_large(self) -> bool:
+        return self.near_reef_dist(2.5)
+
+    def near_reef(self) -> bool:
+        return self.near_reef_dist(1.9)
 
     def near_source(self):
         return (

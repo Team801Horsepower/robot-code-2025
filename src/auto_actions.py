@@ -1,4 +1,4 @@
-from commands2 import InstantCommand, Command
+from commands2 import Command, InstantCommand
 from typing import Callable, Tuple
 
 from subsystems.drive import Drive

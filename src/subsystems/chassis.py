@@ -54,7 +54,7 @@ class Chassis(Subsystem):
             turn_config = (
                 SparkBaseConfig()
                 .inverted(False)
-                .setIdleMode(SparkBaseConfig.IdleMode.kCoast)
+                .setIdleMode(SparkBaseConfig.IdleMode.kBrake)
             )
             turn_config.encoder.positionConversionFactor(
                 2 * pi / config.turn_gear_ratio

@@ -60,20 +60,25 @@ class ApproachHPS(Command):
     def execute(self):
         near_source = self.drive.odometry.near_source()
 
+        tag_seen = (
+            self.th_cmd.get_left_param() is not None
+            and self.th_cmd.get_right_param() is not None
+            # and abs(
+            #     self.th_cmd.target_angle - self.drive.odometry.rotation().radians()
+            # )
+            # < units.degreesToRadians(10)
+        )
+
         if isinstance(self.current_cmd, GraphPathfind):
-            tag_seen = (
-                self.th_cmd.get_left_param() is not None
-                and self.th_cmd.get_right_param() is not None
-                # and abs(
-                #     self.th_cmd.target_angle - self.drive.odometry.rotation().radians()
-                # )
-                # < units.degreesToRadians(10)
-            )
             self.periscope.claw.set(0)
             if self.current_cmd.isFinished() or (tag_seen and near_source):
                 self.current_cmd.end(False)
                 self.current_cmd = self.th_cmd
                 self.current_cmd.initialize()
+        elif (
+            isinstance(self.current_cmd, TargetHPS) and not tag_seen or not near_source
+        ):
+            self.current_cmd = self.th_cmd
         # elif isinstance(self.current_cmd, TargetHPS):
         #     # TODO: Test this
         #     if self.drive.odometry.near_source():

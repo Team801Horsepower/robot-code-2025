@@ -18,10 +18,9 @@ from utils import clamp
 # class TargetTag(Command, ABC):
 class TargetTag(Command):
     def __init__(self):
-        self.approach_pid = PIDController(6.0, 0, 0)
-        self.strafe_pid = PIDController(6.0, 0, 0)
-        # TODO: why is kI set to 5?
-        self.theta_pid = PIDController(6.0, 5.0, 0.3)
+        self.approach_pid = PIDController(5.5, 0, 0)
+        self.strafe_pid = PIDController(5.5, 0, 0)
+        self.theta_pid = PIDController(6.5, 0.0, 0.3)
 
         self.within_threshold = False
 
@@ -161,17 +160,27 @@ class TargetTag(Command):
             # omega = clamp(omega_min, omega_max, omega)
 
             sum_within_threshold = abs(
-                left_param + right_param - (self.left_target + self.right_target)
-            ) < units.degreesToRadians(1.0)
+                left_param
+                + right_param
+                - (self.left_target + self.right_target)
+                # ) < units.degreesToRadians(1.0)
+            ) < units.degreesToRadians(1.5)
             diff_within_threshold = abs(
-                left_param - right_param - (self.left_target - self.right_target)
-            ) < units.degreesToRadians(1.0)
+                left_param
+                - right_param
+                - (self.left_target - self.right_target)
+                # ) < units.degreesToRadians(1.0)
+            ) < units.degreesToRadians(1.5)
             self.within_threshold = sum_within_threshold and diff_within_threshold
 
+        # max_drive_speed = config.auto_drive_speed
+        # max_drive_speed = 2
+        max_drive_speed = 2.5
+
         norm = drive_speed.norm()
-        if norm > config.auto_drive_speed:
-            drive_speed = drive_speed * config.auto_drive_speed / norm
-        if abs(omega) > config.auto_turn_speed:
+        if norm > max_drive_speed:
+            drive_speed = drive_speed * max_drive_speed / norm
+        if abs(omega) > max_drive_speed:
             omega = omega * config.auto_turn_speed / abs(omega)
 
         SmartDashboard.putNumber("omega", omega)
@@ -205,3 +214,6 @@ class TargetTag(Command):
             if target.getFiducialId() == self.tag_id:
                 return units.degreesToRadians(f(target))
         return None
+
+    def end(self, interrupted: bool):
+        self.drive.drive(Transform2d())

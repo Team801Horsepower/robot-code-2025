@@ -10,6 +10,7 @@ from subsystems.drive import Drive
 
 # from subsystems.note_vision import NoteVision
 from utils.graph import Graph
+import config
 
 
 class GraphPathfind(Command):
@@ -55,9 +56,15 @@ class GraphPathfind(Command):
             return
         # cur_pos = self.drive.odometry.pose().translation()
         if self.dtp is None:
-            passthrough = self.final_passthrough if len(self.path) == 1 else 0.4
+            passthrough = self.final_passthrough if len(self.path) == 1 else 0.6
             target_pose = Pose2d(self.path[0], self.target_rot)
-            dtp = DriveToPose(target_pose, self.drive, passthrough=passthrough)
+            # dtp = DriveToPose(target_pose, self.drive, passthrough=passthrough)
+            dtp = DriveToPose(
+                target_pose,
+                self.drive,
+                speed=config.auto_drive_speed,
+                passthrough=passthrough,
+            )
             # if self.chase_note and len(self.path) == 1:
             #     dtp = chase_note.from_dtp(dtp, self.note_vision)
             self.dtp = dtp

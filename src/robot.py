@@ -70,10 +70,20 @@ class Robot(wpilib.TimedRobot):
 
         # SmartDashboard.putNumber("approach P", 15.0)
 
+        SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
+        SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
+
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
         # commands and subsystem periodic methods will not run
         self.scheduler.run()
+
+        config.auto_drive_speed = SmartDashboard.getNumber(
+            "auto drive speed", config.auto_drive_speed
+        )
+        config.auto_turn_speed = SmartDashboard.getNumber(
+            "auto turn speed", config.auto_turn_speed
+        )
 
         self.drive.elevator_height = self.periscope.arm.elevator.get_extension() * sin(
             self.periscope.arm.pivot.get_angle()
@@ -233,26 +243,26 @@ class Robot(wpilib.TimedRobot):
         # self.scheduler.schedule(cmd)
 
         g, s = make_auto_methods(self.drive, self.vision, self.periscope, graph)
-        # cmds = [
-        #     s(11, 3),
-        #     g(False),
-        #     s(8, 3),
-        #     g(False),
-        #     s(8, 2),
-        # ]
         cmds = [
             s(11, 3),
             g(False),
             s(8, 3),
             g(False),
-            s(11, 2),
-            g(False),
             s(8, 2),
-            g(False),
-            s(11, 1),
-            g(False),
-            s(8, 1),
         ]
+        # cmds = [
+        #     s(11, 3),
+        #     g(False),
+        #     s(8, 3),
+        #     g(False),
+        #     s(11, 2),
+        #     g(False),
+        #     s(8, 2),
+        #     g(False),
+        #     s(11, 1),
+        #     g(False),
+        #     s(8, 1),
+        # ]
         self.scheduler.schedule(reduce(Command.andThen, cmds))
 
     def autonomousPeriodic(self):
@@ -266,7 +276,9 @@ class Robot(wpilib.TimedRobot):
         self.target_align_cmd = None
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
-        self.periscope.arm.target = config.transit_setpoint
+        # Remove, because we don't want it retracting after auto
+        # in case our arm is hooked with the reef
+        # self.periscope.arm.target = config.transit_setpoint
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
         SmartDashboard.putNumber(
