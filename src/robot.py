@@ -18,7 +18,7 @@ from functools import reduce
 import time
 
 import config
-from subsystems import drive, odometry, periscope, vision
+from subsystems import drive, odometry, periscope, vision, manipulator_controller
 
 from commands.drive_to_pose import DriveToPose
 from commands.graph_pathfind import GraphPathfind
@@ -49,7 +49,9 @@ class Robot(wpilib.TimedRobot):
         self.vision = vision.Vision(self.scheduler)
 
         self.driver_controller = wpilib.XboxController(0)
-        self.manip_controller = wpilib.XboxController(1)
+        self.manip_controller = manipulator_controller.ManipulatorController(
+            self.scheduler, 1
+        )
 
         self.drive.chassis.set_swerves()
 
@@ -279,7 +281,6 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def teleopInit(self):
-        self.reef_selection = 0
         self.target_align_cmd = None
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
@@ -337,25 +338,6 @@ class Robot(wpilib.TimedRobot):
             self.drive.chassis.zero_swerves()
 
         # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
-        if self.manip_controller.getAButtonPressed():
-            self.manip_setpoint = config.reef_setpoints[0]
-        elif self.manip_controller.getBButtonPressed():
-            self.manip_setpoint = config.reef_setpoints[1]
-        elif self.manip_controller.getXButtonPressed():
-            self.manip_setpoint = config.reef_setpoints[2]
-        elif self.manip_controller.getYButtonPressed():
-            self.manip_setpoint = config.reef_setpoints[3]
-        elif self.manip_controller.getStartButtonPressed():
-            self.manip_setpoint = config.processor_setpoint
-        elif self.manip_controller.getBackButtonPressed():
-            self.manip_setpoint = config.barge_setpoint
-        elif self.manip_controller.getLeftBumperButtonPressed():
-            self.manip_setpoint = config.ground_pickup_setpoint
-        elif self.manip_controller.getRightBumperButtonPressed():
-            self.manip_setpoint = config.algae_reef_setpoints[
-                int(self.reef_selection / 2) % 2
-            ]
-
         if self.driver_controller.getAButtonPressed():
             self.periscope.arm.target = config.transit_setpoint
         elif self.driver_controller.getRightStickButtonPressed():
@@ -365,15 +347,14 @@ class Robot(wpilib.TimedRobot):
                 config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
             )
         elif self.driver_controller.getRightBumperButtonPressed():
-            self.periscope.arm.target = self.manip_setpoint
+            self.periscope.arm.target = self.manip_controller.arm_setpoint
         elif (
             self.driver_controller.getLeftBumperButtonPressed()
-            and self.reef_selection is not None
+            and self.manip_controller.stalk_selection is not None
         ):
             self.target_align_cmd = TargetReef(
-                self.drive, self.vision, self.reef_selection
+                self.drive, self.vision, self.manip_controller.stalk_selection
             )
-            # self.target_align_cmd = TargetHPS(self.drive, self.vision, False)
             self.scheduler.schedule(self.target_align_cmd)
         elif (
             self.driver_controller.getLeftBumperButtonReleased()
@@ -384,67 +365,11 @@ class Robot(wpilib.TimedRobot):
 
         self.autolower()
 
-        # self.periscope.arm.should_extend = True
-
-        # if self.right_bumper_toggle:
-        #     setpoint = self.manip_setpoint
-        #     if self.source_toggle:
-        #         setpoint = config.source_setpoint
-        #     elif (
-        #         self.driver_controller.getBButtonPressed()
-        #         and self.reef_selection is not None
-        #     ):
-        #         self.target_align_command = TargetReef(
-        #             self.drive, self.vision, self.reef_selection
-        #         )
-        #         self.scheduler.schedule(self.target_align_command)
-        #     elif (
-        #         self.driver_controller.getBButtonReleased()
-        #         and self.target_align_command is not None
-        #     ):
-        #         self.target_align_command.cancel()
-        #     self.periscope.arm.target = setpoint
-        #     self.periscope.arm.should_extend = True
-        # elif self.left_bumper_toggle:
-        #     self.periscope.arm.target = config.algae_reef_setpoints[
-        #         int(self.reef_selection / 2) % 2
-        #     ]
-        #     self.periscope.arm.should_extend = True
-        # else:
-        #     self.periscope.arm.target = config.transit_setpoint
-        #     self.periscope.arm.should_extend = False
-
-        # if self.driver_controller.getAButtonPressed():
-        #     self.read_typed_ik_input()
-        # self.periscope.arm.should_extend ^= (
-        #     self.driver_controller.getRightBumperPressed()
-        # )
-
         claw_power = (
             self.driver_controller.getLeftTriggerAxis()
             - self.driver_controller.getRightTriggerAxis()
         )
         self.periscope.claw.set(claw_power)
-        if (
-            abs(self.manip_controller.getLeftX()) > 0.5
-            or abs(self.manip_controller.getLeftY()) > 0.5
-        ):
-            # fullcircle = lambda x: 2 * pi - abs(x) if x < 0 else x
-            self.reef_selection = floor(
-                6
-                / pi
-                * (
-                    (
-                        atan2(
-                            -self.manip_controller.getLeftY(),
-                            self.manip_controller.getLeftX(),
-                        )
-                        + 7 * pi / 12
-                    )
-                    % (2 * pi)
-                )
-            )
-        SmartDashboard.putNumber("reef selection", self.reef_selection)
 
     def teleopExit(self):
         pass
