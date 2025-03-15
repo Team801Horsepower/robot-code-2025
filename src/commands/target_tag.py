@@ -107,8 +107,8 @@ class TargetTag(Command):
         if left_param is None or right_param is None:
             drive_speed = Translation2d(0, 0)
         else:
-            SmartDashboard.putNumber("left yaw", left_param)
-            SmartDashboard.putNumber("right yaw", right_param)
+            SmartDashboard.putNumber("left param", left_param)
+            SmartDashboard.putNumber("right param", right_param)
             SmartDashboard.putNumber("left target", self.left_target)
             SmartDashboard.putNumber("right target", self.right_target)
 

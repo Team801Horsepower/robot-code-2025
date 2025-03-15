@@ -15,6 +15,8 @@ class TargetHPS(TargetTag):
         self.drive_ = drive
         self.vision_ = vision
 
+        self.left_hps = left_hps
+
         self.target_angle_ = units.degreesToRadians(48)
         if left_hps:
             self.target_angle_ *= -1
@@ -31,8 +33,11 @@ class TargetHPS(TargetTag):
             case (True, True):
                 self.tag_id_ = 1
 
-        self.left_target_ = units.degreesToRadians(9.4)
-        self.right_target_ = units.degreesToRadians(12.234)
+        a = units.degreesToRadians(9.4)
+        b = units.degreesToRadians(12.234)
+
+        self.left_target_ = -b if left_hps else a
+        self.right_target_ = -a if left_hps else b
 
         super().__init__()
 
@@ -62,7 +67,7 @@ class TargetHPS(TargetTag):
 
     @property
     def left_i(self) -> int:
-        return 1
+        return 3 if self.left_hps else 1
 
     @property
     def right_i(self) -> int:
@@ -70,11 +75,11 @@ class TargetHPS(TargetTag):
 
     @property
     def get_left(self) -> Callable[[PhotonTrackedTarget], float]:
-        return lambda target: -target.getYaw()
+        return lambda target: -target.getPitch() if self.left_hps else -target.getYaw()
 
     @property
     def get_right(self) -> Callable[[PhotonTrackedTarget], float]:
-        return lambda target: target.getPitch()
+        return lambda target: -target.getYaw() if self.left_hps else target.getPitch()
 
     @property
     def use_diag(self) -> bool:
