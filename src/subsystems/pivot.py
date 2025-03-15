@@ -9,6 +9,7 @@ from navx import AHRS
 
 
 from math import sin, cos
+import time
 
 from utils import lerp_over_table, clamp
 from subsystems.elevator import Elevator
@@ -50,6 +51,10 @@ class Pivot(Subsystem):
         self.target_angle: float = pi / 2
         self.current_angle = config.pivot_range[0]
 
+        self.last_velocity = 0
+        self.last_update_time = time.time()
+        self.acceleration = 0
+
         scheduler.registerSubsystem(self)
 
     def periodic(self):
@@ -74,6 +79,11 @@ class Pivot(Subsystem):
         SmartDashboard.putNumber(
             "pivot target", units.radiansToDegrees(self.target_angle)
         )
+        self.acceleration = (
+            self.pivot_motor_encoders[0].getVelocity() - self.last_velocity
+        ) / (time.time() - self.last_update_time)
+        self.last_velocity = self.pivot_motor_encoders[0].getVelocity()
+        self.last_update_time = time.time()
 
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)

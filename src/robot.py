@@ -88,7 +88,7 @@ class Robot(wpilib.TimedRobot):
         self.drive.elevator_height = self.periscope.arm.elevator.get_extension() * sin(
             self.periscope.arm.pivot.get_angle()
         )
-
+        self.drive.pivot_acceleration = self.periscope.arm.pivot.acceleration
         self.near_reef_change = self.drive.odometry.near_reef() - self.last_near_reef
         self.last_near_reef = self.drive.odometry.near_reef()
         self.near_source_change = (
