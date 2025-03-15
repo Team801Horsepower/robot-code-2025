@@ -70,6 +70,10 @@ class Robot(wpilib.TimedRobot):
         for encoder in self.periscope.arm.elevator.extension_motor_encoders:
             encoder.setPosition(0)
 
+        self.drive.odometry.reset(
+            Pose2d(Translation2d(), Rotation2d(pi if config.is_red() else 0))
+        )
+
         # SmartDashboard.putNumber("approach P", 15.0)
 
         SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)

@@ -1,3 +1,4 @@
+from wpilib import SmartDashboard
 from wpilib.interfaces import GenericHID
 from commands2 import Subsystem, CommandScheduler
 
@@ -51,3 +52,8 @@ class ManipulatorController(Subsystem):
             return (7 - round(6 * (value + 1))) % 12
 
         self.stalk_selection = axis_to_selection(self.controller.getRawAxis(0))
+
+        for i in range(6):
+            SmartDashboard.putBoolean(
+                f"reef selection {i}", self.stalk_selection // 2 == i
+            )
