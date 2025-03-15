@@ -68,17 +68,18 @@ class Odometry(Subsystem):
         ).norm() < dist  # from center of reef
 
     def near_reef_large(self) -> bool:
-        return self.near_reef_dist(2.5)
+        return self.near_reef_dist(2.9)
 
     def near_reef(self) -> bool:
         return self.near_reef_dist(1.9)
 
     def near_source(self):
+        r = 1.8
         return (
             self.pose().translation() - config.flip_red(Translation2d(0.85, 0.65))
-        ).norm() < 1.5 or (
+        ).norm() < r or (
             self.pose().translation() - config.flip_red(Translation2d(0.85, 7.35))
-        ).norm() < 1.5
+        ).norm() < r
 
     def near_targeted_stalk(self, stalk: int):
         # return (

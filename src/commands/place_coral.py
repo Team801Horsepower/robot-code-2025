@@ -18,7 +18,7 @@ class PlaceCoral(Command):
         self.finished |= (
             not self.periscope.claw.has_coral()
             and self.score_time is not None
-            and time.time() - self.score_time > 0.35
+            and time.time() - self.score_time > 0.4
         )
 
         if self.periscope.claw.has_coral() and self.periscope.arm.at_target():

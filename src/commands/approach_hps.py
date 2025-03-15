@@ -60,6 +60,12 @@ class ApproachHPS(Command):
     def execute(self):
         near_source = self.drive.odometry.near_source()
 
+        if self.gpf_cmd.dtp is not None:
+            if self.drive.odometry.near_reef():
+                self.gpf_cmd.dtp.turn_speed = 0
+            else:
+                self.gpf_cmd.dtp.turn_speed = config.auto_turn_speed
+
         tag_seen = (
             self.th_cmd.get_left_param() is not None
             and self.th_cmd.get_right_param() is not None
@@ -70,6 +76,10 @@ class ApproachHPS(Command):
         )
 
         if isinstance(self.current_cmd, GraphPathfind):
+            if self.drive.odometry.near_reef():
+                self.periscope.claw.set(1)
+            else:
+                self.periscope.claw.set(0)
             self.periscope.claw.set(0)
             if self.current_cmd.isFinished() or (tag_seen and near_source):
                 self.current_cmd.end(False)

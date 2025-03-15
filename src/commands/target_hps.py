@@ -82,5 +82,9 @@ class TargetHPS(TargetTag):
         return lambda target: -target.getYaw() if self.left_hps else target.getPitch()
 
     @property
+    def align_speed(self) -> float:
+        return 3
+
+    @property
     def use_diag(self) -> bool:
         return False

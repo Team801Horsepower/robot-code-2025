@@ -29,7 +29,8 @@ class Drive(Subsystem):
 
         slew_rate_limit = (
             utils.lerp_over_table(config.drive_acc_lim, self.elevator_height)[0]
-            + self.pivot_acceleration * 0.1
+            # Pivot correction disabled for now
+            # + self.pivot_acceleration * 0.1
         )
         filtered_vel = self.slew_rate_limiter(slew_rate_limit, vel.translation())
         self.last_filtered_vel = filtered_vel

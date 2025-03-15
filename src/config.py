@@ -40,7 +40,7 @@ wheel_diameter = units.inchesToMeters(3)
 
 drive_speed = 4
 turn_speed = 6
-auto_drive_speed = 5
+auto_drive_speed = 6
 auto_turn_speed = 6
 
 drive_acc_lim: List[Tuple[float, ...]] = format_table(
@@ -108,8 +108,8 @@ pivot_pid_constraint_constants = (100, 15)
 pivot_encoder_id = 0
 pivot_angle_offset = 0.407 * 2 * pi
 pivot_com_offset_for_feedforward = 0.1742036732  # for claw at zero
-pivot_epsilon_pos = 0.05
-pivot_epsilon_v = 0.05
+pivot_epsilon_pos = 0.08
+pivot_epsilon_v = 0.15
 
 # fmt: off
 # (extension, kP, kI, kD)
@@ -179,10 +179,12 @@ wrist_gear_ratio = 11.45
 
 reef_setpoints = [
     Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
-    Transform2d(0.45, 0.90237, units.degreesToRadians(-7)),
-    Transform2d(0.4, 1.31416, units.degreesToRadians(-7)),
+    # Transform2d(0.45, 0.90237, units.degreesToRadians(-7)),
+    Transform2d(0.5, 0.87, units.degreesToRadians(-10)),
+    Transform2d(0.47, 1.31416, units.degreesToRadians(-7)),
     # Transform2d(0.32, 1.988, units.degreesToRadians(-15)),
-    Transform2d(0.58, 1.988, units.degreesToRadians(-26)),
+    # Transform2d(0.58, 1.988, units.degreesToRadians(-26)),
+    Transform2d(0.5, 1.988, units.degreesToRadians(-21)),
 ]
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
 source_setpoint = Transform2d(-0.50, 0.87, units.degreesToRadians(160))

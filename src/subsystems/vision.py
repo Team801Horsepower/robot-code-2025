@@ -39,7 +39,7 @@ class Vision(Subsystem):
             (
                 PhotonCamera("BackLeft"),
                 Transform3d(
-                    Translation3d(-0.24952, -0.29624, 0.18149),
+                    Translation3d(0.29624, 0.24952, 0.18149),
                     Rotation3d(
                         0, units.degreesToRadians(45), units.degreesToRadians(150)
                     ),
@@ -48,7 +48,7 @@ class Vision(Subsystem):
             (
                 PhotonCamera("FrontRight"),
                 Transform3d(
-                    Translation3d(-0.11146, -0.2346, 0.27491),
+                    Translation3d(0.29624, -0.24952, 0.18149),
                     Rotation3d(
                         0, units.degreesToRadians(10), units.degreesToRadians(20)
                     ),

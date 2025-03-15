@@ -128,7 +128,7 @@ class Robot(wpilib.TimedRobot):
             # speed = sqrt(speeds.vx**2 + speeds.vy**2)
             # if conf >= 0.25 and speed < 0.15:
             #     # if conf >= 0.2:
-            if n_ests > 1 and conf >= 0.35 and dev < 0.1:
+            if n_ests > 1 and conf >= 0.4 and dev < 0.05:
                 # if heading_correction is not None and abs(
                 #     heading_correction - heading
                 # ) < units.degreesToRadians(5):
@@ -243,12 +243,19 @@ class Robot(wpilib.TimedRobot):
         # self.scheduler.schedule(cmd)
 
         g, s = make_auto_methods(self.drive, self.vision, self.periscope, graph)
+        # cmds = [
+        #     s(11, 3),
+        #     g(False),
+        #     s(8, 3),
+        #     g(False),
+        #     s(8, 2),
+        # ]
         cmds = [
-            s(11, 3),
-            g(False),
-            s(8, 3),
-            g(False),
-            s(8, 2),
+            s(2, 3),
+            g(True),
+            s(5, 3),
+            g(True),
+            s(4, 3),
         ]
         # cmds = [
         #     s(11, 3),

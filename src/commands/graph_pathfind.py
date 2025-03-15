@@ -63,6 +63,7 @@ class GraphPathfind(Command):
                 target_pose,
                 self.drive,
                 speed=config.auto_drive_speed,
+                turn_speed=config.auto_turn_speed,
                 passthrough=passthrough,
             )
             # if self.chase_note and len(self.path) == 1:

@@ -69,5 +69,9 @@ class TargetReef(TargetTag):
         return self.get_left
 
     @property
+    def align_speed(self) -> float:
+        return 3.5
+
+    @property
     def use_diag(self) -> bool:
         return False
