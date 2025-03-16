@@ -79,6 +79,7 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
         SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
 
+    @time_f("periodic robot")
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
         # commands and subsystem periodic methods will not run
@@ -116,6 +117,7 @@ class Robot(wpilib.TimedRobot):
         # pos = conf = dev = heading_correction = None
 
         n_ests, report = self.vision.pos_report(heading)
+        SmartDashboard.putNumber("pos estimates", n_ests)
         if report is not None:
             pos, conf, dev = report
             SmartDashboard.putNumber("avg x", units.metersToInches(pos.x))
@@ -154,29 +156,14 @@ class Robot(wpilib.TimedRobot):
         self.last_loop = now
         SmartDashboard.putNumber("loop time", took)
 
-        tag8_pose = self.vision.layout.getTagPose(8)
-        if tag8_pose is not None:
-            tag8_pos = tag8_pose.toPose2d().translation()
-            fr_swerve_pos = robot_pos + Translation2d(
-                config.robot_dimensions.x, -config.robot_dimensions.y
-            ).rotateBy(robot_pose.rotation())
-            dist = (fr_swerve_pos - tag8_pos).norm()
-            SmartDashboard.putNumber("tag8-FR swerve (in)", units.metersToInches(dist))
-
-        def get_yaw(i: int) -> float | None:
-            targets = self.vision.results[i].getTargets()
-            for target in targets:
-                if target.getFiducialId() == 8:
-                    return units.degreesToRadians(target.getYaw())
-            return None
-
-        left_yaw = get_yaw(0)
-        right_yaw = get_yaw(2)
-
-        if left_yaw is not None and right_yaw is not None:
-            SmartDashboard.putNumber(
-                "rp diff", units.radiansToDegrees(left_yaw - right_yaw)
-            )
+        # tag8_pose = self.vision.layout.getTagPose(8)
+        # if tag8_pose is not None:
+        #     tag8_pos = tag8_pose.toPose2d().translation()
+        #     fr_swerve_pos = robot_pos + Translation2d(
+        #         config.robot_dimensions.x, -config.robot_dimensions.y
+        #     ).rotateBy(robot_pose.rotation())
+        #     dist = (fr_swerve_pos - tag8_pos).norm()
+        #     SmartDashboard.putNumber("tag8-FR swerve (in)", units.metersToInches(dist))
 
     def disabledInit(self):
         pass
@@ -309,7 +296,7 @@ class Robot(wpilib.TimedRobot):
             units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
         )
 
-    @time_f("teleop periodic")
+    @time_f("periodic teleop")
     def teleopPeriodic(self):
         def deadzone(activation: float) -> float:
             if abs(activation) < 0.01:

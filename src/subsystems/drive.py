@@ -1,11 +1,12 @@
+from wpimath.geometry import Transform2d, Translation2d
+from commands2 import CommandScheduler, Subsystem
+import time
+
 from subsystems.chassis import Chassis
 from subsystems.odometry import Odometry
 from subsystems.turn_signals import TurnSignals
+from utils import lerp_over_table, clamp, time_f
 import config
-import utils
-import time
-from wpimath.geometry import Transform2d, Translation2d
-from commands2 import CommandScheduler, Subsystem
 
 
 class Drive(Subsystem):
@@ -19,6 +20,7 @@ class Drive(Subsystem):
         self.last_update_time = time.time()
         scheduler.registerSubsystem(self)
 
+    @time_f("periodic drive")
     def periodic(self):
         self.odometry.update(self.chassis)
 
@@ -28,7 +30,7 @@ class Drive(Subsystem):
             vel = Transform2d(translation, vel.rotation())
 
         slew_rate_limit = (
-            utils.lerp_over_table(config.drive_acc_lim, self.elevator_height)[0]
+            lerp_over_table(config.drive_acc_lim, self.elevator_height)[0]
             # Pivot correction disabled for now
             # + self.pivot_acceleration * 0.1
         )
@@ -44,6 +46,6 @@ class Drive(Subsystem):
             delta_velocity = (
                 (delta_velocity / delta_velocity.norm())
                 * delta_time
-                * utils.clamp(-limit, limit, delta_velocity.norm() / delta_time)
+                * clamp(-limit, limit, delta_velocity.norm() / delta_time)
             )
         return self.last_filtered_vel + delta_velocity

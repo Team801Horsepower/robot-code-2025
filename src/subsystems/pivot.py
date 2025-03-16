@@ -11,7 +11,7 @@ from navx import AHRS
 from math import sin, cos
 import time
 
-from utils import lerp_over_table, clamp
+from utils import lerp_over_table, clamp, time_f
 from subsystems.elevator import Elevator
 import config
 
@@ -57,6 +57,7 @@ class Pivot(Subsystem):
 
         scheduler.registerSubsystem(self)
 
+    @time_f("periodic pivot")
     def periodic(self):
         self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()

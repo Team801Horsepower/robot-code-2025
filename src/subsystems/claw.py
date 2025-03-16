@@ -4,7 +4,7 @@ from wpilib import AnalogInput, DigitalInput, SmartDashboard
 import time
 
 import config
-from utils import clamp
+from utils import clamp, time_f
 
 
 class Claw(Subsystem):
@@ -24,6 +24,7 @@ class Claw(Subsystem):
         self.coral_detected_time = None
         self.algae_detected_time = None
 
+    @time_f("periodic claw")
     def periodic(self):
         if not self.coral_detected():
             self.coral_detected_time = None
@@ -63,7 +64,13 @@ class Claw(Subsystem):
     #        is greater than the threshold.
     def has_coral(self) -> bool:
         # return time.time() - self.coral_detected_time > 0.025
-        return self.coral_detected_time is not None and time.time() - self.coral_detected_time > 0.025
+        return (
+            self.coral_detected_time is not None
+            and time.time() - self.coral_detected_time > 0.025
+        )
 
     def has_algae(self) -> bool:
-        return self.algae_detected_time is not None and time.time() - self.algae_detected_time > 0.025
+        return (
+            self.algae_detected_time is not None
+            and time.time() - self.algae_detected_time > 0.025
+        )

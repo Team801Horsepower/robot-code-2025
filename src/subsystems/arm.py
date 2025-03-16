@@ -11,7 +11,7 @@ from subsystems.elevator import Elevator
 from subsystems.wrist import Wrist
 
 import config
-from utils import clamp
+from utils import clamp, time_f
 
 
 class Arm(Subsystem):
@@ -34,6 +34,7 @@ class Arm(Subsystem):
         # SmartDashboard.putNumber("Wrist Angle", 0)
         scheduler.registerSubsystem(self)
 
+    @time_f("periodic arm")
     def periodic(self):
         self.wrist.passthrough_allowed = (
             self.wrist_passthrough_allowed_by_algae

@@ -35,9 +35,10 @@ def time_f(name: str):
     def wrapper(f):
         def new_f(*args):
             start = time.time()
-            f(*args)
+            out = f(*args)
             took = time.time() - start
             SmartDashboard.putNumber(f"{name} took", took)
+            return out
 
         return new_f
 

@@ -4,7 +4,7 @@ from wpimath.controller import PIDController
 from wpilib import SmartDashboard
 
 import config
-from utils import lerp_over_table, clamp
+from utils import lerp_over_table, clamp, time_f
 
 
 class Elevator(Subsystem):
@@ -51,6 +51,7 @@ class Elevator(Subsystem):
         # Whether the wrist position is high enough to allow the elevator to lower
         self.wrist_up = True
 
+    @time_f("periodic elevator")
     def periodic(self):
         target = self.target_extension
         if not self.wrist_up:

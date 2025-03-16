@@ -20,6 +20,7 @@ import numpy as np
 from math import sin, cos, pi, atan, isfinite
 
 import config
+from utils import time_f
 
 
 class Vision(Subsystem):
@@ -206,6 +207,7 @@ class Vision(Subsystem):
         # )
         return Translation2d(x, y) - tag1[2]
 
+    @time_f("vision pos report")
     def pos_report(
         self, robot_angle: float
     ) -> Tuple[int, Optional[Tuple[Translation2d, float, float]]]:

@@ -4,6 +4,7 @@ from navx import AHRS
 from subsystems.arm import Arm
 from subsystems.claw import Claw
 from subsystems.climber import Climber
+from utils import time_f
 
 
 class Periscope(Subsystem):
@@ -15,5 +16,6 @@ class Periscope(Subsystem):
         self.climber = Climber(scheduler)
         scheduler.registerSubsystem(self)
 
+    @time_f("periodic periscope")
     def periodic(self):
         self.arm.wrist_passthrough_allowed_by_algae = not self.claw.algae_detected()

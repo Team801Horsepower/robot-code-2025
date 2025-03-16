@@ -58,7 +58,7 @@ class ApproachHPS(Command):
         self.current_cmd.initialize()
 
     def execute(self):
-        near_source = self.drive.odometry.near_source()
+        near_source = self.drive.odometry.near_source_large()
 
         if self.gpf_cmd.dtp is not None:
             if self.drive.odometry.near_reef():

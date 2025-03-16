@@ -5,7 +5,7 @@ from wpimath import units
 from wpilib import SmartDashboard
 
 import config
-from utils import clamp
+from utils import clamp, time_f
 
 
 class Wrist(Subsystem):
@@ -42,6 +42,7 @@ class Wrist(Subsystem):
     def set_angle(self, angle: float):
         self.wrist_encoder.setPosition(angle * config.wrist_gear_ratio)
 
+    @time_f("periodic wrist")
     def periodic(self):
         power = self.pid.calculate(
             self.angle(),

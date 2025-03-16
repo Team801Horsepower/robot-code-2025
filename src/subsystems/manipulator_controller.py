@@ -3,6 +3,7 @@ from wpilib.interfaces import GenericHID
 from commands2 import Subsystem, CommandScheduler
 
 import config
+from utils import time_f
 
 
 class ManipulatorController(Subsystem):
@@ -26,6 +27,7 @@ class ManipulatorController(Subsystem):
 
         self.arm_setpoint = config.transit_setpoint
 
+    @time_f("periodic manip controller")
     def periodic(self):
         self.update_tree_selection()
         if (
