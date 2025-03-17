@@ -4,7 +4,6 @@ import time
 
 from subsystems.chassis import Chassis
 from subsystems.odometry import Odometry
-from subsystems.turn_signals import TurnSignals
 from utils import lerp_over_table, clamp, time_f
 import config
 
@@ -13,7 +12,6 @@ class Drive(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
         self.chassis = Chassis(scheduler)
         self.odometry = Odometry(scheduler)
-        self.turn_signals = TurnSignals(scheduler)
         self.elevator_height = config.extension_range[0]
         self.pivot_acceleration = 0.0
         self.last_filtered_vel = Translation2d(0, 0)

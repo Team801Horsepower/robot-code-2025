@@ -27,9 +27,10 @@ class ManipulatorController(Subsystem):
 
         self.arm_setpoint = config.transit_setpoint
 
+        self.target_level = None
+
     @time_f("periodic manip controller")
     def periodic(self):
-        self.update_tree_selection()
         if (
             self.arm_setpoint == config.algae_reef_setpoints[0]
             or self.arm_setpoint == config.algae_reef_setpoints[1]
@@ -44,17 +45,29 @@ class ManipulatorController(Subsystem):
             self.arm_setpoint = config.algae_reef_setpoints[
                 int(self.stalk_selection / 2) % 2
             ]
+            SmartDashboard.putString("setpoint selection", "ALGAE")
+            self.target_level = None
         elif self.controller.getRawButtonPressed(self.input_indices["g_pickup"]):
             self.arm_setpoint = config.ground_pickup_setpoint
+            SmartDashboard.putString("setpoint selection", "GROUND ALGAE")
+            self.target_level = None
         elif self.controller.getRawButtonPressed(self.input_indices["processor"]):
             self.arm_setpoint = config.processor_setpoint
+            SmartDashboard.putString("setpoint selection", "PROCESSOR")
+            self.target_level = None
         elif self.controller.getRawButtonPressed(self.input_indices["barge"]):
             self.arm_setpoint = config.barge_setpoint
+            SmartDashboard.putString("setpoint selection", "BARGE")
+            self.target_level = None
         else:
             for i, index in enumerate(self.input_indices["branch"]):
                 if self.controller.getRawButtonPressed(index):
                     self.arm_setpoint = config.reef_setpoints[i]
+                    self.target_level = i
+                    self.sb_reef_sel()
                     break
+
+        self.update_tree_selection()
 
     def update_tree_selection(self):
         def axis_to_selection(value):
@@ -66,3 +79,13 @@ class ManipulatorController(Subsystem):
             SmartDashboard.putBoolean(
                 f"reef selection {i}", self.stalk_selection // 2 == i
             )
+
+        if self.target_level is not None:
+            self.sb_reef_sel()
+
+    def sb_reef_sel(self):
+        if self.stalk_selection is None or self.target_level is None:
+            return
+        letter = "HGFEDCBALKJI"[self.stalk_selection]
+        number = str(self.target_level + 1)
+        SmartDashboard.putString("setpoint selection", letter + number)
