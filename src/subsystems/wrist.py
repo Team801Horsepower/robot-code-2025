@@ -26,9 +26,7 @@ class Wrist(Subsystem):
         self.wrist_encoder.setPosition(
             config.wrist_neutral_angle * config.wrist_gear_ratio
         )
-        self.pid = PIDController(
-            *config.wrist_pid_constants
-        )  # TODO: Change to actual constants
+        self.pid = PIDController(*config.wrist_pid_constants)
         self.target_angle = config.wrist_neutral_angle
         self.tolerance = 0.05
         # Whether the elevator is high enough for the wrist to pivot downward

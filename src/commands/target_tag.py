@@ -12,7 +12,6 @@ from subsystems.drive import Drive
 from subsystems.vision import Vision
 
 import config
-from utils import clamp
 
 
 # class TargetTag(Command, ABC):

@@ -174,7 +174,6 @@ class Arm(Subsystem):
             and self.wrist.at_angle()
         )
 
-    # TODO: Target is not necessarily a transform2d
     @property
     def pivot_relative_target(
         self,

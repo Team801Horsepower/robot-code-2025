@@ -1,6 +1,5 @@
 from commands2 import Command
 from wpimath.geometry import Rotation2d, Translation2d
-from wpimath import units
 
 from subsystems.drive import Drive
 from subsystems.vision import Vision
@@ -89,15 +88,6 @@ class ApproachHPS(Command):
             isinstance(self.current_cmd, TargetHPS) and not tag_seen or not near_source
         ):
             self.current_cmd = self.th_cmd
-        # elif isinstance(self.current_cmd, TargetHPS):
-        #     # TODO: Test this
-        #     if self.drive.odometry.near_source():
-        #         self.periscope.arm.target = config.source_setpoint
-        #         self.periscope.claw.set(-1)
-
-        # if self.current_cmd.isFinished():
-        #     self.current_cmd.end(False)
-        #     self.current_cmd = PlaceCoral(self.periscope)
 
         if near_source:
             self.periscope.arm.target = config.source_setpoint
@@ -106,11 +96,6 @@ class ApproachHPS(Command):
         self.current_cmd.execute()
 
     def isFinished(self) -> bool:
-        # return (
-        #     # isinstance(self.current_cmd, PlaceCoral) and self.current_cmd.isFinished()
-        #     isinstance(self.current_cmd, TargetHPS)
-        #     and self.current_cmd.isFinished()
-        # )
         return self.periscope.claw.has_coral()
 
     def end(self, interrupted: bool):

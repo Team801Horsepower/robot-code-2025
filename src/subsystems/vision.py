@@ -1,8 +1,6 @@
 from photonlibpy.photonCamera import PhotonCamera
-from photonlibpy.photonPoseEstimator import PhotonPoseEstimator
 
 from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
-from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from robotpy_apriltag import AprilTagFieldLayout, AprilTagField
 from wpimath.geometry import (
     Transform3d,
@@ -12,12 +10,11 @@ from wpimath.geometry import (
     Translation3d,
 )
 from wpimath import units
-from wpilib import SmartDashboard
 from commands2 import Subsystem, CommandScheduler
 from typing import Tuple, Optional, List
 import numpy as np
 
-from math import sin, cos, pi, atan, isfinite
+from math import sin, cos, pi, atan, isfinite, nan
 
 import config
 from utils import time_f
@@ -161,8 +158,6 @@ class Vision(Subsystem):
                     ),
                 )
             )
-        # TODO: len(tag_info) doesn't account for the new confidence filtering
-        # return (len(tag_info), positions)
         return positions
 
     def get_2tag_conf(
@@ -183,8 +178,12 @@ class Vision(Subsystem):
         tag2: Tuple[int, float, Translation2d],
         # ) -> Tuple[Translation2d, float]:
     ) -> Translation2d:
-        p1 = self.layout.getTagPose(tag1[0]).toPose2d().translation()
-        p2 = self.layout.getTagPose(tag2[0]).toPose2d().translation()
+        p3d1 = self.layout.getTagPose(tag1[0])
+        p3d2 = self.layout.getTagPose(tag2[0])
+        if p3d1 is None or p3d2 is None:
+            return Translation2d(nan, nan)
+        p1 = p3d1.toPose2d().translation()
+        p2 = p3d2.toPose2d().translation()
 
         th1 = tag1[1] + robot_angle
         th2 = tag2[1] + robot_angle
@@ -252,13 +251,16 @@ class Vision(Subsystem):
     def heading_correction(self, robot_angle: float) -> Optional[float]:
         x1 = robot_angle - pi / 4
         x2 = robot_angle + pi / 4
-        try:
-            if self.pos_report(robot_angle)[1][2] == 0:
-                return None
-            y1 = self.pos_report(x1)[1][2]
-            y2 = self.pos_report(x2)[1][2]
-        except TypeError:
+
+        rep = self.pos_report(robot_angle)[1]
+        if rep is None or rep[2] == 0:
             return None
+        rep1 = self.pos_report(x1)[1]
+        rep2 = self.pos_report(x2)[1]
+        if rep1 is None or rep2 is None:
+            return None
+        y1 = rep1[2]
+        y2 = rep2[2]
 
         mat = np.array([[cos(x1), sin(x1)], [cos(x2), sin(x2)]])
         matinv = np.linalg.inv(mat)

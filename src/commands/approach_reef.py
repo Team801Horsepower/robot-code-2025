@@ -1,6 +1,5 @@
 from commands2 import Command
 from wpimath.geometry import Rotation2d, Translation2d
-from wpimath import units
 
 from math import pi
 

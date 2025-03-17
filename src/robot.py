@@ -1,33 +1,18 @@
 #!/usr/bin/env python3
-from math import sin, atan2, floor, pi
 
 import wpilib
-
 from wpilib import SmartDashboard
-
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
-from commands2 import (
-    CommandScheduler,
-    FunctionalCommand,
-    InstantCommand,
-    WaitCommand,
-    Command,
-)
+from commands2 import CommandScheduler, Command
 from wpimath import units
 from functools import reduce
+from math import sin, pi
 import time
 
 import config
-from subsystems import drive, odometry, periscope, vision, manipulator_controller, turn_signals
+from subsystems import drive, periscope, vision, manipulator_controller, turn_signals
 
-from commands.drive_to_pose import DriveToPose
-from commands.graph_pathfind import GraphPathfind
 from commands.target_reef import TargetReef
-from commands.target_hps import TargetHPS
-from commands.place_coral import PlaceCoral
-from commands.collect_coral import CollectCoral
-from commands.approach_reef import ApproachReef
-from commands.approach_hps import ApproachHPS
 
 from utils.graph import Graph
 from utils import time_f
@@ -53,7 +38,9 @@ class Robot(wpilib.TimedRobot):
             self.scheduler, 1
         )
 
-        self.turn_signals = turn_signals.TurnSignals(self.scheduler, self.manip_controller, self.periscope.claw)
+        self.turn_signals = turn_signals.TurnSignals(
+            self.scheduler, self.manip_controller, self.periscope.claw
+        )
 
         self.drive.chassis.set_swerves()
 
@@ -180,62 +167,7 @@ class Robot(wpilib.TimedRobot):
         graph_path = config.code_path + "graph.json"
         graph = Graph(graph_path)
 
-        # dtp = DriveToPose(Pose2d(14.108, 6.0818, Rotation2d()), self.drive)
-        # dtp = DriveToPose(
-        #     Pose2d(16.485, 7.164, Rotation2d.fromDegrees(230)), self.drive
-        # )
-        # pose = self.drive.odometry.pose().transformBy(
-        #     Transform2d(units.inchesToMeters(-60), 0, 0)
-        # )
-        # dtp = DriveToPose(pose, self.drive)
-        # self.scheduler.schedule(dtp)
-        # self.periscope.arm.target = config.source_setpoint
-
-        # self.periscope.arm.target = config.reef_setpoints[1]
         self.periscope.arm.target = config.transit_setpoint
-        # tr = TargetReef(self.drive, self.vision, 8)
-        # pc = PlaceCoral(self.periscope, 1)
-        # self.scheduler.schedule(tr.andThen(pc))
-        # self.scheduler.schedule(pc)
-
-        # def transit():
-        #     self.periscope.arm.target = config.transit_setpoint
-
-        # branches = [
-        #     (8, 3),
-        #     (8, 2),
-        #     (8, 1),
-        # ]
-
-        # cmds = []
-        # for branch in branches:
-        #     cmd = (
-        #         ApproachHPS(self.drive, self.vision, self.periscope, graph, False)
-        #         .andThen(InstantCommand(transit))
-        #         .andThen(
-        #             ApproachReef(
-        #                 self.drive, self.vision, self.periscope.arm, graph, *branch
-        #             )
-        #         )
-        #         .andThen(PlaceCoral(self.periscope))
-        #     )
-        #     cmds.append(cmd)
-
-        # cmd = InstantCommand(transit).andThen(reduce(Command.andThen, cmds))
-        # self.scheduler.schedule(cmd)
-
-        # cmd = (
-        #     CollectCoral(self.periscope, False)
-        #     .deadlineWith(
-        #         ApproachHPS(self.drive, self.vision, self.periscope.arm, graph, False)
-        #     )
-        #     .andThen(InstantCommand(transit))
-        #     .andThen(
-        #         ApproachReef(self.drive, self.vision, self.periscope.arm, graph, 11, 2)
-        #     )
-        #     .andThen(PlaceCoral(self.periscope))
-        # )
-        # self.scheduler.schedule(cmd)
 
         g, s = make_auto_methods(self.drive, self.vision, self.periscope, graph)
         # cmds = [
@@ -277,9 +209,7 @@ class Robot(wpilib.TimedRobot):
         self.target_align_cmd = None
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
-        # Remove, because we don't want it retracting after auto
-        # in case our arm is hooked with the reef
-        # self.periscope.arm.target = config.transit_setpoint
+
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
         SmartDashboard.putNumber(
