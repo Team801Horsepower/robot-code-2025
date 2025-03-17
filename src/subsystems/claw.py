@@ -35,6 +35,9 @@ class Claw(Subsystem):
         elif self.algae_detected_time is None:
             self.algae_detected_time = time.time()
 
+        if self.has_algae() and not self.has_coral():
+            self.set(0.25)
+
         SmartDashboard.putNumber("algae sensor value", self.algae_sensor.getValue())
         SmartDashboard.putBoolean("algae detected", self.algae_detected())
         SmartDashboard.putBoolean("coral detected", self.coral_detected())
@@ -54,16 +57,7 @@ class Claw(Subsystem):
     def coral_detected(self) -> bool:
         return not self.coral_sensor.get()
 
-    # FIXME: This gives a false positive if the loop time overruns the threshold.
-    #        Maybe instead of setting it to the current time every frame, we set
-    #        it to None by default, then when coral_detected() is true, we set
-    #        the time value only if it's currently None, and leave it alone
-    #        otherwise. If coral_detected() is every seen to be False, we set
-    #        it back to None. Then, has_coral() is a check of first,
-    #        coral_detected_time is not None, and then that the elapsed since then
-    #        is greater than the threshold.
     def has_coral(self) -> bool:
-        # return time.time() - self.coral_detected_time > 0.025
         return (
             self.coral_detected_time is not None
             and time.time() - self.coral_detected_time > 0.025

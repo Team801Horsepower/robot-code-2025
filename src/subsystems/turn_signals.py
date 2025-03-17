@@ -45,6 +45,9 @@ class TurnSignals(Subsystem):
             self.pdp.setSwitchableChannel(state)
             if state:
                 self.signal(1, False)
+        elif side == 2:
+            self.signal(1, state)
+            self.signal(-1, state)
         else:
             self.signal(1, False)
             self.signal(-1, False)

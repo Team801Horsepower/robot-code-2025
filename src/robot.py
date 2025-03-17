@@ -3,7 +3,7 @@
 import wpilib
 from wpilib import SmartDashboard
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
-from commands2 import CommandScheduler, Command
+from commands2 import CommandScheduler, Command, InstantCommand, WaitCommand
 from wpimath import units
 from functools import reduce
 from math import sin, pi
@@ -15,7 +15,7 @@ from subsystems import drive, periscope, vision, manipulator_controller, turn_si
 from commands.target_reef import TargetReef
 
 from utils.graph import Graph
-from utils import time_f
+from utils import time_f, letter_to_morse
 
 from auto_actions import make_auto_methods
 
@@ -67,6 +67,23 @@ class Robot(wpilib.TimedRobot):
 
         SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
         SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
+
+        def flip_turn_signals(value):
+            self.turn_signals.signal(2, value)
+
+        blink_string = "801 Horsepower"
+        led_cmds = []
+        for letter in blink_string:
+            for blink_time in letter_to_morse(letter):
+                led_cmds.append(
+                    InstantCommand(flip_turn_signals(True)).andThen(
+                        WaitCommand(blink_time)
+                    )
+                )
+                led_cmds.append(
+                    InstantCommand(flip_turn_signals(False)).andThen(WaitCommand(0.025))
+                )
+        self.scheduler.schedule(reduce(Command.andThen, led_cmds))
 
     @time_f("periodic robot")
     def robotPeriodic(self):
