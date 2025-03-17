@@ -39,8 +39,12 @@ class TurnSignals(Subsystem):
     def signal(self, side: int, state: bool):
         if side == 1:
             self.spark.set(1 if state else 0)
+            if state:
+                self.signal(-1, False)
         elif side == -1:
             self.pdp.setSwitchableChannel(state)
+            if state:
+                self.signal(1, False)
         else:
             self.signal(1, False)
             self.signal(-1, False)
