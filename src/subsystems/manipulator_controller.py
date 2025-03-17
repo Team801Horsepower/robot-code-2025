@@ -31,6 +31,13 @@ class ManipulatorController(Subsystem):
     def periodic(self):
         self.update_tree_selection()
         if (
+            self.arm_setpoint == config.algae_reef_setpoints[0]
+            or self.arm_setpoint == config.algae_reef_setpoints[1]
+        ) and self.stalk_selection is not None:
+            self.arm_setpoint = config.algae_reef_setpoints[
+                int(self.stalk_selection / 2) % 2
+            ]
+        if (
             self.controller.getRawButtonPressed(self.input_indices["algae"])
             and self.stalk_selection is not None
         ):
