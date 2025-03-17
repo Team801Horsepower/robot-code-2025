@@ -18,7 +18,7 @@ from functools import reduce
 import time
 
 import config
-from subsystems import drive, odometry, periscope, vision, manipulator_controller
+from subsystems import drive, odometry, periscope, vision, manipulator_controller, turn_signals
 
 from commands.drive_to_pose import DriveToPose
 from commands.graph_pathfind import GraphPathfind
@@ -52,6 +52,8 @@ class Robot(wpilib.TimedRobot):
         self.manip_controller = manipulator_controller.ManipulatorController(
             self.scheduler, 1
         )
+
+        self.turn_signals = turn_signals.TurnSignals(self.scheduler, self.manip_controller, self.periscope.claw)
 
         self.drive.chassis.set_swerves()
 
