@@ -55,7 +55,10 @@ class Elevator(Subsystem):
     def periodic(self):
         target = self.target_extension
         if not self.wrist_up:
-            target = max(target, config.wrist_passthrough_min_extension)
+            target = max(
+                target,
+                min(config.wrist_passthrough_min_extension, self.get_extension()),
+            )
         self.target_target_extension(target)
         self.update_extension()
 

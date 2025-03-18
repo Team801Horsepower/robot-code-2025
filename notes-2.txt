@@ -1,0 +1,4 @@
+IK neutral state
+x: 0.06846
+y: 0.97244
+wrist angle (subject to change): 3.31974

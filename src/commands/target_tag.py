@@ -5,7 +5,7 @@ from wpimath.controller import PIDController
 from wpimath import units
 from wpilib import SmartDashboard
 from math import pi, tan
-from typing import Optional, Callable
+from typing import Optional, Callable, Tuple
 from abc import abstractmethod
 
 from subsystems.drive import Drive
@@ -18,11 +18,11 @@ import config
 class TargetTag(Command):
     def __init__(self):
         # self.approach_pid = PIDController(5.5, 0, 0.002)
-        self.approach_pid = PIDController(5.5, 0, 0.0)
+        self.approach_pid = PIDController(*self.approach_pid_constants)
         # self.strafe_pid = PIDController(5.5, 0, 0.002)
-        self.strafe_pid = PIDController(5.0, 0, 0.0)
+        self.strafe_pid = PIDController(*self.strafe_pid_constants)
         # self.theta_pid = PIDController(6.5, 0.0, 0.3)
-        self.theta_pid = PIDController(6.5, 0.0, 0.0)
+        self.theta_pid = PIDController(*self.theta_pid_constants)
 
         self.within_threshold = False
 
@@ -46,6 +46,21 @@ class TargetTag(Command):
     @property
     @abstractmethod
     def tag_id(self) -> int:
+        pass
+
+    @property
+    @abstractmethod
+    def approach_pid_constants(self) -> Tuple[float, float, float]:
+        pass
+
+    @property
+    @abstractmethod
+    def strafe_pid_constants(self) -> Tuple[float, float, float]:
+        pass
+
+    @property
+    @abstractmethod
+    def theta_pid_constants(self) -> Tuple[float, float, float]:
         pass
 
     @property
@@ -174,6 +189,10 @@ class TargetTag(Command):
                 left_param - right_param - (self.left_target - self.right_target)
             ) < units.degreesToRadians(1.0)
             # ) < units.degreesToRadians(1.5)
+
+            SmartDashboard.putBoolean("tt sum within threshold", sum_within_threshold)
+            SmartDashboard.putBoolean("tt diff within threshold", diff_within_threshold)
+
             self.within_threshold = sum_within_threshold and diff_within_threshold
 
         # max_drive_speed = config.auto_drive_speed

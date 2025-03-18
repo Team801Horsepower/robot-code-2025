@@ -79,7 +79,6 @@ class ApproachHPS(Command):
                 self.periscope.claw.set(1)
             else:
                 self.periscope.claw.set(0)
-            self.periscope.claw.set(0)
             if self.current_cmd.isFinished() or (tag_seen and near_source):
                 self.current_cmd.end(False)
                 self.current_cmd = self.th_cmd

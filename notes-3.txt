@@ -1,0 +1,52 @@
+transit state
+pivot: 68.7°
+elevator: retracted
+wrist: 114.6°
+
+algae ground pickup state
+pivot: 35°
+elevator: retracted
+wrist: 118°
+
+processor state
+pivot: 35°
+elevator: retracted
+wrist: 166°
+
+human player station state
+IK x: -0.45
+IK y: 0.87
+IK wrist: 143°
+
+L1 state
+(copy L2)
+
+L2 state
+IK x: 0.4
+IK y: 0.87237
+IK wrist: -7°
+
+L3 state
+IK x: 0.4
+IK y: 1.29416
+IK wrist: -7°
+
+L4 state
+IK x: 0.3
+IK y: 1.988
+IK wrist: -20°
+
+algae 1 state
+IK x: 0.5
+IK y: 1.1
+IK wrist: 35°
+
+algae 2 state
+IK x: 0.5
+IK y: 1.6
+IK wrist: 35°
+
+barge state
+IK x: -0.375
+IK y: 2.4
+IK wrist: 140°

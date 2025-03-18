@@ -105,6 +105,8 @@ pivot_motor_ids = [30, 32, 31, 33]
 # pivot_pid_constants = (0.65, 0, 0)
 pivot_pid_constraint_constants = (100, 15)
 
+pivot_gear_ratio = 80.801
+
 pivot_encoder_id = 0
 pivot_angle_offset = 0.407 * 2 * pi
 pivot_com_offset_for_feedforward = 0.1742036732  # for claw at zero

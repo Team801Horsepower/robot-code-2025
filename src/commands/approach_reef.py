@@ -34,7 +34,8 @@ class ApproachReef(Command):
         self.tr_cmd = TargetReef(self.drive, self.vision, self.stalk_i)
 
         reef_center_pos = Translation2d(4.5, 4)
-        pathfind_pos = reef_center_pos + Translation2d(2.2, 0).rotateBy(
+        # pathfind_pos = reef_center_pos + Translation2d(2.2, 0).rotateBy(
+        pathfind_pos = reef_center_pos + Translation2d(1.7, 0).rotateBy(
             Rotation2d(self.tr_cmd.face_i * pi / 3)
         )
         pathfind_pos = config.flip_red(pathfind_pos)
@@ -71,8 +72,9 @@ class ApproachReef(Command):
         elif isinstance(self.current_cmd, TargetReef):
             if not tag_seen or not near_reef:
                 self.current_cmd = self.gpf_cmd
-            if near_reef:
-                self.arm.target = config.reef_setpoints[self.target_level]
+
+        if near_reef:
+            self.arm.target = config.reef_setpoints[self.target_level]
 
         self.current_cmd.execute()
 

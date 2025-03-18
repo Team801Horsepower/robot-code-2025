@@ -1,7 +1,7 @@
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath import units
 from math import pi
-from typing import Callable
+from typing import Callable, Tuple
 
 from subsystems.drive import Drive
 from subsystems.vision import Vision
@@ -54,6 +54,18 @@ class TargetHPS(TargetTag):
         return self.tag_id_
 
     @property
+    def approach_pid_constants(self) -> Tuple[float, float, float]:
+        return (7.5, 0.0, 0.0)
+
+    @property
+    def strafe_pid_constants(self) -> Tuple[float, float, float]:
+        return (5.0, 0.0, 0.0)
+
+    @property
+    def theta_pid_constants(self) -> Tuple[float, float, float]:
+        return (6.5, 0.0, 0.0)
+
+    @property
     def target_angle(self) -> float:
         return self.target_angle_
 
@@ -83,7 +95,7 @@ class TargetHPS(TargetTag):
 
     @property
     def align_speed(self) -> float:
-        return 3
+        return 4
 
     @property
     def use_diag(self) -> bool:

@@ -1,0 +1,29 @@
+Camera parameters
+
+front left
+x: -0.11146
+y: 0.23460
+z: 0.27491
+yaw: 340
+pitch: 20
+
+back left
+x: -0.16406
+y: 0.25998
+z: 0.277
+yaw: 150
+pitch: 25
+
+front right
+x: -0.11146
+y: -0.23460
+z: 0.27491
+yaw: 20
+pitch: 20
+
+back right
+x: -0.16406
+y: -0.25998
+z: 0.277
+yaw: 210
+pitch: 25

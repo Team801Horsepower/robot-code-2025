@@ -13,6 +13,8 @@ import config
 from subsystems import drive, periscope, vision, manipulator_controller, turn_signals
 
 from commands.target_reef import TargetReef
+from commands.approach_reef import ApproachReef
+from commands.approach_hps import ApproachHPS
 
 from utils.graph import Graph
 from utils import time_f, letter_to_morse
@@ -84,6 +86,9 @@ class Robot(wpilib.TimedRobot):
                     InstantCommand(flip_turn_signals(False)).andThen(WaitCommand(0.025))
                 )
         self.scheduler.schedule(reduce(Command.andThen, led_cmds))
+
+        graph_path = config.code_path + "graph.json"
+        self.graph = Graph(graph_path)
 
     @time_f("periodic robot")
     def robotPeriodic(self):
@@ -181,26 +186,28 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def autonomousInit(self):
-        graph_path = config.code_path + "graph.json"
-        graph = Graph(graph_path)
+        self.auto_start_time = time.time()
 
         self.periscope.arm.target = config.transit_setpoint
 
-        g, s = make_auto_methods(self.drive, self.vision, self.periscope, graph)
-        # cmds = [
-        #     s(11, 3),
-        #     g(False),
-        #     s(8, 3),
-        #     g(False),
-        #     s(8, 2),
-        # ]
+        g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
+
         cmds = [
-            s(2, 3),
-            g(True),
-            s(5, 3),
-            g(True),
-            s(4, 3),
+            s(11, 3),
+            g(False),
+            s(8, 3),
+            g(False),
+            s(8, 2),
         ]
+
+        # cmds = [
+        #     s(2, 3),
+        #     g(True),
+        #     s(5, 3),
+        #     g(True),
+        #     s(4, 3),
+        # ]
+
         # cmds = [
         #     s(11, 3),
         #     g(False),
@@ -214,7 +221,13 @@ class Robot(wpilib.TimedRobot):
         #     g(False),
         #     s(8, 1),
         # ]
-        self.scheduler.schedule(reduce(Command.andThen, cmds))
+        def log_time():
+            auto_took = time.time() - self.auto_start_time
+            SmartDashboard.putNumber("auto took", auto_took)
+
+        self.scheduler.schedule(
+            reduce(Command.andThen, cmds).andThen(InstantCommand(log_time))
+        )
 
     def autonomousPeriodic(self):
         self.autolower()
@@ -292,24 +305,48 @@ class Robot(wpilib.TimedRobot):
             self.driver_controller.getLeftBumperButtonPressed()
             and self.manip_controller.stalk_selection is not None
         ):
-            self.target_align_cmd = TargetReef(
-                self.drive, self.vision, self.manip_controller.stalk_selection
+            # self.target_align_cmd = TargetReef(
+            #     self.drive, self.vision, self.manip_controller.stalk_selection
+            # )
+            if self.target_align_cmd is not None:
+                self.target_align_cmd.cancel()
+            self.target_align_cmd = ApproachReef(
+                self.drive,
+                self.vision,
+                self.periscope.arm,
+                self.graph,
+                self.manip_controller.stalk_selection,
+                self.manip_controller.target_level or 0,
+            )
+            self.scheduler.schedule(self.target_align_cmd)
+        elif (
+            left_hps := self.driver_controller.getXButtonPressed()
+        ) or self.driver_controller.getBButtonPressed():
+            if self.target_align_cmd is not None:
+                self.target_align_cmd.cancel()
+            self.target_align_cmd = ApproachHPS(
+                self.drive, self.vision, self.periscope, self.graph, left_hps
             )
             self.scheduler.schedule(self.target_align_cmd)
         elif (
             self.driver_controller.getLeftBumperButtonReleased()
-            and self.target_align_cmd is not None
-        ):
+            or self.driver_controller.getXButtonReleased()
+            or self.driver_controller.getBButtonReleased()
+        ) and self.target_align_cmd is not None:
             self.target_align_cmd.cancel()
             self.target_align_cmd = None
 
         self.autolower()
 
-        claw_power = (
-            self.driver_controller.getLeftTriggerAxis()
-            - self.driver_controller.getRightTriggerAxis()
-        )
-        self.periscope.claw.set(claw_power)
+        if not (
+            isinstance(self.target_align_cmd, ApproachHPS)
+            and self.target_align_cmd.isScheduled()
+        ):
+            claw_power = (
+                self.driver_controller.getLeftTriggerAxis()
+                - self.driver_controller.getRightTriggerAxis()
+            )
+            self.periscope.claw.set(claw_power)
 
     def teleopExit(self):
         pass

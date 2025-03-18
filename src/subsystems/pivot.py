@@ -86,6 +86,10 @@ class Pivot(Subsystem):
         self.last_velocity = self.pivot_motor_encoders[0].getVelocity()
         self.last_update_time = time.time()
 
+        SmartDashboard.putNumber(
+            "pivot encoder", self.pivot_motor_encoders[0].getPosition()
+        )
+
     def target_target_angle(self, target: float):
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
         self.set_power(pid_output + self.pivot_ff_power())
@@ -102,11 +106,22 @@ class Pivot(Subsystem):
     def update_angle(self) -> float:
         return config.pivot_angle_offset - self.pivot_encoder.get() * 2.0 * pi
 
+    def get_vel(self) -> float:
+        return (
+            self.pivot_motor_encoders[0].getVelocity()
+            / 60
+            / config.pivot_gear_ratio
+            * 2
+            * pi
+        )
+
     def at_angle(self) -> bool:
-        if (
-            abs(self.get_angle() - self.target_angle) < config.pivot_epsilon_pos
-            and abs(self.pivot_motor_encoders[0].getVelocity()) < config.pivot_epsilon_v
-        ):
+        at_pos = abs(self.get_angle() - self.target_angle) < config.pivot_epsilon_pos
+        at_vel = abs(self.get_vel()) < config.pivot_epsilon_v
+        SmartDashboard.putBoolean("pivot pos at target", at_pos)
+        SmartDashboard.putBoolean("pivot vel at target", at_vel)
+        SmartDashboard.putNumber("pivot vel", self.get_vel())
+        if at_pos and at_vel:
             return True
 
         return False

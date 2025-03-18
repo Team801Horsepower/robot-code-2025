@@ -44,6 +44,10 @@ class Arm(Subsystem):
         self.elevator.wrist_up = self.wrist.angle() > config.wrist_neutral_angle
         self.seek_target()
 
+        SmartDashboard.putBoolean("pivot at target", self.pivot.at_angle())
+        SmartDashboard.putBoolean("elevator at target", self.elevator.at_extension())
+        SmartDashboard.putBoolean("wrist at target", self.wrist.at_angle())
+
     def seek_target(self):
         if isinstance(self.pivot_relative_target, Transform2d):
             self._target_outofbounds = False
