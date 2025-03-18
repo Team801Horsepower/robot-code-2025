@@ -16,7 +16,6 @@ from subsystems import (
     vision,
     manipulator_controller,
     turn_signals,
-    climber,
 )
 
 from commands.target_reef import TargetReef
@@ -50,8 +49,6 @@ class Robot(wpilib.TimedRobot):
         self.turn_signals = turn_signals.TurnSignals(
             self.scheduler, self.manip_controller, self.periscope.claw
         )
-
-        self.climber = climber.Climber(self.scheduler)
 
         self.drive.chassis.set_swerves()
 
@@ -347,22 +344,26 @@ class Robot(wpilib.TimedRobot):
 
         self.autolower()
 
+        SmartDashboard.putBoolean("climb mode", self.manip_controller.get_climb_mode())
         if self.manip_controller.get_climb_mode():
-            self.climber.climb(
+            self.periscope.claw.set(0)
+            self.periscope.climber.climb(
                 max(
                     self.driver_controller.getLeftTriggerAxis(),
                     self.driver_controller.getRightTriggerAxis(),
                 )
             )
-        elif not (
-            isinstance(self.target_align_cmd, ApproachHPS)
-            and self.target_align_cmd.isScheduled()
-        ):
-            claw_power = (
-                self.driver_controller.getLeftTriggerAxis()
-                - self.driver_controller.getRightTriggerAxis()
-            )
-            self.periscope.claw.set(claw_power)
+        else:
+            self.periscope.climber.climb(0)
+            if not (
+                isinstance(self.target_align_cmd, ApproachHPS)
+                and self.target_align_cmd.isScheduled()
+            ):
+                claw_power = (
+                    self.driver_controller.getLeftTriggerAxis()
+                    - self.driver_controller.getRightTriggerAxis()
+                )
+                self.periscope.claw.set(claw_power)
 
     def teleopExit(self):
         pass

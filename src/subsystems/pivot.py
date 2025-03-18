@@ -55,6 +55,8 @@ class Pivot(Subsystem):
         self.last_update_time = time.time()
         self.acceleration = 0
 
+        self.should_power_limit = True
+
         scheduler.registerSubsystem(self)
 
     @time_f("periodic pivot")
@@ -96,7 +98,8 @@ class Pivot(Subsystem):
 
     def set_power(self, power: float):
         SmartDashboard.putNumber("pivot power", power)
-        power = clamp(-0.25, 0.25, power)
+        if self.should_power_limit:
+            power = clamp(-0.25, 0.25, power)
         for motor in self.pivot_motors:
             motor.set(power)
 

@@ -19,3 +19,4 @@ class Periscope(Subsystem):
     @time_f("periodic periscope")
     def periodic(self):
         self.arm.wrist_passthrough_allowed_by_algae = not self.claw.algae_detected()
+        self.arm.pivot.should_power_limit = self.climber.climbed()

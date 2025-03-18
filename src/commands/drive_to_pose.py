@@ -88,9 +88,7 @@ class DriveToPose(Command):
         self.drive.drive(drive_input, True)
 
         speeds = self.drive.chassis.chassis_speeds()
-        is_slow = (
-            sqrt(speeds.vx**2 + speeds.vy**2) < 0.05 and abs(speeds.omega) < 0.1
-        )
+        is_slow = sqrt(speeds.vx**2 + speeds.vy**2) < 0.05 and abs(speeds.omega) < 0.1
         now = time.time()
         if not is_slow:
             self.slow_time = now
