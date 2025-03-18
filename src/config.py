@@ -78,7 +78,7 @@ claw_beam_break_id = 0
 
 # -- Climber --
 
-climb_motor_id = 0 # TODO: change to actual motor id
+climb_motor_id = 60
 
 # -- Arm --
 
