@@ -326,8 +326,9 @@ class Robot(wpilib.TimedRobot):
             )
             self.scheduler.schedule(self.target_align_cmd)
         elif (
-            left_hps := self.driver_controller.getXButtonPressed()
-        ) or self.driver_controller.getBButtonPressed():
+            (left_hps := self.driver_controller.getXButtonPressed())
+            or self.driver_controller.getBButtonPressed()
+        ) and not self.manip_controller.get_climb_mode():
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
             self.target_align_cmd = ApproachHPS(
@@ -353,6 +354,10 @@ class Robot(wpilib.TimedRobot):
                     self.driver_controller.getRightTriggerAxis(),
                 )
             )
+            if self.driver_controller.getBButtonPressed():
+                self.periscope.arm.target = config.climb_raised_setpoint
+            elif self.driver_controller.getXButtonPressed():
+                self.periscope.arm.target = config.climb_lowered_setpoint
         else:
             self.periscope.climber.climb(0)
             if not (
