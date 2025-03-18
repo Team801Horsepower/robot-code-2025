@@ -35,9 +35,6 @@ class Claw(Subsystem):
         elif self.algae_detected_time is None:
             self.algae_detected_time = time.time()
 
-        if self.has_algae() and not self.has_coral():
-            self.set(0.25)
-
         SmartDashboard.putNumber("algae sensor value", self.algae_sensor.getValue())
         SmartDashboard.putBoolean("algae detected", self.algae_detected())
         SmartDashboard.putBoolean("coral detected", self.coral_detected())
@@ -49,10 +46,14 @@ class Claw(Subsystem):
         if self.has_coral():
             power = max(power, 0)
         power = clamp(-0.75, 1, power)
-        self.motor.set(power)
+
+        if power == 0 and self.has_algae() and not self.has_coral():
+            self.set(0.05)
+        else:
+            self.motor.set(power)
 
     def algae_detected(self) -> bool:
-        return self.algae_sensor.getValue() > 1300
+        return self.algae_sensor.getValue() > 500
 
     def coral_detected(self) -> bool:
         return not self.coral_sensor.get()
