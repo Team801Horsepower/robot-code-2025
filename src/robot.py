@@ -396,7 +396,7 @@ class Robot(wpilib.TimedRobot):
 
     def testPeriodic(self):
         if self.driver_controller.getAButtonPressed():
-            self.read_typed_ik_input()
+            self.read_typed_arm_input()
             # entry = list(config.elevator_dynamics_table[5])
             # entry[1] = SmartDashboard.getNumber("hff", 0.0065)
             # config.elevator_dynamics_table[5] = tuple(entry)
