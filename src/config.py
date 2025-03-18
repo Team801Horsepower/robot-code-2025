@@ -222,3 +222,15 @@ processor_setpoint = (
     extension_range[0],
     units.degreesToRadians(166),
 )
+
+
+climb_raised_setpoint = (
+    units.degreesToRadians(115),
+    extension_range[0],
+    units.degreesToRadians(166),
+)
+climb_lowered_setpoint = (
+    units.degreesToRadians(5),
+    extension_range[0],
+    units.degreesToRadians(166),
+)
