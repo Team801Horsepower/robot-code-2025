@@ -11,7 +11,7 @@ import config
 
 
 class TargetReef(TargetTag):
-    def __init__(self, drive: Drive, vision: Vision, stalk_i: int):
+    def __init__(self, drive: Drive, vision: Vision, stalk_i: int, algae: bool):
         self.drive_ = drive
         self.vision_ = vision
 
@@ -21,10 +21,13 @@ class TargetReef(TargetTag):
         self.target_angle_ = 0.0 if config.is_red() else pi
         self.target_angle_ += pi / 3 * self.face_i
 
-        left_stalk = stalk_i % 2 == 0
-
-        self.left_target_ = units.degreesToRadians(13.6 if left_stalk else -12.11)
-        self.right_target_ = units.degreesToRadians(13.75 if left_stalk else -11.66)
+        if not algae:
+            left_stalk = stalk_i % 2 == 0
+            self.left_target_ = units.degreesToRadians(13.6 if left_stalk else -12.11)
+            self.right_target_ = units.degreesToRadians(13.75 if left_stalk else -11.66)
+        else:
+            self.right_target_ = units.degreesToRadians(3.815)
+            self.left_target_ = units.degreesToRadians(-3.815)
 
         super().__init__()
 

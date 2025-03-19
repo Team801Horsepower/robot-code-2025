@@ -90,6 +90,25 @@ class Robot(wpilib.TimedRobot):
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
 
+        SmartDashboard.putNumber(
+            "new pivot target",
+            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
+        )
+        SmartDashboard.putNumber(
+            "new elevator target", self.periscope.arm.elevator.target_extension
+        )
+        SmartDashboard.putNumber(
+            "new wrist target",
+            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
+        )
+        SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
+        SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
+        units.degreesToRadians(
+            SmartDashboard.putNumber(
+                "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
+            )
+        )
+
     @time_f("periodic robot")
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
@@ -305,9 +324,6 @@ class Robot(wpilib.TimedRobot):
             self.driver_controller.getLeftBumperButtonPressed()
             and self.manip_controller.stalk_selection is not None
         ):
-            # self.target_align_cmd = TargetReef(
-            #     self.drive, self.vision, self.manip_controller.stalk_selection
-            # )
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
             self.target_align_cmd = ApproachReef(
@@ -317,6 +333,7 @@ class Robot(wpilib.TimedRobot):
                 self.graph,
                 self.manip_controller.stalk_selection,
                 self.manip_controller.target_level or 0,
+                self.manip_controller.reef_algae_selected,
             )
             self.scheduler.schedule(self.target_align_cmd)
         elif (
@@ -352,29 +369,11 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def testInit(self):
-        SmartDashboard.putNumber(
-            "new pivot target",
-            units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
-        )
-        SmartDashboard.putNumber(
-            "new elevator target", self.periscope.arm.elevator.target_extension
-        )
-        SmartDashboard.putNumber(
-            "new wrist target",
-            units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
-        )
-        SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
-        SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
-        units.degreesToRadians(
-            SmartDashboard.putNumber(
-                "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
-            )
-        )
         SmartDashboard.putNumber("hff", 0.0065)
 
     def testPeriodic(self):
         if self.driver_controller.getAButtonPressed():
-            self.read_typed_ik_input()
+            self.read_typed_arm_input()
             # entry = list(config.elevator_dynamics_table[5])
             # entry[1] = SmartDashboard.getNumber("hff", 0.0065)
             # config.elevator_dynamics_table[5] = tuple(entry)

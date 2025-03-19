@@ -53,7 +53,7 @@ class Claw(Subsystem):
             self.motor.set(power)
 
     def algae_detected(self) -> bool:
-        return self.algae_sensor.getValue() > 500
+        return self.algae_sensor.getValue() > 550
 
     def coral_detected(self) -> bool:
         return not self.coral_sensor.get()

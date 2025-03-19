@@ -23,6 +23,7 @@ class ApproachReef(Command):
         graph: Graph,
         stalk_i: int,
         target_level: int,
+        algae: bool,
     ):
         self.drive = drive
         self.vision = vision
@@ -31,7 +32,9 @@ class ApproachReef(Command):
         self.stalk_i = stalk_i
         self.target_level = target_level
 
-        self.tr_cmd = TargetReef(self.drive, self.vision, self.stalk_i)
+        self.algae = algae
+
+        self.tr_cmd = TargetReef(self.drive, self.vision, self.stalk_i, algae)
 
         reef_center_pos = Translation2d(4.5, 4)
         # pathfind_pos = reef_center_pos + Translation2d(2.2, 0).rotateBy(
@@ -74,7 +77,11 @@ class ApproachReef(Command):
                 self.current_cmd = self.gpf_cmd
 
         if near_reef:
-            self.arm.target = config.reef_setpoints[self.target_level]
+            if not self.algae:
+                self.arm.target = config.reef_setpoints[self.target_level]
+            else:
+                height = int(self.stalk_i / 2) % 2
+                self.arm.target = config.algae_reef_setpoints[height]
 
         self.current_cmd.execute()
 

@@ -180,7 +180,8 @@ wrist_gear_ratio = 11.45
 # -- Setpoints --
 
 reef_setpoints = [
-    Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
+    # Transform2d(0.4, 0.87237, units.degreesToRadians(-7)),
+    (units.degreesToRadians(28), extension_range[0], units.degreesToRadians(155)),
     # Transform2d(0.45, 0.90237, units.degreesToRadians(-7)),
     Transform2d(0.5, 0.87, units.degreesToRadians(-10)),
     Transform2d(0.47, 1.31416, units.degreesToRadians(-7)),

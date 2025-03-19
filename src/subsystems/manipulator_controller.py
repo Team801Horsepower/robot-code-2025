@@ -29,6 +29,8 @@ class ManipulatorController(Subsystem):
 
         self.target_level = None
 
+        self.reef_algae_selected = False
+
     @time_f("periodic manip controller")
     def periodic(self):
         if (
@@ -47,24 +49,29 @@ class ManipulatorController(Subsystem):
             ]
             SmartDashboard.putString("setpoint selection", "ALGAE")
             self.target_level = None
+            self.reef_algae_selected = True
         elif self.controller.getRawButtonPressed(self.input_indices["g_pickup"]):
             self.arm_setpoint = config.ground_pickup_setpoint
             SmartDashboard.putString("setpoint selection", "GROUND ALGAE")
             self.target_level = None
+            self.reef_algae_selected = False
         elif self.controller.getRawButtonPressed(self.input_indices["processor"]):
             self.arm_setpoint = config.processor_setpoint
             SmartDashboard.putString("setpoint selection", "PROCESSOR")
             self.target_level = None
+            self.reef_algae_selected = False
         elif self.controller.getRawButtonPressed(self.input_indices["barge"]):
             self.arm_setpoint = config.barge_setpoint
             SmartDashboard.putString("setpoint selection", "BARGE")
             self.target_level = None
+            self.reef_algae_selected = False
         else:
             for i, index in enumerate(self.input_indices["branch"]):
                 if self.controller.getRawButtonPressed(index):
                     self.arm_setpoint = config.reef_setpoints[i]
                     self.target_level = i
                     self.sb_reef_sel()
+                    self.reef_algae_selected = False
                     break
 
         self.update_tree_selection()
