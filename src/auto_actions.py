@@ -38,7 +38,7 @@ def make_auto_methods(
 
     def s(stalk_i: int, level_i: int):
         return ApproachReef(
-            drive, vision, periscope.arm, graph, stalk_i, level_i
+            drive, vision, periscope.arm, graph, stalk_i, level_i, False
         ).andThen(PlaceCoral(periscope))
 
     return (g, s)

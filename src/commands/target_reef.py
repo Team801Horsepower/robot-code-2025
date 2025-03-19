@@ -2,6 +2,7 @@ from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath import units
 from math import pi
 from typing import Callable, Tuple
+from wpilib import SmartDashboard
 
 from subsystems.drive import Drive
 from subsystems.vision import Vision
@@ -23,8 +24,10 @@ class TargetReef(TargetTag):
 
         if not algae:
             left_stalk = stalk_i % 2 == 0
-            self.left_target_ = units.degreesToRadians(13.6 if left_stalk else -12.11)
-            self.right_target_ = units.degreesToRadians(13.75 if left_stalk else -11.66)
+            # self.left_target_ = units.degreesToRadians(13.6 if left_stalk else -12.11)
+            # self.right_target_ = units.degreesToRadians(13.75 if left_stalk else -11.66)
+            self.left_target_ = units.degreesToRadians(11.43 if left_stalk else -12.05)
+            self.right_target_ = units.degreesToRadians(16.97 if left_stalk else -7.19)
         else:
             self.right_target_ = units.degreesToRadians(3.815)
             self.left_target_ = units.degreesToRadians(-3.815)
@@ -45,11 +48,15 @@ class TargetReef(TargetTag):
 
     @property
     def approach_pid_constants(self) -> Tuple[float, float, float]:
-        return (5.5, 0.0, 0.0)
+        p = SmartDashboard.getNumber("reef approach P", 10.0)
+        i = SmartDashboard.getNumber("reef approach I", 0.0)
+        return (p, 0.0, i)
 
     @property
     def strafe_pid_constants(self) -> Tuple[float, float, float]:
-        return (5.0, 0.0, 0.0)
+        p = SmartDashboard.getNumber("reef strafe P", 3.0)
+        i = SmartDashboard.getNumber("reef strafe I", 0.0)
+        return (p, 0.0, i)
 
     @property
     def theta_pid_constants(self) -> Tuple[float, float, float]:
@@ -85,7 +92,8 @@ class TargetReef(TargetTag):
 
     @property
     def align_speed(self) -> float:
-        return 3.5
+        # return 4.5
+        return SmartDashboard.getNumber("reef align speed", 5.5)
 
     @property
     def use_diag(self) -> bool:

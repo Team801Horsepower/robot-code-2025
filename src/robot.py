@@ -12,9 +12,9 @@ import time
 import config
 from subsystems import drive, periscope, vision, manipulator_controller, turn_signals
 
-from commands.target_reef import TargetReef
 from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
+from commands.place_coral import PlaceCoral
 
 from utils.graph import Graph
 from utils import time_f, letter_to_morse
@@ -65,10 +65,8 @@ class Robot(wpilib.TimedRobot):
             Pose2d(Translation2d(), Rotation2d(pi if config.is_red() else 0))
         )
 
-        # SmartDashboard.putNumber("approach P", 15.0)
-
-        SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
-        SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
+        # SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
+        # SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
 
         def flip_turn_signals(value):
             self.turn_signals.signal(2, value)
@@ -109,11 +107,40 @@ class Robot(wpilib.TimedRobot):
             )
         )
 
+        SmartDashboard.putNumber("reef approach P", 10.0)
+        SmartDashboard.putNumber("reef strafe P", 3.0)
+        SmartDashboard.putNumber("reef approach I", 0.0)
+        SmartDashboard.putNumber("reef strafe I", 0.0)
+        SmartDashboard.putNumber("reef align speed", 5.5)
+        SmartDashboard.putNumber("align threshold", 1.0)
+
     @time_f("periodic robot")
     def robotPeriodic(self):
         # This line must always be present in robotPeriodic, or else
         # commands and subsystem periodic methods will not run
         self.scheduler.run()
+
+        SmartDashboard.putNumberArray(
+            "drive encoder pos",
+            [
+                swerve.drive_encoder.getPosition()
+                for swerve in self.drive.chassis.swerves
+            ],
+        )
+        SmartDashboard.putNumberArray(
+            "drive encoder vel",
+            [
+                swerve.drive_encoder.getVelocity()
+                for swerve in self.drive.chassis.swerves
+            ],
+        )
+        SmartDashboard.putNumberArray(
+            "drive motor current",
+            [
+                swerve.drive_motor.getOutputCurrent()
+                for swerve in self.drive.chassis.swerves
+            ],
+        )
 
         config.auto_drive_speed = SmartDashboard.getNumber(
             "auto drive speed", config.auto_drive_speed
@@ -207,6 +234,7 @@ class Robot(wpilib.TimedRobot):
     def autonomousInit(self):
         self.auto_start_time = time.time()
 
+        self.periscope.arm.pivot.has_flipped_middle_finger = False
         self.periscope.arm.target = config.transit_setpoint
 
         g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
@@ -358,6 +386,8 @@ class Robot(wpilib.TimedRobot):
         if not (
             isinstance(self.target_align_cmd, ApproachHPS)
             and self.target_align_cmd.isScheduled()
+            # self.target_align_cmd is not None
+            # and self.target_align_cmd.isScheduled()
         ):
             claw_power = (
                 self.driver_controller.getLeftTriggerAxis()
@@ -373,7 +403,7 @@ class Robot(wpilib.TimedRobot):
 
     def testPeriodic(self):
         if self.driver_controller.getAButtonPressed():
-            self.read_typed_arm_input()
+            self.read_typed_ik_input()
             # entry = list(config.elevator_dynamics_table[5])
             # entry[1] = SmartDashboard.getNumber("hff", 0.0065)
             # config.elevator_dynamics_table[5] = tuple(entry)

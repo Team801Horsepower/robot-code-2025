@@ -24,15 +24,9 @@ class Arm(Subsystem):
 
         self.target: Optional[Transform2d | Tuple[float, float, float]] = None
         self.use_algae = False
-        # self.should_extend = False
         self._target_outofbounds = False
 
         self.wrist_passthrough_allowed_by_algae = True
-
-        # SmartDashboard.putNumber("Pivot Angle", 0)
-        # SmartDashboard.putNumber("Elevator Extension", 0)
-        # SmartDashboard.putNumber("Wrist Angle", 0)
-        scheduler.registerSubsystem(self)
 
     @time_f("periodic arm")
     def periodic(self):

@@ -55,11 +55,11 @@ class TargetHPS(TargetTag):
 
     @property
     def approach_pid_constants(self) -> Tuple[float, float, float]:
-        return (7.5, 0.0, 0.0)
+        return (9.5, 0.0, 0.0)
 
     @property
     def strafe_pid_constants(self) -> Tuple[float, float, float]:
-        return (5.0, 0.0, 0.0)
+        return (7.0, 0.0, 0.0)
 
     @property
     def theta_pid_constants(self) -> Tuple[float, float, float]:

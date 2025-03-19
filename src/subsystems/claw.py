@@ -9,6 +9,8 @@ from utils import clamp, time_f
 
 class Claw(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
+        scheduler.registerSubsystem(self)
+
         self.motor = SparkFlex(config.claw_motor_id, SparkFlex.MotorType.kBrushless)
         motor_config = SparkFlexConfig().inverted(True)
         motor_config.setIdleMode(SparkFlexConfig.IdleMode.kBrake)
@@ -19,10 +21,11 @@ class Claw(Subsystem):
         )
         self.algae_sensor = AnalogInput(0)
         self.coral_sensor = DigitalInput(1)
-        scheduler.registerSubsystem(self)
 
         self.coral_detected_time = None
         self.algae_detected_time = None
+
+        self.limit_eject_power = False
 
     @time_f("periodic claw")
     def periodic(self):
@@ -46,6 +49,9 @@ class Claw(Subsystem):
         if self.has_coral():
             power = max(power, 0)
         power = clamp(-0.75, 1, power)
+
+        if self.limit_eject_power:
+            power = min(0.3, power)
 
         if power == 0 and self.has_algae() and not self.has_coral():
             self.set(0.05)

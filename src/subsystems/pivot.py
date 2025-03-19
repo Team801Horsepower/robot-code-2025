@@ -18,6 +18,8 @@ import config
 
 class Pivot(Subsystem):
     def __init__(self, scheduler: CommandScheduler, elevator: Elevator, navx: AHRS):
+        scheduler.registerSubsystem(self)
+
         self.elevator: Elevator = elevator
         self.navx: AHRS = navx
 
@@ -55,7 +57,7 @@ class Pivot(Subsystem):
         self.last_update_time = time.time()
         self.acceleration = 0
 
-        scheduler.registerSubsystem(self)
+        self.has_flipped_middle_finger = False
 
     @time_f("periodic pivot")
     def periodic(self):
@@ -73,13 +75,6 @@ class Pivot(Subsystem):
                 lerp_over_table(config.pivot_acc_lim, self.elevator.get_extension())[0],
             )
         )
-
-        SmartDashboard.putNumber(
-            "pivot angle", units.radiansToDegrees(self.get_angle())
-        )
-        SmartDashboard.putNumber(
-            "pivot target", units.radiansToDegrees(self.target_angle)
-        )
         self.acceleration = (
             self.pivot_motor_encoders[0].getVelocity() - self.last_velocity
         ) / (time.time() - self.last_update_time)
@@ -87,10 +82,20 @@ class Pivot(Subsystem):
         self.last_update_time = time.time()
 
         SmartDashboard.putNumber(
+            "pivot angle", units.radiansToDegrees(self.get_angle())
+        )
+        SmartDashboard.putNumber(
+            "pivot target", units.radiansToDegrees(self.target_angle)
+        )
+        SmartDashboard.putNumber(
             "pivot encoder", self.pivot_motor_encoders[0].getPosition()
         )
 
     def target_target_angle(self, target: float):
+        self.has_flipped_middle_finger |= self.get_angle() >= config.middle_finger_angle
+        if not self.has_flipped_middle_finger:
+            target = config.middle_finger_angle + units.degreesToRadians(2)
+
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
         self.set_power(pid_output + self.pivot_ff_power())
 

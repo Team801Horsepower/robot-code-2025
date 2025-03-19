@@ -181,13 +181,15 @@ class TargetTag(Command):
             # SmartDashboard.putNumber("omega max", omega_max)
             # omega = clamp(omega_min, omega_max, omega)
 
+            threshold = SmartDashboard.getNumber("align threshold", 1.0)
+
             sum_within_threshold = abs(
                 left_param + right_param - (self.left_target + self.right_target)
-            ) < units.degreesToRadians(1.0)
+            ) < units.degreesToRadians(threshold)
             # ) < units.degreesToRadians(1.5)
             diff_within_threshold = abs(
                 left_param - right_param - (self.left_target - self.right_target)
-            ) < units.degreesToRadians(1.0)
+            ) < units.degreesToRadians(threshold)
             # ) < units.degreesToRadians(1.5)
 
             SmartDashboard.putBoolean("tt sum within threshold", sum_within_threshold)

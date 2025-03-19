@@ -1,5 +1,7 @@
 from commands2 import Command
 from wpimath.geometry import Rotation2d, Translation2d
+from wpimath import units
+from wpilib import SmartDashboard
 
 from math import pi
 
@@ -58,13 +60,20 @@ class ApproachReef(Command):
     def execute(self):
         near_reef = self.drive.odometry.near_reef_large()
 
+        ang_dist = abs(
+            (self.tr_cmd.target_angle - self.drive.odometry.rotation().radians() + pi)
+            % (2 * pi)
+            - pi
+        )
+        SmartDashboard.putNumber(
+            "dist from target angle",
+            units.radiansToDegrees(ang_dist),
+        )
+
         tag_seen = (
             self.tr_cmd.get_left_param() is not None
             and self.tr_cmd.get_right_param() is not None
-            # and abs(
-            #     self.tr_cmd.target_angle - self.drive.odometry.rotation().radians()
-            # )
-            # < units.degreesToRadians(20)
+            and ang_dist < units.degreesToRadians(15)
         )
 
         if isinstance(self.current_cmd, GraphPathfind):

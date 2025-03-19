@@ -5,6 +5,7 @@ from subsystems.arm import Arm
 from subsystems.claw import Claw
 from subsystems.climber import Climber
 from utils import time_f
+import config
 
 
 class Periscope(Subsystem):
@@ -14,8 +15,8 @@ class Periscope(Subsystem):
         self.arm = Arm(scheduler, navx)
         self.claw = Claw(scheduler)
         self.climber = Climber(scheduler)
-        scheduler.registerSubsystem(self)
 
     @time_f("periodic periscope")
     def periodic(self):
         self.arm.wrist_passthrough_allowed_by_algae = not self.claw.algae_detected()
+        self.claw.limit_eject_power = self.arm.target == config.reef_setpoints[0]

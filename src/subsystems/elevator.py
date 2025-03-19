@@ -11,8 +11,6 @@ class Elevator(Subsystem):
     def __init__(self, scheduler: CommandScheduler):
         scheduler.registerSubsystem(self)
 
-        # self.pivot: Pivot = pivot
-
         self.mass = config.elevator_mass
         self.target_extension = config.extension_range[0]
 

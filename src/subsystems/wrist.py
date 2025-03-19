@@ -32,8 +32,6 @@ class Wrist(Subsystem):
         # Whether the elevator is high enough for the wrist to pivot downward
         self.passthrough_allowed = False
 
-        scheduler.registerSubsystem(self)
-
     def angle(self) -> float:
         return self.wrist_encoder.getPosition() / config.wrist_gear_ratio
 
