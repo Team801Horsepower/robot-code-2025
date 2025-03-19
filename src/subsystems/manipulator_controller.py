@@ -29,6 +29,8 @@ class ManipulatorController(Subsystem):
 
         self.target_level = None
 
+        self.in_climb_mode = False
+
     @time_f("periodic manip controller")
     def periodic(self):
         if (
@@ -69,6 +71,8 @@ class ManipulatorController(Subsystem):
 
         self.update_tree_selection()
 
+        self.in_climb_mode = self.controller.getRawButton(self.input_indices["climb"])
+
     def update_tree_selection(self):
         def axis_to_selection(value):
             return (7 - round(6 * (value + 1))) % 12
@@ -91,4 +95,4 @@ class ManipulatorController(Subsystem):
         SmartDashboard.putString("setpoint selection", letter + number)
 
     def get_climb_mode(self):
-        return self.controller.getRawButton(self.input_indices["climb"])
+        return self.in_climb_mode

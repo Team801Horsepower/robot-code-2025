@@ -325,10 +325,10 @@ class Robot(wpilib.TimedRobot):
                 self.manip_controller.target_level or 0,
             )
             self.scheduler.schedule(self.target_align_cmd)
-        elif (
+        elif not self.manip_controller.get_climb_mode() and (
             (left_hps := self.driver_controller.getXButtonPressed())
             or self.driver_controller.getBButtonPressed()
-        ) and not self.manip_controller.get_climb_mode():
+        ):
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
             self.target_align_cmd = ApproachHPS(
