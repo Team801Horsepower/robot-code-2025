@@ -25,6 +25,8 @@ class ApproachHPS(Command):
         self.vision = vision
         self.periscope = periscope
 
+        self.graph = graph
+
         self.left_hps = left_hps
 
         self.th_cmd = TargetHPS(self.drive, self.vision, left_hps)
@@ -38,16 +40,18 @@ class ApproachHPS(Command):
         #     Rotation2d(self.th_cmd.face_i * pi / 3)
         # )
         # pathfind_pos = Translation2d(1.2, 7 if left_hps else config.field_width - 7)
-        pathfind_pos = Translation2d(
+        self.pathfind_pos = Translation2d(
             1.74, 7.34 if left_hps else config.field_width - 7.34
         )
-        pathfind_pos = config.flip_red(pathfind_pos)
+        self.pathfind_pos = config.flip_red(self.pathfind_pos)
+
+        self.target_rot = Rotation2d(self.th_cmd.target_angle)
 
         self.gpf_cmd = GraphPathfind(
-            pathfind_pos,
+            self.pathfind_pos,
             graph,
             self.drive,
-            Rotation2d(self.th_cmd.target_angle),
+            self.target_rot,
             # 0.4,
         )
 
@@ -86,7 +90,11 @@ class ApproachHPS(Command):
         elif (
             isinstance(self.current_cmd, TargetHPS) and not tag_seen or not near_source
         ):
-            self.current_cmd = self.th_cmd
+            self.gpf_cmd = GraphPathfind(
+                self.pathfind_pos, self.graph, self.drive, self.target_rot
+            )
+            self.current_cmd = self.gpf_cmd
+            self.current_cmd.initialize()
 
         if near_source:
             self.periscope.arm.target = config.source_setpoint

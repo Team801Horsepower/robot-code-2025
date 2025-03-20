@@ -238,15 +238,46 @@ class Robot(wpilib.TimedRobot):
         self.periscope.arm.pivot.has_flipped_middle_finger = False
         self.periscope.arm.target = config.transit_setpoint
 
+        left_start = False
+
+        start_y = 0.5
+        if left_start:
+            start_y = config.field_width - start_y
+        self.drive.odometry.reset(
+            Pose2d(
+                config.flip_red(Translation2d(7.17, 0.5)),
+                Rotation2d(pi if config.is_red() else 0),
+            )
+        )
+
         g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
 
-        cmds = [
-            s(11, 3),
-            g(False),
-            s(8, 3),
-            g(False),
-            s(8, 2),
-        ]
+        if left_start:
+            cmds = [
+                s(2, 3),
+                g(True),
+                s(4, 3),
+                g(True),
+                s(5, 3),
+            ]
+        else:
+            cmds = [
+                s(11, 3),
+                g(False),
+                s(9, 3),
+                g(False),
+                s(8, 3),
+            ]
+
+        # cmds = [
+        #     # s(11, 3),
+        #     s(11, 2),
+        #     g(False),
+        #     # s(8, 3),
+        #     s(9, 2),
+        #     g(False),
+        #     s(8, 2),
+        # ]
 
         # cmds = [
         #     s(2, 3),
