@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import wpilib
-from wpilib import SmartDashboard
+from wpilib import SmartDashboard, DataLogManager
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
 from commands2 import CommandScheduler, Command, InstantCommand, WaitCommand
 from wpimath import units
@@ -24,6 +24,7 @@ from auto_actions import make_auto_methods
 
 class Robot(wpilib.TimedRobot):
     def robotInit(self):
+        DataLogManager.start()
         self.scheduler = CommandScheduler()
 
         # Subsystem initialization
