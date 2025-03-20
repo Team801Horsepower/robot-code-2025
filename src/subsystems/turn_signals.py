@@ -2,9 +2,11 @@ import time
 
 from commands2 import CommandScheduler, Subsystem
 from wpilib import PowerDistribution, PWMMotorController
+from photonlibpy.photonCamera import VisionLEDMode
 
 from subsystems.manipulator_controller import ManipulatorController
 from subsystems.claw import Claw
+from subsystems.vision import Vision
 
 
 class TurnSignals(Subsystem):
@@ -13,10 +15,12 @@ class TurnSignals(Subsystem):
         scheduler: CommandScheduler,
         manip_controller: ManipulatorController,
         claw: Claw,
+        vision: Vision,
     ):
         scheduler.registerSubsystem(self)
 
         self.claw = claw
+        self.vision = vision
         self.manip_controller = manip_controller
 
         self.pdp = PowerDistribution()
@@ -38,16 +42,24 @@ class TurnSignals(Subsystem):
 
     def signal(self, side: int, state: bool):
         if side == 1:
-            self.spark.set(1 if state else 0)
+            self.vision.cameras[0][0].setLEDMode(
+                VisionLEDMode.kOn if state else VisionLEDMode.kOff
+            )
             if state:
                 self.signal(-1, False)
         elif side == -1:
-            self.pdp.setSwitchableChannel(state)
+            self.vision.cameras[3][0].setLEDMode(
+                VisionLEDMode.kOn if state else VisionLEDMode.kOff
+            )
             if state:
                 self.signal(1, False)
         elif side == 2:
-            self.signal(1, state)
-            self.signal(-1, state)
+            self.vision.cameras[0][0].setLEDMode(
+                VisionLEDMode.kOn if state else VisionLEDMode.kOff
+            )
+            self.vision.cameras[3][0].setLEDMode(
+                VisionLEDMode.kOn if state else VisionLEDMode.kOff
+            )
         else:
             self.signal(1, False)
             self.signal(-1, False)

@@ -1,3 +1,4 @@
+from wpilib import SmartDashboard
 from subsystems.swerve import Swerve
 import config
 
@@ -68,7 +69,26 @@ class Chassis(Subsystem):
 
             # Prevs must be updated again after conversion factors were changed
             swerve.update_prevs()
+
+        SmartDashboard.putNumberArray(
+            "swerve currents",
+            [swerve.drive_motor.getOutputCurrent() for swerve in self.swerves],
+        )
+        SmartDashboard.putNumberArray(
+            "swerve voltages",
+            [swerve.drive_motor.getBusVoltage() for swerve in self.swerves],
+        )
         scheduler.registerSubsystem(self)
+
+    def periodic(self):
+        SmartDashboard.putNumberArray(
+            "swerve currents",
+            [swerve.drive_motor.getOutputCurrent() for swerve in self.swerves],
+        )
+        SmartDashboard.putNumberArray(
+            "swerve voltages",
+            [swerve.drive_motor.getBusVoltage() for swerve in self.swerves],
+        )
 
     def set_swerves(self):
         for swerve in self.swerves:

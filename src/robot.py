@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+from photonlibpy.photonCamera import VisionLEDMode
 import wpilib
 from wpilib import SmartDashboard, DataLogManager
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
 from commands2 import CommandScheduler, Command, InstantCommand, WaitCommand
 from wpimath import units
+from wpilib import Relay
 from functools import reduce
 from math import sin, pi
 import time
@@ -42,7 +44,7 @@ class Robot(wpilib.TimedRobot):
         )
 
         self.turn_signals = turn_signals.TurnSignals(
-            self.scheduler, self.manip_controller, self.periscope.claw
+            self.scheduler, self.manip_controller, self.periscope.claw, self.vision
         )
 
         self.drive.chassis.set_swerves()
@@ -66,25 +68,11 @@ class Robot(wpilib.TimedRobot):
             Pose2d(Translation2d(), Rotation2d(pi if config.is_red() else 0))
         )
 
-        # SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
-        # SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
+        # SmartDashboard.putNumber("approach P", 15.0)
 
-        def flip_turn_signals(value):
-            self.turn_signals.signal(2, value)
-
-        blink_string = "801 Horsepower"
-        led_cmds = []
-        for letter in blink_string:
-            for blink_time in letter_to_morse(letter):
-                led_cmds.append(
-                    InstantCommand(flip_turn_signals(True)).andThen(
-                        WaitCommand(blink_time)
-                    )
-                )
-                led_cmds.append(
-                    InstantCommand(flip_turn_signals(False)).andThen(WaitCommand(0.025))
-                )
-        self.scheduler.schedule(reduce(Command.andThen, led_cmds))
+        SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
+        SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
+        # self.signal_blink_command = self.blink_morse_code("metal")
 
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
@@ -201,6 +189,8 @@ class Robot(wpilib.TimedRobot):
                 #     # self.drive.odometry.reset_heading(Rotation2d(heading_correction))
                 #     pass
                 self.drive.odometry.reset_translation(pos)
+                # if self.isDisabled() and not self.signal_blink_command.isScheduled():
+                #     self.signal_blink_command = self.blink_morse_code("pipe")
 
         robot_pose = self.drive.odometry.pose()
         robot_pos = robot_pose.translation()
@@ -393,14 +383,28 @@ class Robot(wpilib.TimedRobot):
             claw_power = (
                 self.driver_controller.getLeftTriggerAxis()
                 - self.driver_controller.getRightTriggerAxis()
+            ) * (
+                -2
+                * (
+                    self.periscope.arm.target
+                    in [
+                        config.ground_pickup_setpoint,
+                        config.algae_reef_setpoints,
+                        config.processor_setpoint,
+                        config.barge_setpoint,
+                    ]
+                )
+                + 1
             )
             self.periscope.claw.set(claw_power)
 
     def teleopExit(self):
+        self.signal_blink_command = self.blink_morse_code("Womp womp!")
         pass
 
     def testInit(self):
         SmartDashboard.putNumber("hff", 0.0065)
+        self.relay = Relay(0, Relay.Direction.kBothDirections)
 
     def testPeriodic(self):
         if self.driver_controller.getAButtonPressed():
@@ -408,6 +412,7 @@ class Robot(wpilib.TimedRobot):
             # entry = list(config.elevator_dynamics_table[5])
             # entry[1] = SmartDashboard.getNumber("hff", 0.0065)
             # config.elevator_dynamics_table[5] = tuple(entry)
+        self.relay.set(Relay.Value.kForward)
 
     def testExit(self):
         pass
@@ -455,6 +460,28 @@ class Robot(wpilib.TimedRobot):
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         ):
             self.periscope.arm.target = config.transit_setpoint
+
+    def blink_morse_code(self, string):
+        def flip_turn_signals(value):
+            self.turn_signals.signal(2, value)
+
+        dit_length = 0.3
+        blink_string = string
+        led_cmds = []
+        for letter in blink_string:
+            for blink_time in letter_to_morse(letter):
+                led_cmds.append(
+                    InstantCommand(flip_turn_signals(True)).andThen(
+                        WaitCommand(blink_time * dit_length)
+                    )
+                )
+                led_cmds.append(
+                    InstantCommand(flip_turn_signals(False)).andThen(
+                        WaitCommand(dit_length)
+                    )
+                )
+        self.scheduler.schedule(cmd := reduce(Command.andThen, led_cmds))
+        return cmd
 
 
 if __name__ == "__main__":
