@@ -113,7 +113,9 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("reef approach I", 0.0)
         SmartDashboard.putNumber("reef strafe I", 0.0)
         SmartDashboard.putNumber("reef align speed", 5.5)
-        SmartDashboard.putNumber("align threshold", 1.0)
+        SmartDashboard.putNumber("align threshold", 1.1)
+
+        SmartDashboard.putBoolean("start auto on left", False)
 
     @time_f("periodic robot")
     def robotPeriodic(self):
@@ -194,7 +196,13 @@ class Robot(wpilib.TimedRobot):
             # speed = sqrt(speeds.vx**2 + speeds.vy**2)
             # if conf >= 0.25 and speed < 0.15:
             #     # if conf >= 0.2:
-            if n_ests > 1 and conf >= 0.4 and dev < 0.05:
+            if (
+                n_ests > 1
+                and conf >= 0.4
+                and dev < 0.05
+                # TODO: should we have this?
+                and not self.isAutonomousEnabled()
+            ):
                 # if heading_correction is not None and abs(
                 #     heading_correction - heading
                 # ) < units.degreesToRadians(5):
@@ -238,14 +246,14 @@ class Robot(wpilib.TimedRobot):
         self.periscope.arm.pivot.has_flipped_middle_finger = False
         self.periscope.arm.target = config.transit_setpoint
 
-        left_start = False
+        left_start = SmartDashboard.getBoolean("start auto on left", False)
 
         start_y = 0.5
         if left_start:
             start_y = config.field_width - start_y
         self.drive.odometry.reset(
             Pose2d(
-                config.flip_red(Translation2d(7.17, 0.5)),
+                config.flip_red(Translation2d(7.17, start_y)),
                 Rotation2d(pi if config.is_red() else 0),
             )
         )

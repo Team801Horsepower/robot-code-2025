@@ -181,7 +181,7 @@ class TargetTag(Command):
             # SmartDashboard.putNumber("omega max", omega_max)
             # omega = clamp(omega_min, omega_max, omega)
 
-            threshold = SmartDashboard.getNumber("align threshold", 1.0)
+            threshold = SmartDashboard.getNumber("align threshold", 1.1)
 
             sum_within_threshold = abs(
                 left_param + right_param - (self.left_target + self.right_target)

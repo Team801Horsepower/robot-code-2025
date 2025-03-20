@@ -214,7 +214,8 @@ transit_setpoint = (
     units.degreesToRadians(114.6),
 )
 processor_setpoint = (
-    units.degreesToRadians(35),
+    # units.degreesToRadians(35),
+    units.degreesToRadians(32),
     extension_range[0],
     units.degreesToRadians(166),
 )
