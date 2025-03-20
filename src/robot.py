@@ -14,7 +14,6 @@ from subsystems import drive, periscope, vision, manipulator_controller, turn_si
 
 from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
-from commands.place_coral import PlaceCoral
 
 from utils.graph import Graph
 from utils import time_f, letter_to_morse
@@ -112,6 +111,8 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("reef strafe P", 3.0)
         SmartDashboard.putNumber("reef approach I", 0.0)
         SmartDashboard.putNumber("reef strafe I", 0.0)
+        SmartDashboard.putNumber("reef approach D", 0.0)
+        SmartDashboard.putNumber("reef strafe D", 0.0)
         SmartDashboard.putNumber("reef align speed", 5.5)
         SmartDashboard.putNumber("align threshold", 1.1)
 
@@ -394,6 +395,7 @@ class Robot(wpilib.TimedRobot):
         ):
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
+
             self.target_align_cmd = ApproachReef(
                 self.drive,
                 self.vision,
@@ -403,6 +405,14 @@ class Robot(wpilib.TimedRobot):
                 self.manip_controller.target_level or 0,
                 self.manip_controller.reef_algae_selected,
             )
+
+            # self.target_align_cmd = TargetReef(
+            #     self.drive,
+            #     self.vision,
+            #     self.manip_controller.stalk_selection,
+            #     self.manip_controller.reef_algae_selected,
+            # )
+
             self.scheduler.schedule(self.target_align_cmd)
         elif (
             left_hps := self.driver_controller.getXButtonPressed()

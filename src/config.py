@@ -192,7 +192,8 @@ reef_setpoints = [
     # Transform2d(0.32, 1.988, units.degreesToRadians(-15)),
     # Transform2d(0.58, 1.988, units.degreesToRadians(-26)),
     # Transform2d(0.5, 1.988, units.degreesToRadians(-21)),
-    Transform2d(0.6, 1.988, units.degreesToRadians(-17)),
+    # Transform2d(0.6, 1.988, units.degreesToRadians(-17)),
+    Transform2d(0.52, 1.988, units.degreesToRadians(-17)),
 ]
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
 # source_setpoint = Transform2d(-0.50, 0.87, units.degreesToRadians(160))

@@ -50,13 +50,15 @@ class TargetReef(TargetTag):
     def approach_pid_constants(self) -> Tuple[float, float, float]:
         p = SmartDashboard.getNumber("reef approach P", 10.0)
         i = SmartDashboard.getNumber("reef approach I", 0.0)
-        return (p, 0.0, i)
+        d = SmartDashboard.getNumber("reef approach D", 0.0)
+        return (p, i, d)
 
     @property
     def strafe_pid_constants(self) -> Tuple[float, float, float]:
         p = SmartDashboard.getNumber("reef strafe P", 3.0)
         i = SmartDashboard.getNumber("reef strafe I", 0.0)
-        return (p, 0.0, i)
+        d = SmartDashboard.getNumber("reef strafe D", 0.0)
+        return (p, i, d)
 
     @property
     def theta_pid_constants(self) -> Tuple[float, float, float]:
