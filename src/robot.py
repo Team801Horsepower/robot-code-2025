@@ -69,25 +69,10 @@ class Robot(wpilib.TimedRobot):
         # SmartDashboard.putNumber("auto drive speed", config.auto_drive_speed)
         # SmartDashboard.putNumber("auto turn speed", config.auto_turn_speed)
 
-        def flip_turn_signals(value):
-            self.turn_signals.signal(2, value)
-
-        blink_string = "801 Horsepower"
-        led_cmds = []
-        for letter in blink_string:
-            for blink_time in letter_to_morse(letter):
-                led_cmds.append(
-                    InstantCommand(flip_turn_signals(True)).andThen(
-                        WaitCommand(blink_time)
-                    )
-                )
-                led_cmds.append(
-                    InstantCommand(flip_turn_signals(False)).andThen(WaitCommand(0.025))
-                )
-        self.scheduler.schedule(reduce(Command.andThen, led_cmds))
-
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
+
+        self.morse_cmd = None
 
         SmartDashboard.putNumber(
             "new pivot target",
@@ -118,6 +103,8 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("align threshold", 1.2)
 
         SmartDashboard.putBoolean("start auto on left", False)
+
+        SmartDashboard.putString("morse message", "801!")
 
     @time_f("periodic robot")
     def robotPeriodic(self):
@@ -232,6 +219,10 @@ class Robot(wpilib.TimedRobot):
         #     ).rotateBy(robot_pose.rotation())
         #     dist = (fr_swerve_pos - tag8_pos).norm()
         #     SmartDashboard.putNumber("tag8-FR swerve (in)", units.metersToInches(dist))
+        if (
+            self.morse_cmd is not None and not self.morse_cmd.isScheduled()
+        ) or self.morse_cmd is None:
+            self.turn_signals.should_turn_signal = 1
 
     def disabledInit(self):
         pass
@@ -346,6 +337,11 @@ class Robot(wpilib.TimedRobot):
             "new wrist target",
             units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
         )
+
+        # self.morse_cmd = self.blink_morse(
+        #     SmartDashboard.getString("morse message", "801!")
+        # )
+        # self.turn_signals.should_turn_signal = 0
 
     @time_f("periodic teleop")
     def teleopPeriodic(self):
@@ -508,6 +504,25 @@ class Robot(wpilib.TimedRobot):
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         ):
             self.periscope.arm.target = config.transit_setpoint
+
+    def blink_morse(self, message):
+        def flip_turn_signals(value):
+            self.turn_signals.signal(2, value)
+
+        blink_string = message
+        led_cmds = []
+        for letter in blink_string:
+            for blink_time in letter_to_morse(letter):
+                led_cmds.append(
+                    InstantCommand(flip_turn_signals(True)).andThen(
+                        WaitCommand(blink_time * 0.3)
+                    )
+                )
+                led_cmds.append(
+                    InstantCommand(flip_turn_signals(False)).andThen(WaitCommand(0.3))
+                )
+        self.scheduler.schedule(cmd := reduce(Command.andThen, led_cmds))
+        return cmd
 
 
 if __name__ == "__main__":
