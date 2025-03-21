@@ -48,14 +48,14 @@ class TargetReef(TargetTag):
 
     @property
     def approach_pid_constants(self) -> Tuple[float, float, float]:
-        p = SmartDashboard.getNumber("reef approach P", 10.0)
+        p = SmartDashboard.getNumber("reef approach P", 8.0)
         i = SmartDashboard.getNumber("reef approach I", 0.0)
         d = SmartDashboard.getNumber("reef approach D", 0.0)
         return (p, i, d)
 
     @property
     def strafe_pid_constants(self) -> Tuple[float, float, float]:
-        p = SmartDashboard.getNumber("reef strafe P", 3.0)
+        p = SmartDashboard.getNumber("reef strafe P", 4.5)
         i = SmartDashboard.getNumber("reef strafe I", 0.0)
         d = SmartDashboard.getNumber("reef strafe D", 0.0)
         return (p, i, d)
@@ -95,7 +95,7 @@ class TargetReef(TargetTag):
     @property
     def align_speed(self) -> float:
         # return 4.5
-        return SmartDashboard.getNumber("reef align speed", 5.5)
+        return SmartDashboard.getNumber("reef align speed", 4.0)
 
     @property
     def use_diag(self) -> bool:

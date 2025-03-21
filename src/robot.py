@@ -107,14 +107,14 @@ class Robot(wpilib.TimedRobot):
             )
         )
 
-        SmartDashboard.putNumber("reef approach P", 10.0)
-        SmartDashboard.putNumber("reef strafe P", 3.0)
+        SmartDashboard.putNumber("reef approach P", 8.0)
+        SmartDashboard.putNumber("reef strafe P", 4.5)
         SmartDashboard.putNumber("reef approach I", 0.0)
         SmartDashboard.putNumber("reef strafe I", 0.0)
         SmartDashboard.putNumber("reef approach D", 0.0)
         SmartDashboard.putNumber("reef strafe D", 0.0)
-        SmartDashboard.putNumber("reef align speed", 5.5)
-        SmartDashboard.putNumber("align threshold", 1.1)
+        SmartDashboard.putNumber("reef align speed", 4.0)
+        SmartDashboard.putNumber("align threshold", 1.2)
 
         SmartDashboard.putBoolean("start auto on left", False)
 
