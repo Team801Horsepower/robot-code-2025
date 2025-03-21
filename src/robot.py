@@ -14,6 +14,7 @@ from subsystems import drive, periscope, vision, manipulator_controller, turn_si
 
 from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
+from commands.target_reef import TargetReef
 
 from utils.graph import Graph
 from utils import time_f, letter_to_morse
@@ -198,7 +199,7 @@ class Robot(wpilib.TimedRobot):
             # if conf >= 0.25 and speed < 0.15:
             #     # if conf >= 0.2:
             if (
-                n_ests > 1
+                n_ests >= 4
                 and conf >= 0.4
                 and dev < 0.05
                 # TODO: should we have this?
@@ -396,22 +397,25 @@ class Robot(wpilib.TimedRobot):
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
 
-            self.target_align_cmd = ApproachReef(
-                self.drive,
-                self.vision,
-                self.periscope.arm,
-                self.graph,
-                self.manip_controller.stalk_selection,
-                self.manip_controller.target_level or 0,
-                self.manip_controller.reef_algae_selected,
-            )
-
-            # self.target_align_cmd = TargetReef(
-            #     self.drive,
-            #     self.vision,
-            #     self.manip_controller.stalk_selection,
-            #     self.manip_controller.reef_algae_selected,
-            # )
+            if self.manip_controller.disable_pathfinding:
+                print("using binocular vision alignment only")
+                self.target_align_cmd = TargetReef(
+                    self.drive,
+                    self.vision,
+                    self.manip_controller.stalk_selection,
+                    self.manip_controller.reef_algae_selected,
+                )
+            else:
+                print("using pathfinding and alignment")
+                self.target_align_cmd = ApproachReef(
+                    self.drive,
+                    self.vision,
+                    self.periscope.arm,
+                    self.graph,
+                    self.manip_controller.stalk_selection,
+                    self.manip_controller.target_level or 0,
+                    self.manip_controller.reef_algae_selected,
+                )
 
             self.scheduler.schedule(self.target_align_cmd)
         elif (

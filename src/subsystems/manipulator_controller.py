@@ -31,6 +31,8 @@ class ManipulatorController(Subsystem):
 
         self.reef_algae_selected = False
 
+        self.disable_pathfinding = False
+
     @time_f("periodic manip controller")
     def periodic(self):
         if (
@@ -75,6 +77,10 @@ class ManipulatorController(Subsystem):
                     break
 
         self.update_tree_selection()
+
+        self.disable_pathfinding = self.controller.getRawButton(
+            self.input_indices["climb"]
+        )
 
     def update_tree_selection(self):
         def axis_to_selection(value):
