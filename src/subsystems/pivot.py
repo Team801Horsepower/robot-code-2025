@@ -150,4 +150,4 @@ class Pivot(Subsystem):
             * self.navx.getRawAccelX()
         )
 
-        return t_g + t_a
+        return t_g - t_a
