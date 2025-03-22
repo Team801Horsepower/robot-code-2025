@@ -52,7 +52,7 @@ class Wrist(Subsystem):
             units.radiansToDegrees(self.angle()),
         )
         SmartDashboard.putNumber(
-            "wrist pos",
+            "target wrist pos",
             units.radiansToDegrees(self.target_angle),
         )
         SmartDashboard.putNumber("wrist power", power)

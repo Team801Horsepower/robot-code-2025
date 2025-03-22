@@ -54,7 +54,7 @@ class Claw(Subsystem):
             power = min(0.3, power)
 
         if power == 0 and self.has_algae() and not self.has_coral():
-            self.set(0.05)
+            self.set(0.075)
         else:
             self.motor.set(power)
 
