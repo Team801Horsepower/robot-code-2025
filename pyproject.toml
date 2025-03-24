@@ -16,6 +16,7 @@ python = ">=3.13,<3.14"
 robotpy = {extras = ["commands2", "phoenix6", "rev", "navx"], version = "^2025.1.1.1"}
 pycowsay = "^0.0.0.2"
 photonlibpy = "^2025.1.1"
+astar = "^0.99"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.14.1"

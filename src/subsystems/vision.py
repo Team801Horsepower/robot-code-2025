@@ -1,11 +1,23 @@
-from commands2 import CommandScheduler, Subsystem
-from wpimath.geometry import Translation2d, Transform3d, Rotation3d, Translation3d
-from wpimath import units
-from typing import Tuple, List, Optional
 from photonlibpy.photonCamera import PhotonCamera
-from math import pi
+
+from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
+from robotpy_apriltag import AprilTagFieldLayout, AprilTagField
+from wpimath.geometry import (
+    Transform3d,
+    Rotation2d,
+    Rotation3d,
+    Translation2d,
+    Translation3d,
+)
+from wpimath import units
+from commands2 import Subsystem, CommandScheduler
+from typing import Tuple, Optional, List
+import numpy as np
+
+from math import sin, cos, pi, atan, isfinite, nan
 
 import config
+from utils import time_f
 
 
 class Vision(Subsystem):
@@ -14,34 +26,68 @@ class Vision(Subsystem):
 
         self.cameras: List[Tuple[PhotonCamera, Transform3d]] = [
             (
-                PhotonCamera("FrontCamera"),
+                PhotonCamera("FrontLeft"),
                 Transform3d(
-                    # Translation3d(0.60880625, 0.29845, 0.428625),
-                    # Translation3d(0, 0, 0.428625),
-                    Translation3d(0.29880625, 0, 0.428625),
-                    Rotation3d(0, units.degreesToRadians(-5), 0),
+                    Translation3d(-0.11146, 0.2346, 0.27491),
+                    Rotation3d(
+                        0, units.degreesToRadians(10), units.degreesToRadians(340)
+                    ),
                 ),
             ),
             (
-                PhotonCamera("RearCamera"),
+                PhotonCamera("BackLeft"),
                 Transform3d(
-                    # Translation3d(0.52466875, 0.29845, 0.428625),
-                    # Translation3d(-0.0841375, 0, 0.428625),
-                    Translation3d(0.21466875, 0.29845, 0.428625),
-                    Rotation3d(0, units.degreesToRadians(-5.9), pi),
+                    Translation3d(0.29624, 0.24952, 0.18149),
+                    Rotation3d(
+                        0, units.degreesToRadians(45), units.degreesToRadians(150)
+                    ),
+                ),
+            ),
+            (
+                PhotonCamera("FrontRight"),
+                Transform3d(
+                    Translation3d(0.29624, -0.24952, 0.18149),
+                    Rotation3d(
+                        0, units.degreesToRadians(10), units.degreesToRadians(20)
+                    ),
+                ),
+            ),
+            (
+                PhotonCamera("BackRight"),
+                Transform3d(
+                    Translation3d(0.24952, -0.29624, 0.10149),
+                    Rotation3d(
+                        0, units.degreesToRadians(45), units.degreesToRadians(210)
+                    ),
                 ),
             ),
         ]
 
+        # layout_path = config.code_path + "firehouse-apriltags.json"
+        # layout_path = config.code_path + "reefscape-apriltags.json"
+
+        # self.layout = AprilTagFieldLayout(layout_path)
+        self.layout = AprilTagFieldLayout.loadField(AprilTagField.k2025Reefscape)
+
+        self.results: List[PhotonPipelineResult] = []
+        self.get_results()
+
     def periodic(self):
-        pass
+        self.get_results()
+
+    def get_results(self):
+        self.results = []
+        for cam in self.cameras:
+            res = cam[0].getLatestResult()
+            self.results.append(res)
 
     # (tag pitch, tag yaw)
     def cur_atag(
         self, cam_i: int, red_id: int, blue_id: int
     ) -> Optional[Tuple[float, float]]:
         atag_id = red_id if config.is_red() else blue_id
-        result = self.cameras[cam_i][0].getLatestResult()
+        # result = self.cameras[cam_i][0].getLatestResult()
+        result = self.results[cam_i]
         for target in result.getTargets():
             if target.fiducialId == atag_id:
                 return (
@@ -50,12 +96,189 @@ class Vision(Subsystem):
                 )
         return None
 
-    # (ntags, (position, confidence, deviation))
+    def test(self):
+        # atag0 = self.cur_atag(0, 9, 9)
+        # if atag0 is not None:
+        #     SmartDashboard.putNumber(
+        #         "front cam tag 9 yaw", units.radiansToDegrees(atag0[1])
+        #     )
+        # atag1 = self.cur_atag(1, 9, 9)
+        # if atag1 is not None:
+        #     SmartDashboard.putNumber(
+        #         "rear cam tag 9 yaw", units.radiansToDegrees(atag1[1])
+        #     )
+        pass
+
+    def estimate_multitag_pos(
+        self,
+        robot_angle: float,
+        # ) -> Tuple[int, List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]]:
+    ) -> List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]:
+        tag_info = []
+        for (cam, transform), res in zip(self.cameras, self.results):
+            # res = cam.getLatestResult()
+            # print(res)
+            tags = res.getTargets()
+            for tag in tags:
+                id = tag.getFiducialId()
+                if self.layout.getTagPose(id) is not None:
+                    tag_info.append(
+                        (
+                            id,
+                            units.degreesToRadians(-tag.getYaw())
+                            + transform.rotation().toRotation2d().radians(),
+                            transform.translation()
+                            .toTranslation2d()
+                            .rotateBy(Rotation2d(robot_angle)),
+                        )
+                    )
+        maybe_pairs = []
+        # positions = []
+        for i in range(len(tag_info)):
+            for j in range(i + 1, len(tag_info)):
+                # positions.append(
+                #     (
+                #         (tag_info[i][0], tag_info[j][0]),
+                #         self.estimate_2tag_pos(robot_angle, tag_info[i], tag_info[j]),
+                #     )
+                # )
+                conf = self.get_2tag_conf(robot_angle, tag_info[i], tag_info[j])
+                maybe_pairs.append((conf, i, j))
+        if len(maybe_pairs) > 5:
+            maybe_pairs.sort(key=lambda t: t[0], reverse=True)
+            maybe_pairs = maybe_pairs[:5]
+        positions = []
+        for conf, i, j in maybe_pairs:
+            positions.append(
+                (
+                    (tag_info[i][0], tag_info[j][0]),
+                    (
+                        self.estimate_2tag_pos(robot_angle, tag_info[i], tag_info[j]),
+                        conf,
+                    ),
+                )
+            )
+        return positions
+
+    def get_2tag_conf(
+        self,
+        robot_angle: float,
+        tag1: Tuple[int, float, Translation2d],
+        tag2: Tuple[int, float, Translation2d],
+    ) -> float:
+        th1 = tag1[1] + robot_angle
+        th2 = tag2[1] + robot_angle
+        return sin(th1 - th2) ** 2
+
+    def estimate_2tag_pos(
+        self,
+        robot_angle: float,
+        # ID, yaw angle, camera offset from robot origin
+        tag1: Tuple[int, float, Translation2d],
+        tag2: Tuple[int, float, Translation2d],
+        # ) -> Tuple[Translation2d, float]:
+    ) -> Translation2d:
+        p3d1 = self.layout.getTagPose(tag1[0])
+        p3d2 = self.layout.getTagPose(tag2[0])
+        if p3d1 is None or p3d2 is None:
+            return Translation2d(nan, nan)
+        p1 = p3d1.toPose2d().translation()
+        p2 = p3d2.toPose2d().translation()
+
+        th1 = tag1[1] + robot_angle
+        th2 = tag2[1] + robot_angle
+        # confidence = sin(th1 - th2) ** 2
+
+        a1, b1 = -sin(th1), cos(th1)
+        a2, b2 = -sin(th2), cos(th2)
+
+        camera_delta = tag2[2] - tag1[2]
+
+        c1 = a1 * p1.x + b1 * p1.y
+        c2 = a2 * p2.x + b2 * p2.y - a2 * camera_delta.x - b2 * camera_delta.y
+
+        x = (b2 * c1 - b1 * c2) / (a1 * b2 - a2 * b1)
+        y = (c2 * a1 - c1 * a2) / (a1 * b2 - a2 * b1)
+
+        # return (
+        #     Translation2d(x, y) - tag1[2],
+        #     confidence,
+        # )
+        return Translation2d(x, y) - tag1[2]
+
+    @time_f("vision pos report")
     def pos_report(
         self, robot_angle: float
     ) -> Tuple[int, Optional[Tuple[Translation2d, float, float]]]:
-        return (0, None)
+        # ) -> Optional[Tuple[Translation2d, float, float]]:
+        # ntags, estimates = self.estimate_multitag_pos(robot_angle)
+        estimates = self.estimate_multitag_pos(robot_angle)
+        confs = [tup[1][1] for tup in estimates]
+        total_conf = sum(confs)
+        weights = [conf / total_conf for conf in confs]
+        positions = [tup[1][0] for tup in estimates]
 
-    # returns corrected heading based on april tags
+        if len(positions) == 0:
+            # return (ntags, None)
+            return (0, None)
+
+        try:
+            # avg_pos = Translation2d(np.dot(weights, positions))
+            # avg_pos = np.dot(weights, positions)
+            avg_pos = Translation2d()
+            # avg_x = 0
+            # avg_y = 0
+            for weight, pos in zip(weights, positions):
+                # avg_pos += weight * pos
+                avg_pos += Translation2d(weight * pos.x, weight * pos.y)
+                # avg_x += weight * pos.x
+                # avg_y += weight * pos.y
+                # print(f"weight {weight} x {pos.x} y {pos.y}")
+            # avg_pos = Translation2d(avg_x, avg_y)
+            sq_diffs = [(pos - avg_pos).norm() ** 2 for pos in positions]
+            # deviation_conf = 1 / (1 + float(np.sqrt(np.dot(weights, sq_diffs))))
+            deviation = float(np.sqrt(np.dot(weights, sq_diffs)))
+            composite_conf = float(np.dot(weights, confs))
+            # return (ntags, (avg_pos, composite_conf, deviation))
+            return (len(estimates), (avg_pos, composite_conf, deviation))
+        except TypeError as e:
+            print(e)
+            # avg_pos = None
+            # deviation_conf = 0
+            # composite_conf = 0
+            return (len(estimates), None)
+
     def heading_correction(self, robot_angle: float) -> Optional[float]:
-        return None
+        x1 = robot_angle - pi / 4
+        x2 = robot_angle + pi / 4
+
+        rep = self.pos_report(robot_angle)[1]
+        if rep is None or rep[2] == 0:
+            return None
+        rep1 = self.pos_report(x1)[1]
+        rep2 = self.pos_report(x2)[1]
+        if rep1 is None or rep2 is None:
+            return None
+        y1 = rep1[2]
+        y2 = rep2[2]
+
+        mat = np.array([[cos(x1), sin(x1)], [cos(x2), sin(x2)]])
+        matinv = np.linalg.inv(mat)
+
+        out1 = np.array([[y1], [y2]])
+        out2 = np.array([[y1], [-y2]])
+
+        coefs1 = (matinv @ out1).flatten()
+        coefs2 = (matinv @ out2).flatten()
+
+        h1 = round(robot_angle / pi) * pi - atan(coefs1[0] / coefs1[1])
+        h2 = round(robot_angle / pi) * pi - atan(coefs2[0] / coefs2[1])
+
+        new_angle = min(h1, h2, key=lambda h: abs(h - robot_angle))
+        if isfinite(new_angle):
+            return new_angle
+        else:
+            return None
+
+    def idk(self):
+        pass
