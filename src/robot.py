@@ -2,6 +2,7 @@
 
 import wpilib
 from wpilib import SmartDashboard, DataLogManager
+from wpilib.interfaces import GenericHID
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
 from commands2 import CommandScheduler, Command, InstantCommand, WaitCommand
 from wpimath import units
@@ -449,8 +450,24 @@ class Robot(wpilib.TimedRobot):
             )
             self.periscope.claw.set(claw_power)
 
+        should_rumble = (
+            (
+                self.driver_controller.getRightTriggerAxis() > 0.1
+                or self.driver_controller.getXButton()
+                or self.driver_controller.getBButton()
+            )
+            and self.periscope.claw.has_coral()
+        ) or (
+            self.driver_controller.getLeftBumperButton()
+            and self.target_align_cmd is not None
+            and self.target_align_cmd.isFinished()
+        )
+        self.driver_controller.setRumble(
+            GenericHID.RumbleType.kBothRumble, 1 if should_rumble else 0
+        )
+
     def teleopExit(self):
-        pass
+        self.driver_controller.setRumble(GenericHID.RumbleType.kBothRumble, 0)
 
     def testInit(self):
         SmartDashboard.putNumber("hff", 0.0065)
