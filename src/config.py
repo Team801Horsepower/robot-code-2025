@@ -138,6 +138,8 @@ pivot_acc_lim: List[Tuple[float, ...]] = format_table([
     (1.636584300, 1.5),
     (1.906579590, 0),
 ])
+
+pivot_backlash_compensator = 0
 # fmt: on
 
 # -- Elevator --

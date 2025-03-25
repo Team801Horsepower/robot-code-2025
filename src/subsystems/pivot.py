@@ -41,6 +41,8 @@ class Pivot(Subsystem):
                 SparkFlex.PersistMode.kNoPersistParameters,
             )
 
+        self.pivot_motor_controllers = [motor.getClosedLoopController() for motor in self.pivot_motors]
+
         self.theta_pid = ProfiledPIDController(
             *lerp_over_table(config.pivot_pid_constants, self.elevator.get_extension()),
             constraints=TrapezoidProfile.Constraints(
@@ -58,6 +60,8 @@ class Pivot(Subsystem):
         self.acceleration = 0
 
         self.has_flipped_middle_finger = False
+
+        self.last_direction = 0
 
     @time_f("periodic pivot")
     def periodic(self):
@@ -97,13 +101,18 @@ class Pivot(Subsystem):
             target = config.middle_finger_angle + units.degreesToRadians(2)
 
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
-        self.set_power(pid_output + self.pivot_ff_power())
+        current_direction = 1 if pid_output > 0 else -1
+        if current_direction != self.last_direction:
+            pid_output += current_direction * config.pivot_backlash_compensator
+        self.last_direction = current_direction
 
-    def set_power(self, power: float):
-        SmartDashboard.putNumber("pivot power", power)
-        power = clamp(-0.25, 0.25, power)
-        for motor in self.pivot_motors:
-            motor.set(power)
+        self.set_current(pid_output + self.pivot_ff_power())
+
+    def set_current(self, current: float):
+        SmartDashboard.putNumber("pivot power", current)
+        current = clamp(-0.25, 0.25, current)
+        for controller in self.pivot_motor_controllers:
+            controller.setReference(current, SparkFlex.ControlType.kCurrent)
 
     def get_angle(self) -> float:
         return self.current_angle
