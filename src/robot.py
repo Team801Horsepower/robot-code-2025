@@ -420,9 +420,9 @@ class Robot(wpilib.TimedRobot):
                 )
 
             self.scheduler.schedule(self.target_align_cmd)
-        elif (
-            left_hps := self.driver_controller.getXButtonPressed()
-        ) or self.driver_controller.getBButtonPressed():
+        elif ((left_hps := self.driver_controller.getXButtonPressed() 
+             or self.driver_controller.getBButtonPressed())
+            and not self.manip_controller.climb_mode):
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
             self.target_align_cmd = ApproachHPS(
@@ -430,10 +430,11 @@ class Robot(wpilib.TimedRobot):
             )
             self.scheduler.schedule(self.target_align_cmd)
         elif (
-            self.driver_controller.getLeftBumperButtonReleased()
+            (self.driver_controller.getLeftBumperButtonReleased()
             or self.driver_controller.getXButtonReleased()
-            or self.driver_controller.getBButtonReleased()
-        ) and self.target_align_cmd is not None:
+            or self.driver_controller.getBButtonReleased())
+            and not self.manip_controller.climb_mode
+            and self.target_align_cmd is not None):
             self.target_align_cmd.cancel()
             self.target_align_cmd = None
 
@@ -446,18 +447,24 @@ class Robot(wpilib.TimedRobot):
             # and self.target_align_cmd.isScheduled()
         ):
             if self.manip_controller.climb_mode:
-                self.climber.climb(
+                self.periscope.climber.climb(
                     max(
                         self.driver_controller.getLeftTriggerAxis(),
                         self.driver_controller.getRightTriggerAxis(),
                     )
                 )
+                self.periscope.claw.set(0)
+                if self.driver_controller.getBButtonPressed():
+                    self.periscope.arm.target = config.climb_raised_setpoint
+                elif self.driver_controller.getXButtonPressed():
+                    self.periscope.arm.target = config.climb_lowered_setpoint
             else:
                 claw_power = (
                     self.driver_controller.getLeftTriggerAxis()
                     - self.driver_controller.getRightTriggerAxis()
                 )
                 self.periscope.claw.set(claw_power)
+                self.periscope.climber.climb(0)
 
     def teleopExit(self):
         pass
