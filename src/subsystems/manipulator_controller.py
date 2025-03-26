@@ -78,10 +78,15 @@ class ManipulatorController(Subsystem):
 
         self.update_tree_selection()
 
-        self.disable_pathfinding = self.controller.getRawButton(
+        # self.disable_pathfinding = self.controller.getRawButton(
+        #     self.input_indices["climb"]
+        # )
+        self.disable_pathfinding = False
+        
+        self.climb_mode = self.controller.getRawButton(
             self.input_indices["climb"]
         )
-
+        
     def update_tree_selection(self):
         def axis_to_selection(value):
             return (7 - round(6 * (value + 1))) % 12

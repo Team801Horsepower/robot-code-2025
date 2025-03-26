@@ -10,7 +10,14 @@ from math import sin, pi
 import time
 
 import config
-from subsystems import drive, periscope, vision, manipulator_controller, turn_signals
+from subsystems import (
+    drive,
+    periscope,
+    vision,
+    manipulator_controller,
+    turn_signals,
+    climber,
+)
 
 from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
@@ -44,6 +51,8 @@ class Robot(wpilib.TimedRobot):
         self.turn_signals = turn_signals.TurnSignals(
             self.scheduler, self.manip_controller, self.periscope.claw
         )
+
+        self.climber = climber.Climber(self.scheduler)
 
         self.drive.chassis.set_swerves()
 
@@ -439,11 +448,19 @@ class Robot(wpilib.TimedRobot):
             # self.target_align_cmd is not None
             # and self.target_align_cmd.isScheduled()
         ):
-            claw_power = (
-                self.driver_controller.getLeftTriggerAxis()
-                - self.driver_controller.getRightTriggerAxis()
-            )
-            self.periscope.claw.set(claw_power)
+            if self.manip_controller.climb_mode:
+                self.climber.climb(
+                    max(
+                        self.driver_controller.getLeftTriggerAxis(),
+                        self.driver_controller.getRightTriggerAxis(),
+                    )
+                )
+            else:
+                claw_power = (
+                    self.driver_controller.getLeftTriggerAxis()
+                    - self.driver_controller.getRightTriggerAxis()
+                )
+                self.periscope.claw.set(claw_power)
 
     def teleopExit(self):
         pass
