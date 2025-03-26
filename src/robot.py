@@ -16,7 +16,6 @@ from subsystems import (
     vision,
     manipulator_controller,
     turn_signals,
-    climber,
 )
 
 from commands.approach_reef import ApproachReef
@@ -51,8 +50,6 @@ class Robot(wpilib.TimedRobot):
         self.turn_signals = turn_signals.TurnSignals(
             self.scheduler, self.manip_controller, self.periscope.claw
         )
-
-        self.climber = climber.Climber(self.scheduler)
 
         self.drive.chassis.set_swerves()
 

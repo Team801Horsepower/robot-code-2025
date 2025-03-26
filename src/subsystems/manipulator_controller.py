@@ -107,3 +107,6 @@ class ManipulatorController(Subsystem):
         letter = "HGFEDCBALKJI"[self.stalk_selection]
         number = str(self.target_level + 1)
         SmartDashboard.putString("setpoint selection", letter + number)
+
+    def get_climb_mode(self):
+        return self.controller.getRawButton(self.input_indices["climb"])

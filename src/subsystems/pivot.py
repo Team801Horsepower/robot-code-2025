@@ -58,6 +58,7 @@ class Pivot(Subsystem):
         self.acceleration = 0
 
         self.has_flipped_middle_finger = False
+        self.should_power_limit = True
 
     @time_f("periodic pivot")
     def periodic(self):
@@ -101,7 +102,8 @@ class Pivot(Subsystem):
 
     def set_power(self, power: float):
         SmartDashboard.putNumber("pivot power", power)
-        power = clamp(-0.25, 0.25, power)
+        if self.should_power_limit:
+            power = clamp(-0.25, 0.25, power)
         for motor in self.pivot_motors:
             motor.set(power)
 
