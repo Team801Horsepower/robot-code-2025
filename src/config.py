@@ -164,7 +164,7 @@ extension_ratio = units.inchesToMeters(0.22557 * pi)  # m / revolution
 
 # -- Wrist --
 wrist_pid_constants = (0.8, 0, 0)
-wrist_motor_id = 50  # TODO: change to actual motor id
+wrist_motor_id = 50
 wrist_limits = (
     units.degreesToRadians(50),
     units.degreesToRadians(252),

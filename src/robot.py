@@ -507,19 +507,21 @@ class Robot(wpilib.TimedRobot):
 
     def blink_morse(self, message):
         def flip_turn_signals(value):
-            self.turn_signals.signal(2, value)
+            self.turn_signals.signal(1, value)
 
         blink_string = message
         led_cmds = []
         for letter in blink_string:
             for blink_time in letter_to_morse(letter):
                 led_cmds.append(
-                    InstantCommand(flip_turn_signals(True)).andThen(
+                    InstantCommand(lambda: flip_turn_signals(True)).andThen(
                         WaitCommand(blink_time * 0.3)
                     )
                 )
                 led_cmds.append(
-                    InstantCommand(flip_turn_signals(False)).andThen(WaitCommand(0.3))
+                    InstantCommand(lambda: flip_turn_signals(False)).andThen(
+                        WaitCommand(0.3)
+                    )
                 )
         self.scheduler.schedule(cmd := reduce(Command.andThen, led_cmds))
         return cmd
