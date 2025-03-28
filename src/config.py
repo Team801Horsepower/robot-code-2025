@@ -225,12 +225,12 @@ processor_setpoint = (
 
 
 climb_raised_setpoint = (
-    units.degreesToRadians(115),
+    units.degreesToRadians(105),
     extension_range[0],
-    units.degreesToRadians(166),
+    units.degreesToRadians(88.31974),
 )
 climb_lowered_setpoint = (
-    units.degreesToRadians(5),
+    units.degreesToRadians(15),
     extension_range[0],
-    units.degreesToRadians(166),
+    units.degreesToRadians(88.31974),
 )
