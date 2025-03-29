@@ -14,14 +14,22 @@ class Climber(Subsystem):
 
     def periodic(self):
         SmartDashboard.putBoolean("climbed", self.climbed())
-        if self.climb_motor.getOutputCurrent() > 801: # TODO: add real threshold :P
-            self.cage_gathered = True
+
+        SmartDashboard.putNumber(
+                "Climb Motor Current Draw",
+                self.climb_motor.getOutputCurrent(),
+            )
+        # if self.climb_motor.getOutputCurrent() > 801: # TODO: add real threshold :P
+        #     self.cage_gathered = True
+
+        # self.cage_gathered = True
 
     def climb(self, power: float):
-        if not self.climbed():
-            self.climb_motor.set(-power)
-        else:
-            self.climb_motor.set(0)
+        # if not self.climbed():
+        #     self.climb_motor.set(-power)
+        # else:
+        #     self.climb_motor.set(0)
+        self.climb_motor.set(-power)
 
     def climbed(self) -> bool:
         return self.cage_gathered

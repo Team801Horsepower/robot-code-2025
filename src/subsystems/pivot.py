@@ -1,6 +1,6 @@
 from commands2 import CommandScheduler, Subsystem
 from wpilib import DutyCycleEncoder, SmartDashboard
-from wpimath.controller import ProfiledPIDController
+from wpimath.controller import ProfiledPIDController, PIDController
 from math import pi
 from wpimath.trajectory import TrapezoidProfile
 from wpimath import units
@@ -29,6 +29,8 @@ class Pivot(Subsystem):
         ]
 
         self.pivot_motor_encoders = [motor.getEncoder() for motor in self.pivot_motors]
+
+        self.climbing = False
 
         for i, motor in enumerate(self.pivot_motors):
             motor_config = SparkBaseConfig()
@@ -60,8 +62,13 @@ class Pivot(Subsystem):
         self.has_flipped_middle_finger = False
         self.should_power_limit = True
 
+        SmartDashboard.putNumber("climb power mult", 1)
     @time_f("periodic pivot")
     def periodic(self):
+        self.power_mult = SmartDashboard.getNumber("climb power mult", 1)
+
+        if (self.climbing):
+            print("hi")
         self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()
         new_constants = lerp_over_table(
@@ -98,7 +105,10 @@ class Pivot(Subsystem):
             target = config.middle_finger_angle + units.degreesToRadians(2)
 
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
-        self.set_power(pid_output + self.pivot_ff_power())
+        if self.climbing:
+            self.set_power((pid_output + self.pivot_ff_power()) * self.power_mult)
+        else:
+            self.set_power(pid_output + self.pivot_ff_power())
 
     def set_power(self, power: float):
         SmartDashboard.putNumber("pivot power", power)

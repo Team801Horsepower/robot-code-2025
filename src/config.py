@@ -55,10 +55,10 @@ drive_acc_lim: List[Tuple[float, ...]] = format_table(
 
 # drive id, turn id, cancoder id
 swerves = [
-    (10, 11, 12),
-    (15, 16, 17),
-    (20, 21, 22),
     (25, 26, 27),
+    (20, 21, 22),
+    (15, 16, 17),
+    (10, 11, 12),
 ]
 
 # front left, back left, front right, back right
@@ -225,7 +225,7 @@ processor_setpoint = (
 
 
 climb_raised_setpoint = (
-    units.degreesToRadians(105),
+    units.degreesToRadians(75),
     extension_range[0],
     units.degreesToRadians(88.31974),
 )

@@ -420,27 +420,24 @@ class Robot(wpilib.TimedRobot):
                 )
 
             self.scheduler.schedule(self.target_align_cmd)
-        elif ((left_hps := self.driver_controller.getXButtonPressed() 
-             or self.driver_controller.getBButtonPressed())
-            and not self.manip_controller.climb_mode):
-            if self.target_align_cmd is not None:
-                self.target_align_cmd.cancel()
-            self.target_align_cmd = ApproachHPS(
-                self.drive, self.vision, self.periscope, self.graph, left_hps
-            )
-            self.scheduler.schedule(self.target_align_cmd)
-        elif (
-            (self.driver_controller.getLeftBumperButtonReleased()
-            or self.driver_controller.getXButtonReleased()
-            or self.driver_controller.getBButtonReleased())
-            and not self.manip_controller.climb_mode
-            and self.target_align_cmd is not None):
-            self.target_align_cmd.cancel()
-            self.target_align_cmd = None
-
-        self.autolower()
-
-        if not (
+        # elif ((left_hps := self.driver_controller.getXButtonPressed() 
+        #      or self.driver_controller.getBButtonPressed())
+        #     and not self.manip_controller.climb_mode):
+        #     if self.target_align_cmd is not None:
+        #         self.target_align_cmd.cancel()
+        #     self.target_align_cmd = ApproachHPS(
+        #         self.drive, self.vision, self.periscope, self.graph, left_hps
+        #     )
+        #     self.scheduler.schedule(self.target_align_cmd)
+        # elif (
+        #     (self.driver_controller.getLeftBumperButtonReleased()
+        #     or self.driver_controller.getXButtonReleased()
+        #     or self.driver_controller.getBButtonReleased())
+        #     and not self.manip_controller.climb_mode
+        #     and self.target_align_cmd is not None):
+        #     self.target_align_cmd.cancel()
+        #     self.target_align_cmd = None
+        elif not (
             isinstance(self.target_align_cmd, ApproachHPS)
             and self.target_align_cmd.isScheduled()
             # self.target_align_cmd is not None
@@ -458,6 +455,7 @@ class Robot(wpilib.TimedRobot):
                     self.periscope.arm.target = config.climb_raised_setpoint
                 elif self.driver_controller.getXButtonPressed():
                     self.periscope.arm.target = config.climb_lowered_setpoint
+                    self.periscope.arm.pivot.climbing = True
             else:
                 claw_power = (
                     self.driver_controller.getLeftTriggerAxis()
@@ -465,6 +463,8 @@ class Robot(wpilib.TimedRobot):
                 )
                 self.periscope.claw.set(claw_power)
                 self.periscope.climber.climb(0)
+
+        self.autolower()
 
     def teleopExit(self):
         pass

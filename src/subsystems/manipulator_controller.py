@@ -86,7 +86,9 @@ class ManipulatorController(Subsystem):
         self.climb_mode = self.controller.getRawButton(
             self.input_indices["climb"]
         )
-        
+
+        SmartDashboard.putBoolean("Climb Mode", self.climb_mode)
+
     def update_tree_selection(self):
         def axis_to_selection(value):
             return (7 - round(6 * (value + 1))) % 12
