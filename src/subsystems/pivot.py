@@ -62,14 +62,9 @@ class Pivot(Subsystem):
         self.has_flipped_middle_finger = False
         self.should_power_limit = True
 
-        SmartDashboard.putNumber("climb power mult", 1)
+
     @time_f("periodic pivot")
     def periodic(self):
-        self.power_mult = SmartDashboard.getNumber("climb power mult", 1)
-
-        if (self.climbing):
-            print("hi")
-        self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()
         new_constants = lerp_over_table(
             config.pivot_pid_constants, self.elevator.get_extension()
@@ -106,7 +101,7 @@ class Pivot(Subsystem):
 
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
         if self.climbing:
-            self.set_power((pid_output + self.pivot_ff_power()) * self.power_mult)
+            self.set_power((pid_output + self.pivot_ff_power()) * config.climb_power_mult)
         else:
             self.set_power(pid_output + self.pivot_ff_power())
 

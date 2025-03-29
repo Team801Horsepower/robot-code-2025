@@ -325,6 +325,7 @@ class Robot(wpilib.TimedRobot):
         self.target_align_cmd = None
         self.right_bumper_toggle = False
         self.left_bumper_toggle = False
+        self.periscope.arm.pivot.climbing = False
 
         SmartDashboard.putNumber("new IK x", config.ik_neutral_x)
         SmartDashboard.putNumber("new IK y", config.ik_neutral_y)
@@ -420,30 +421,13 @@ class Robot(wpilib.TimedRobot):
                 )
 
             self.scheduler.schedule(self.target_align_cmd)
-        # elif ((left_hps := self.driver_controller.getXButtonPressed() 
-        #      or self.driver_controller.getBButtonPressed())
-        #     and not self.manip_controller.climb_mode):
-        #     if self.target_align_cmd is not None:
-        #         self.target_align_cmd.cancel()
-        #     self.target_align_cmd = ApproachHPS(
-        #         self.drive, self.vision, self.periscope, self.graph, left_hps
-        #     )
-        #     self.scheduler.schedule(self.target_align_cmd)
-        # elif (
-        #     (self.driver_controller.getLeftBumperButtonReleased()
-        #     or self.driver_controller.getXButtonReleased()
-        #     or self.driver_controller.getBButtonReleased())
-        #     and not self.manip_controller.climb_mode
-        #     and self.target_align_cmd is not None):
-        #     self.target_align_cmd.cancel()
-        #     self.target_align_cmd = None
-        elif not (
-            isinstance(self.target_align_cmd, ApproachHPS)
-            and self.target_align_cmd.isScheduled()
-            # self.target_align_cmd is not None
-            # and self.target_align_cmd.isScheduled()
-        ):
-            if self.manip_controller.climb_mode:
+        elif self.manip_controller.climb_mode:
+            if not (
+                isinstance(self.target_align_cmd, ApproachHPS)
+                and self.target_align_cmd.isScheduled()
+                # self.target_align_cmd is not None
+                # and self.target_align_cmd.isScheduled()
+            ):
                 self.periscope.climber.climb(
                     max(
                         self.driver_controller.getLeftTriggerAxis(),
@@ -452,11 +436,35 @@ class Robot(wpilib.TimedRobot):
                 )
                 self.periscope.claw.set(0)
                 if self.driver_controller.getBButtonPressed():
+                    self.periscope.arm.pivot.climbing = False
                     self.periscope.arm.target = config.climb_raised_setpoint
                 elif self.driver_controller.getXButtonPressed():
-                    self.periscope.arm.target = config.climb_lowered_setpoint
                     self.periscope.arm.pivot.climbing = True
-            else:
+                    self.periscope.arm.target = config.climb_lowered_setpoint
+
+        elif ((left_hps := self.driver_controller.getXButtonPressed() 
+             or self.driver_controller.getBButtonPressed())
+            and not self.manip_controller.climb_mode):
+            if self.target_align_cmd is not None:
+                self.target_align_cmd.cancel()
+            self.target_align_cmd = ApproachHPS(
+                self.drive, self.vision, self.periscope, self.graph, left_hps
+            )
+            self.scheduler.schedule(self.target_align_cmd)
+        elif (
+            (self.driver_controller.getLeftBumperButtonReleased()
+            or self.driver_controller.getXButtonReleased()
+            or self.driver_controller.getBButtonReleased())
+            and not self.manip_controller.climb_mode
+            and self.target_align_cmd is not None):
+            self.target_align_cmd.cancel()
+            self.target_align_cmd = None
+        elif not (
+            isinstance(self.target_align_cmd, ApproachHPS)
+            and self.target_align_cmd.isScheduled()
+            # self.target_align_cmd is not None
+            # and self.target_align_cmd.isScheduled()
+        ):
                 claw_power = (
                     self.driver_controller.getLeftTriggerAxis()
                     - self.driver_controller.getRightTriggerAxis()

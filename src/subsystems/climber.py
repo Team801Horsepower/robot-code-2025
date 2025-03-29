@@ -10,15 +10,16 @@ class Climber(Subsystem):
         self.climb_motor = SparkFlex(
             config.climb_motor_id, SparkFlex.MotorType.kBrushless
         )
-        self.cage_gathered = False
+        # self.cage_gathered = False
 
     def periodic(self):
-        SmartDashboard.putBoolean("climbed", self.climbed())
+        pass
+        # SmartDashboard.putBoolean("climbed", self.climbed())
 
-        SmartDashboard.putNumber(
-                "Climb Motor Current Draw",
-                self.climb_motor.getOutputCurrent(),
-            )
+        # # SmartDashboard.putNumber(
+        #         "Climb Motor Current Draw",
+        #         self.climb_motor.getOutputCurrent(),
+        #     )
         # if self.climb_motor.getOutputCurrent() > 801: # TODO: add real threshold :P
         #     self.cage_gathered = True
 
@@ -31,6 +32,6 @@ class Climber(Subsystem):
         #     self.climb_motor.set(0)
         self.climb_motor.set(-power)
 
-    def climbed(self) -> bool:
-        return self.cage_gathered
+    # def climbed(self) -> bool:
+    #     return self.cage_gathered
         

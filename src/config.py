@@ -79,6 +79,7 @@ claw_beam_break_id = 0
 # -- Climber --
 
 climb_motor_id = 60
+climb_power_mult = 4
 
 # -- Arm --
 
@@ -225,7 +226,7 @@ processor_setpoint = (
 
 
 climb_raised_setpoint = (
-    units.degreesToRadians(75),
+    units.degreesToRadians(72),
     extension_range[0],
     units.degreesToRadians(88.31974),
 )
