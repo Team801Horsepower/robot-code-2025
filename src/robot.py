@@ -264,7 +264,7 @@ class Robot(wpilib.TimedRobot):
 
         if left_start:
             cmds = [
-                s(2, 3),
+                s(3, 3),
                 g(True),
                 s(4, 3),
                 g(True),
@@ -272,7 +272,7 @@ class Robot(wpilib.TimedRobot):
             ]
         else:
             cmds = [
-                s(11, 3),
+                s(10, 3),
                 g(False),
                 s(9, 3),
                 g(False),
