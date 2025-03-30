@@ -62,7 +62,7 @@ swerves = [
 ]
 
 # front left, back left, front right, back right
-swerve_ids = [0, 2, 1, 3]
+swerve_ids = [3, 1, 2, 0]
 
 drive_pid = (0.15, 0, 0)
 turn_pid = (0.5, 0, 0)
@@ -197,7 +197,7 @@ reef_setpoints = [
 ]
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
 # source_setpoint = Transform2d(-0.50, 0.87, units.degreesToRadians(160))
-source_setpoint = Transform2d(-0.54, 0.82, units.degreesToRadians(160))
+source_setpoint = Transform2d(-0.5, 0.82, units.degreesToRadians(160))
 
 ground_pickup_setpoint = (
     units.degreesToRadians(35),
