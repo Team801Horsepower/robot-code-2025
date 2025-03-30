@@ -65,9 +65,6 @@ class Wrist(Subsystem):
             else config.wrist_neutral_angle + units.degreesToRadians(5)
         )
 
-    def fold(self):
-        self.target = 0.0  # TODO: change to preferred folding position
-
     def at_angle(self) -> bool:
         return abs(self.angle() - self.target_angle) <= self.tolerance
 
