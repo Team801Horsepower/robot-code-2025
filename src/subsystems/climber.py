@@ -10,7 +10,7 @@ class Climber(Subsystem):
         self.climb_motor = SparkFlex(
             config.climb_motor_id, SparkFlex.MotorType.kBrushless
         )
-        # self.cage_gathered = False
+        # self.cage_gathered = True
 
     def periodic(self):
         pass

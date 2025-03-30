@@ -465,12 +465,12 @@ class Robot(wpilib.TimedRobot):
             # self.target_align_cmd is not None
             # and self.target_align_cmd.isScheduled()
         ):
-                claw_power = (
-                    self.driver_controller.getLeftTriggerAxis()
-                    - self.driver_controller.getRightTriggerAxis()
-                )
-                self.periscope.claw.set(claw_power)
-                self.periscope.climber.climb(0)
+            claw_power = (
+                self.driver_controller.getLeftTriggerAxis()
+                - self.driver_controller.getRightTriggerAxis()
+            )
+            self.periscope.claw.set(claw_power)
+            self.periscope.climber.climb(0)
 
         self.autolower()
 
