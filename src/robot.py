@@ -398,7 +398,6 @@ class Robot(wpilib.TimedRobot):
                 self.target_align_cmd.cancel()
 
             if self.manip_controller.disable_pathfinding:
-                print("using binocular vision alignment only")
                 self.target_align_cmd = TargetReef(
                     self.drive,
                     self.vision,
@@ -406,7 +405,6 @@ class Robot(wpilib.TimedRobot):
                     self.manip_controller.reef_algae_selected,
                 )
             else:
-                print("using pathfinding and alignment")
                 self.target_align_cmd = ApproachReef(
                     self.drive,
                     self.vision,
