@@ -30,6 +30,8 @@ class Arm(Subsystem):
 
     @time_f("periodic arm")
     def periodic(self):
+        self.pivot.climbing = self.target == config.climb_lowered_setpoint
+
         self.wrist.passthrough_allowed = (
             self.wrist_passthrough_allowed_by_algae
             and self.elevator.get_extension() > config.wrist_passthrough_min_extension

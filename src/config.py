@@ -78,6 +78,8 @@ claw_beam_break_id = 0
 
 # -- Climber --
 
+climb_motor_id = 60
+
 # -- Arm --
 
 # TODO: Set claw to wrist length and angle to correct value
@@ -139,6 +141,9 @@ pivot_acc_lim: List[Tuple[float, ...]] = format_table([
     (1.906579590, 0),
 ])
 # fmt: on
+
+climb_power_mult = 3
+climbing_pivot_acc_limit = 0.6
 
 # -- Elevator --
 
@@ -219,4 +224,15 @@ processor_setpoint = (
     units.degreesToRadians(32),
     extension_range[0],
     units.degreesToRadians(166),
+)
+
+climb_raised_setpoint = (
+    units.degreesToRadians(72),
+    extension_range[0],
+    wrist_neutral_angle + units.degreesToRadians(1),
+)
+climb_lowered_setpoint = (
+    units.degreesToRadians(12),
+    extension_range[0],
+    wrist_neutral_angle + units.degreesToRadians(1),
 )

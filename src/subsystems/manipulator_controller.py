@@ -32,6 +32,9 @@ class ManipulatorController(Subsystem):
         self.reef_algae_selected = False
 
         self.disable_pathfinding = False
+        SmartDashboard.putBoolean("disable pathfinding", self.disable_pathfinding)
+
+        self.climb_mode = False
 
     @time_f("periodic manip controller")
     def periodic(self):
@@ -78,9 +81,10 @@ class ManipulatorController(Subsystem):
 
         self.update_tree_selection()
 
-        self.disable_pathfinding = self.controller.getRawButton(
-            self.input_indices["climb"]
+        self.disable_pathfinding = SmartDashboard.getBoolean(
+            "disable pathfinding", self.disable_pathfinding
         )
+        self.climb_mode = self.controller.getRawButton(self.input_indices["climb"])
 
     def update_tree_selection(self):
         def axis_to_selection(value):

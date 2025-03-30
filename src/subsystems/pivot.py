@@ -58,9 +58,16 @@ class Pivot(Subsystem):
         self.acceleration = 0
 
         self.has_flipped_middle_finger = False
+        self.climbing = False
+
+        SmartDashboard.putNumber("climbing acc limit", config.climbing_pivot_acc_limit)
 
     @time_f("periodic pivot")
     def periodic(self):
+        config.climbing_pivot_acc_limit = SmartDashboard.getNumber(
+            "climbing acc limit", config.climbing_pivot_acc_limit
+        )
+
         self.target_target_angle(self.target_angle)
         self.current_angle = self.update_angle()
         new_constants = lerp_over_table(
@@ -69,12 +76,19 @@ class Pivot(Subsystem):
         self.theta_pid.setP(new_constants[0])
         self.theta_pid.setI(new_constants[1])
         self.theta_pid.setD(new_constants[2])
-        self.theta_pid.setConstraints(
-            TrapezoidProfile.Constraints(
-                1000,
-                lerp_over_table(config.pivot_acc_lim, self.elevator.get_extension())[0],
+        if self.climbing:
+            self.theta_pid.setConstraints(
+                TrapezoidProfile.Constraints(1000, config.climbing_pivot_acc_limit)
             )
-        )
+        else:
+            self.theta_pid.setConstraints(
+                TrapezoidProfile.Constraints(
+                    1000,
+                    lerp_over_table(
+                        config.pivot_acc_lim, self.elevator.get_extension()
+                    )[0],
+                )
+            )
         self.acceleration = (
             self.pivot_motor_encoders[0].getVelocity() - self.last_velocity
         ) / (time.time() - self.last_update_time)
@@ -97,11 +111,14 @@ class Pivot(Subsystem):
             target = config.middle_finger_angle + units.degreesToRadians(2)
 
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
+        if self.climbing:
+            pid_output *= config.climb_power_mult
         self.set_power(pid_output + self.pivot_ff_power())
 
     def set_power(self, power: float):
         SmartDashboard.putNumber("pivot power", power)
-        power = clamp(-0.25, 0.25, power)
+        if not self.climbing:
+            power = clamp(-0.25, 0.25, power)
         for motor in self.pivot_motors:
             motor.set(power)
 
