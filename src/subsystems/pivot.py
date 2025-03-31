@@ -112,7 +112,10 @@ class Pivot(Subsystem):
 
         pid_output = self.theta_pid.calculate(self.get_angle(), target)
         if self.climbing:
-            pid_output *= config.climb_power_mult
+            if self.get_angle() < config.climb_power_increase_angle:
+                pid_output *= config.climb_power_mult_when_low
+            else:
+                pid_output *= config.climb_power_mult
         self.set_power(pid_output + self.pivot_ff_power())
 
     def set_power(self, power: float):

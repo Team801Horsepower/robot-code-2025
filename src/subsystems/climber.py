@@ -22,10 +22,16 @@ class Climber(Subsystem):
         )
 
         SmartDashboard.putNumber("climb power multiplier", config.climb_power_mult)
+        SmartDashboard.putNumber(
+            "climb power large multiplier", config.climb_power_mult_when_low
+        )
 
     def periodic(self):
         config.climb_power_mult = SmartDashboard.getNumber(
             "climb power multiplier", config.climb_power_mult
+        )
+        config.climb_power_mult_when_low = SmartDashboard.getNumber(
+            "climb power large multiplier", config.climb_power_mult_when_low
         )
 
     def climb(self, power: float):
