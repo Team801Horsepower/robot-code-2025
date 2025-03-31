@@ -205,6 +205,7 @@ reef_setpoints = [
 barge_setpoint = Transform2d(-0.375, 2.4, units.degreesToRadians(140))
 # source_setpoint = Transform2d(-0.50, 0.87, units.degreesToRadians(160))
 source_setpoint = Transform2d(-0.5, 0.82, units.degreesToRadians(160))
+auto_source_setpoint = Transform2d(-0.54, 0.82, units.degreesToRadians(160))
 
 ground_pickup_setpoint = (
     units.degreesToRadians(35),

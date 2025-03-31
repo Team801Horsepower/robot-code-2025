@@ -97,7 +97,7 @@ class ApproachHPS(Command):
             self.current_cmd.initialize()
 
         if near_source:
-            self.periscope.arm.target = config.source_setpoint
+            self.periscope.arm.target = config.auto_source_setpoint
             self.periscope.claw.set(-1)
 
         self.current_cmd.execute()
