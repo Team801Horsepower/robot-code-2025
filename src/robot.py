@@ -247,7 +247,7 @@ class Robot(wpilib.TimedRobot):
         self.auto_start_time = time.time()
 
         self.periscope.arm.pivot.has_flipped_middle_finger = False
-        self.periscope.arm.target = config.transit_setpoint
+        self.periscope.arm.set_target(config.transit_setpoint)
 
         left_start = SmartDashboard.getBoolean("start auto on left", False)
 
@@ -382,15 +382,17 @@ class Robot(wpilib.TimedRobot):
 
         # self.periscope.arm.should_extend = self.driver_controller.getRightBumper()
         if self.driver_controller.getAButtonPressed():
-            self.periscope.arm.target = config.transit_setpoint
+            self.periscope.arm.set_target(config.transit_setpoint)
         elif self.driver_controller.getRightStickButtonPressed():
-            self.periscope.arm.target = config.source_setpoint
+            self.periscope.arm.set_target(config.source_setpoint)
         elif self.driver_controller.getYButtonPressed():
-            self.periscope.arm.target = Transform2d(
-                config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
+            self.periscope.arm.set_target(
+                Transform2d(
+                    config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
+                )
             )
         elif self.driver_controller.getRightBumperButtonPressed():
-            self.periscope.arm.target = self.manip_controller.arm_setpoint
+            self.periscope.arm.set_target(self.manip_controller.arm_setpoint)
         elif (
             self.driver_controller.getLeftBumperButtonPressed()
             and self.manip_controller.stalk_selection is not None
@@ -431,7 +433,7 @@ class Robot(wpilib.TimedRobot):
             (climb_down := self.driver_controller.getXButtonPressed())
             or self.driver_controller.getBButtonPressed()
         ):
-            self.periscope.arm.target = (
+            self.periscope.arm.set_target(
                 config.climb_lowered_setpoint
                 if climb_down
                 else config.climb_raised_setpoint
@@ -513,7 +515,7 @@ class Robot(wpilib.TimedRobot):
                 "new IK wrist", units.radiansToDegrees(config.ik_neutral_wrist)
             )
         )
-        self.periscope.arm.target = Transform2d(new_ik_x, new_ik_y, new_ik_wrist)
+        self.periscope.arm.set_target(Transform2d(new_ik_x, new_ik_y, new_ik_wrist))
 
     def read_typed_arm_input(self):
         new_pivot_target = units.degreesToRadians(
@@ -531,10 +533,12 @@ class Robot(wpilib.TimedRobot):
                 units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
             )
         )
-        self.periscope.arm.target = (
-            new_pivot_target,
-            new_extension_target,
-            new_wrist_target,
+        self.periscope.arm.set_target(
+            (
+                new_pivot_target,
+                new_extension_target,
+                new_wrist_target,
+            )
         )
 
     def should_autolower(self):
@@ -547,7 +551,7 @@ class Robot(wpilib.TimedRobot):
         if self.should_autolower() and self.periscope.arm.target != Transform2d(
             config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
         ):
-            self.periscope.arm.target = config.transit_setpoint
+            self.periscope.arm.set_target(config.transit_setpoint)
 
 
 if __name__ == "__main__":

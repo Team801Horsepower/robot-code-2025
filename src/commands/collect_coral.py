@@ -10,7 +10,7 @@ class CollectCoral(Command):
         self.left_hps = left_hps
 
     def initialize(self):
-        self.periscope.arm.target = config.source_setpoint
+        self.periscope.arm.set_target(config.source_setpoint)
 
     def execute(self):
         # if self.periscope.claw.has_coral():

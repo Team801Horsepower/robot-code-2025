@@ -23,6 +23,7 @@ class Arm(Subsystem):
         self.wrist = Wrist(scheduler)
 
         self.target: Optional[Transform2d | Tuple[float, float, float]] = None
+        self.real_target: Optional[Tuple[float, float, float]] = None
         self.use_algae = False
         self._target_outofbounds = False
 
@@ -45,6 +46,46 @@ class Arm(Subsystem):
         SmartDashboard.putBoolean("wrist at target", self.wrist.at_angle())
 
     def seek_target(self):
+        if self.real_target is not None:
+            self.pivot.target_angle = self.real_target[0]
+            self.elevator.target_extension = self.real_target[1]
+            self.wrist.target_angle = self.real_target[2]
+
+    def at_target(self) -> bool:
+        return (
+            self.pivot.at_angle()
+            and self.elevator.at_extension()
+            and self.wrist.at_angle()
+        )
+
+    @property
+    def pivot_relative_target(
+        self,
+    ) -> Optional[Transform2d | Tuple[float, float, float]]:
+        match self.target:
+            case None:
+                return None
+            case Transform2d():
+                return Transform2d(
+                    self.target.x - config.pivot_offset.x,
+                    self.target.y - config.pivot_offset.y,
+                    self.target.rotation().radians(),
+                )
+            case (float(_), float(_), float(_)):
+                return self.target
+            case _:
+                return
+
+    def target_attainable(self) -> bool:
+        return (
+            self._target_outofbounds
+            and self.pivot.target_attainable()
+            and self.elevator.target_attainable()
+            and self.wrist.target_attainable()
+        )
+
+    def set_target(self, target: Optional[Transform2d | Tuple[float, float, float]]):
+        self.target = target
         if isinstance(self.pivot_relative_target, Transform2d):
             self._target_outofbounds = False
             # Position of the wrist pivot in 2D arm space
@@ -116,7 +157,6 @@ class Arm(Subsystem):
             target_pivot = clamp(
                 degreesToRadians(50),
                 degreesToRadians(100),
-                # wrist_position.angle().radians(),
                 angle_to_wrist,
             )
 
@@ -124,14 +164,12 @@ class Arm(Subsystem):
                 "IK pivot angle",
                 radiansToDegrees(target_pivot),
             )
-            self.pivot.target_angle = target_pivot
 
             target_wrist = clamp(
                 config.wrist_limits[0],
                 config.wrist_limits[1],
                 pi
                 - (
-                    # wrist_position.angle().radians()
                     angle_to_wrist
                     - self.pivot_relative_target.rotation().radians()
                     + float(self.use_algae) * config.coral_algae_pickup_angle
@@ -141,61 +179,20 @@ class Arm(Subsystem):
                 "IK wrist angle",
                 radiansToDegrees(target_wrist),
             )
-            self.wrist.target_angle = target_wrist
-
-            # if self.should_extend:
-            #     target_elevator = clamp(
-            #         config.extension_range[0],
-            #         config.extension_range[1],
-            #         wrist_position.norm(),
-            #     )
-            # else:
-            #     target_elevator = config.extension_range[0]
             target_elevator = clamp(
                 config.extension_range[0],
                 config.extension_range[1],
                 wrist_position.norm(),
             )
             SmartDashboard.putNumber("IK elevator extension", target_elevator)
-            self.elevator.target_extension = target_elevator
+            self.real_target = (target_pivot, target_elevator, target_wrist)
         else:
             match self.pivot_relative_target:
                 case (float(_), float(_), float(_)):
-                    self.pivot.target_angle = self.pivot_relative_target[0]
-                    self.elevator.target_extension = self.pivot_relative_target[1]
-                    self.wrist.target_angle = self.pivot_relative_target[2]
+                    self.real_target = (
+                        self.pivot_relative_target[0],
+                        self.pivot_relative_target[1],
+                        self.pivot_relative_target[2],
+                    )
                 case _:
                     pass
-
-    def at_target(self) -> bool:
-        return (
-            self.pivot.at_angle()
-            and self.elevator.at_extension()
-            and self.wrist.at_angle()
-        )
-
-    @property
-    def pivot_relative_target(
-        self,
-    ) -> Optional[Transform2d | Tuple[float, float, float]]:
-        match self.target:
-            case None:
-                return None
-            case Transform2d():
-                return Transform2d(
-                    self.target.x - config.pivot_offset.x,
-                    self.target.y - config.pivot_offset.y,
-                    self.target.rotation().radians(),
-                )
-            case (float(_), float(_), float(_)):
-                return self.target
-            case _:
-                return
-
-    def target_attainable(self) -> bool:
-        return (
-            self._target_outofbounds
-            and self.pivot.target_attainable()
-            and self.elevator.target_attainable()
-            and self.wrist.target_attainable()
-        )

@@ -29,7 +29,7 @@ def make_auto_methods(
     drive: Drive, vision: Vision, periscope: Periscope, graph: Graph
 ) -> Tuple[Callable[[bool], Command], Callable[[int, int], Command]]:
     def transit():
-        periscope.arm.target = config.transit_setpoint
+        periscope.arm.set_target(config.transit_setpoint)
 
     def g(left_hps: bool):
         return ApproachHPS(drive, vision, periscope, graph, left_hps).andThen(
