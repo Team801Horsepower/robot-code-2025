@@ -98,10 +98,10 @@ class ApproachReef(Command):
 
         if near_reef:
             if not self.algae:
-                self.arm.target = config.reef_setpoints[self.target_level]
+                self.arm.set_target(config.reef_setpoints[self.target_level])
             else:
                 height = int(self.stalk_i / 2) % 2
-                self.arm.target = config.algae_reef_setpoints[height]
+                self.arm.set_target(config.algae_reef_setpoints[height])
 
         self.current_cmd.execute()
 
