@@ -150,7 +150,7 @@ pivot_acc_lim: List[Tuple[float, ...]] = format_table([
 
 # pivot_backlash_compensator = 20
 pivot_backlash_compensator: List[Tuple[float, ...]] = format_table([
-   (0.7366, 5),
+   (0.7366, 0),
    (1.906579590, 20),
 ])
 
