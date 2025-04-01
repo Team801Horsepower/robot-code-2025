@@ -157,7 +157,6 @@ class Arm(Subsystem):
             target_pivot = clamp(
                 degreesToRadians(50),
                 degreesToRadians(100),
-                # wrist_position.angle().radians(),
                 angle_to_wrist,
             )
 
@@ -165,14 +164,12 @@ class Arm(Subsystem):
                 "IK pivot angle",
                 radiansToDegrees(target_pivot),
             )
-            # self.pivot.target_angle = target_pivot
 
             target_wrist = clamp(
                 config.wrist_limits[0],
                 config.wrist_limits[1],
                 pi
                 - (
-                    # wrist_position.angle().radians()
                     angle_to_wrist
                     - self.pivot_relative_target.rotation().radians()
                     + float(self.use_algae) * config.coral_algae_pickup_angle
@@ -182,23 +179,12 @@ class Arm(Subsystem):
                 "IK wrist angle",
                 radiansToDegrees(target_wrist),
             )
-            # self.wrist.target_angle = target_wrist
-
-            # if self.should_extend:
-            #     target_elevator = clamp(
-            #         config.extension_range[0],
-            #         config.extension_range[1],
-            #         wrist_position.norm(),
-            #     )
-            # else:
-            #     target_elevator = config.extension_range[0]
             target_elevator = clamp(
                 config.extension_range[0],
                 config.extension_range[1],
                 wrist_position.norm(),
             )
             SmartDashboard.putNumber("IK elevator extension", target_elevator)
-            # self.elevator.target_extension = target_elevator
             self.real_target = (target_pivot, target_elevator, target_wrist)
         else:
             match self.pivot_relative_target:
