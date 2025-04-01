@@ -35,11 +35,16 @@ class Pivot(Subsystem):
             motor_config.setIdleMode(SparkBaseConfig.IdleMode.kBrake)
             # Alternate inverting for correct rotation, positive is up
             motor_config.inverted(i % 2 == 0)
+            motor_config.closedLoop.pid(0.01, 0, 0)
             motor.configure(
                 motor_config,
                 SparkFlex.ResetMode.kResetSafeParameters,
                 SparkFlex.PersistMode.kNoPersistParameters,
             )
+
+        self.pivot_motor_controllers = [
+            motor.getClosedLoopController() for motor in self.pivot_motors
+        ]
 
         self.theta_pid = ProfiledPIDController(
             *lerp_over_table(config.pivot_pid_constants, self.elevator.get_extension()),
@@ -59,6 +64,8 @@ class Pivot(Subsystem):
 
         self.has_flipped_middle_finger = False
         self.climbing = False
+
+        self.last_direction = 0
 
         SmartDashboard.putNumber("climbing acc limit", config.climbing_pivot_acc_limit)
 
@@ -105,6 +112,10 @@ class Pivot(Subsystem):
             "pivot encoder", self.pivot_motor_encoders[0].getPosition()
         )
 
+        SmartDashboard.putNumber(
+            "pivot current", self.pivot_motors[0].getOutputCurrent()
+        )
+
     def target_target_angle(self, target: float):
         self.has_flipped_middle_finger |= self.get_angle() >= config.middle_finger_angle
         if not self.has_flipped_middle_finger:
@@ -116,7 +127,17 @@ class Pivot(Subsystem):
                 pid_output *= config.climb_power_mult_when_low
             else:
                 pid_output *= config.climb_power_mult
-        self.set_power(pid_output + self.pivot_ff_power())
+
+        current_direction = 1 if pid_output > 0 else -1
+        if current_direction != self.last_direction:
+            backlash_compensator = lerp_over_table(
+                config.pivot_backlash_compensator, self.elevator.get_extension()
+            )[0]
+            pid_output += current_direction * backlash_compensator
+        self.last_direction = current_direction
+
+        # self.set_power(pid_output + self.pivot_ff_power())
+        self.set_current(pid_output + self.pivot_ff_power())
 
     def set_power(self, power: float):
         SmartDashboard.putNumber("pivot power", power)
@@ -124,6 +145,12 @@ class Pivot(Subsystem):
             power = clamp(-0.25, 0.25, power)
         for motor in self.pivot_motors:
             motor.set(power)
+
+    def set_current(self, current: float):
+        SmartDashboard.putNumber("pivot target current", current)
+        current = clamp(-40, 40, current)
+        for controller in self.pivot_motor_controllers:
+            controller.setReference(current, SparkFlex.ControlType.kCurrent)
 
     def get_angle(self) -> float:
         return self.current_angle
