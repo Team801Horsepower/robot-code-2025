@@ -69,17 +69,18 @@ class Vision(Subsystem):
         # self.layout = AprilTagFieldLayout(layout_path)
         self.layout = AprilTagFieldLayout.loadField(AprilTagField.k2025Reefscape)
 
-        self.results: List[PhotonPipelineResult] = []
+        self.results: List[PhotonPipelineResult] = [PhotonPipelineResult()] * 4
         self.get_results()
 
+    @time_f("periodic vision")
     def periodic(self):
         self.get_results()
 
     def get_results(self):
-        self.results = []
-        for cam in self.cameras:
-            res = cam[0].getLatestResult()
-            self.results.append(res)
+        for i in range(len(self.results)):
+            res_s = self.cameras[i][0].getAllUnreadResults()
+            if res_s:
+                self.results[i] = res_s[-1]
 
     # (tag pitch, tag yaw)
     def cur_atag(
@@ -112,6 +113,8 @@ class Vision(Subsystem):
     def estimate_multitag_pos(
         self,
         robot_angle: float,
+        ests_th: Optional[int] = None,
+        conf_th: Optional[float] = None,
         # ) -> Tuple[int, List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]]:
     ) -> List[Tuple[Tuple[int, int], Tuple[Translation2d, float]]]:
         tag_info = []
@@ -144,9 +147,22 @@ class Vision(Subsystem):
                 # )
                 conf = self.get_2tag_conf(robot_angle, tag_info[i], tag_info[j])
                 maybe_pairs.append((conf, i, j))
+
+        if ests_th is not None and len(maybe_pairs) < ests_th:
+            return []
+
         if len(maybe_pairs) > 5:
             maybe_pairs.sort(key=lambda t: t[0], reverse=True)
             maybe_pairs = maybe_pairs[:5]
+
+        if conf_th is not None:
+            confs = [t[0] for t in maybe_pairs]
+            total_conf = sum(confs)
+            weights = [conf / total_conf for conf in confs]
+            composite_conf = float(np.dot(weights, confs))
+            if composite_conf < conf_th:
+                return []
+
         positions = []
         for conf, i, j in maybe_pairs:
             positions.append(
@@ -208,11 +224,14 @@ class Vision(Subsystem):
 
     @time_f("vision pos report")
     def pos_report(
-        self, robot_angle: float
+        self,
+        robot_angle: float,
+        ests_th: Optional[int] = None,
+        conf_th: Optional[float] = None,
     ) -> Tuple[int, Optional[Tuple[Translation2d, float, float]]]:
         # ) -> Optional[Tuple[Translation2d, float, float]]:
         # ntags, estimates = self.estimate_multitag_pos(robot_angle)
-        estimates = self.estimate_multitag_pos(robot_angle)
+        estimates = self.estimate_multitag_pos(robot_angle, ests_th, conf_th)
         confs = [tup[1][1] for tup in estimates]
         total_conf = sum(confs)
         weights = [conf / total_conf for conf in confs]

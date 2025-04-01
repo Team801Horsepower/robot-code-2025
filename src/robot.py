@@ -179,7 +179,11 @@ class Robot(wpilib.TimedRobot):
         # ntags = pos = conf = dev = heading_correction = None
         # pos = conf = dev = heading_correction = None
 
-        n_ests, report = self.vision.pos_report(heading)
+        ests_th = 4
+        conf_th = 0.4
+        dev_th = 0.05
+
+        n_ests, report = self.vision.pos_report(heading, ests_th, conf_th)
         SmartDashboard.putNumber("pos estimates", n_ests)
         if report is not None:
             pos, conf, dev = report
@@ -200,9 +204,9 @@ class Robot(wpilib.TimedRobot):
             # if conf >= 0.25 and speed < 0.15:
             #     # if conf >= 0.2:
             if (
-                n_ests >= 4
-                and conf >= 0.4
-                and dev < 0.05
+                n_ests >= ests_th
+                and conf >= conf_th
+                and dev < dev_th
                 # TODO: should we have this?
                 and not self.isAutonomousEnabled()
             ):
