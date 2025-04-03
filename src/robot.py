@@ -16,6 +16,7 @@ from subsystems import drive, periscope, vision, manipulator_controller, turn_si
 from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
 from commands.target_reef import TargetReef
+from commands.continuous import Continuous
 
 from utils.graph import Graph
 from utils import time_f, letter_to_morse
@@ -397,21 +398,25 @@ class Robot(wpilib.TimedRobot):
                 self.target_align_cmd.cancel()
 
             if self.manip_controller.disable_pathfinding:
-                self.target_align_cmd = TargetReef(
-                    self.drive,
-                    self.vision,
-                    self.manip_controller.stalk_selection,
-                    self.manip_controller.reef_algae_selected,
+                self.target_align_cmd = Continuous(
+                    TargetReef(
+                        self.drive,
+                        self.vision,
+                        self.manip_controller.stalk_selection,
+                        self.manip_controller.reef_algae_selected,
+                    )
                 )
             else:
-                self.target_align_cmd = ApproachReef(
-                    self.drive,
-                    self.vision,
-                    self.periscope.arm,
-                    self.graph,
-                    self.manip_controller.stalk_selection,
-                    self.manip_controller.target_level or 0,
-                    self.manip_controller.reef_algae_selected,
+                self.target_align_cmd = Continuous(
+                    ApproachReef(
+                        self.drive,
+                        self.vision,
+                        self.periscope.arm,
+                        self.graph,
+                        self.manip_controller.stalk_selection,
+                        self.manip_controller.target_level or 0,
+                        self.manip_controller.reef_algae_selected,
+                    )
                 )
 
             self.scheduler.schedule(self.target_align_cmd)
@@ -421,8 +426,10 @@ class Robot(wpilib.TimedRobot):
         ):
             if self.target_align_cmd is not None:
                 self.target_align_cmd.cancel()
-            self.target_align_cmd = ApproachHPS(
-                self.drive, self.vision, self.periscope, self.graph, left_hps
+            self.target_align_cmd = Continuous(
+                ApproachHPS(
+                    self.drive, self.vision, self.periscope, self.graph, left_hps
+                )
             )
             self.scheduler.schedule(self.target_align_cmd)
         elif self.manip_controller.climb_mode and (
@@ -460,7 +467,8 @@ class Robot(wpilib.TimedRobot):
             self.periscope.climber.climb(0)
 
             if not (
-                isinstance(self.target_align_cmd, ApproachHPS)
+                self.target_align_cmd is not None
+                and isinstance(self.target_align_cmd.inner, ApproachHPS)
                 and self.target_align_cmd.isScheduled()
                 # self.target_align_cmd is not None
                 # and self.target_align_cmd.isScheduled()
@@ -481,7 +489,7 @@ class Robot(wpilib.TimedRobot):
         ) or (
             self.driver_controller.getLeftBumperButton()
             and self.target_align_cmd is not None
-            and self.target_align_cmd.isFinished()
+            and self.target_align_cmd.inner_finished()
         )
         self.driver_controller.setRumble(
             GenericHID.RumbleType.kBothRumble, 1 if should_rumble else 0
