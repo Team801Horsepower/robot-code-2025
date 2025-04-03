@@ -210,11 +210,6 @@ class Robot(wpilib.TimedRobot):
 
         SmartDashboard.putNumberArray("robot pose", [robot_pos.x, robot_pos.y, heading])
 
-        now = time.time()
-        took = now - self.last_loop
-        self.last_loop = now
-        SmartDashboard.putNumber("loop time", took)
-
         # tag8_pose = self.vision.layout.getTagPose(8)
         # if tag8_pose is not None:
         #     tag8_pos = tag8_pose.toPose2d().translation()
@@ -227,6 +222,11 @@ class Robot(wpilib.TimedRobot):
             self.morse_cmd is not None and not self.morse_cmd.isScheduled()
         ) or self.morse_cmd is None:
             self.turn_signals.should_turn_signal = True
+
+        now = time.time()
+        took = now - self.last_loop
+        self.last_loop = now
+        SmartDashboard.putNumber("loop time", took)
 
     def disabledInit(self):
         pass

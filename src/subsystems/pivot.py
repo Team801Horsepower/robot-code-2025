@@ -121,12 +121,16 @@ class Pivot(Subsystem):
         if not self.has_flipped_middle_finger:
             target = config.middle_finger_angle + units.degreesToRadians(2)
 
-        pid_output = self.theta_pid.calculate(self.get_angle(), target)
         if self.climbing:
+            pid_output = config.pivot_climb_p * (target - self.get_angle())
             if self.get_angle() < config.climb_power_increase_angle:
                 pid_output *= config.climb_power_mult_when_low
             else:
                 pid_output *= config.climb_power_mult
+            self.set_power(pid_output)
+            return
+
+        pid_output = self.theta_pid.calculate(self.get_angle(), target)
 
         current_direction = 1 if pid_output > 0 else -1
         if current_direction != self.last_direction:

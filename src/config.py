@@ -139,6 +139,8 @@ pivot_pid_constants: List[Tuple[float, ...]] = format_table([
     (1.906579590, 130 * 0.45, 0, 0),
 ])
 
+pivot_climb_p = 0.65
+
 # (extension, acc)
 pivot_acc_lim: List[Tuple[float, ...]] = format_table([
     (0.7366, 10),
@@ -222,7 +224,7 @@ source_setpoint = Transform2d(-0.5, 0.82, units.degreesToRadians(160))
 auto_source_setpoint = Transform2d(-0.54, 0.82, units.degreesToRadians(160))
 
 ground_pickup_setpoint = (
-    units.degreesToRadians(35),
+    units.degreesToRadians(30),
     extension_range[0],
     units.degreesToRadians(118),
 )
