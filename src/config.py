@@ -158,10 +158,10 @@ pivot_backlash_compensator: List[Tuple[float, ...]] = format_table([
 
 # fmt: on
 
-climb_power_mult = 3
+climb_power_mult = 2
 climb_power_increase_angle = units.degreesToRadians(25)
-climb_power_mult_when_low = 5
-climbing_pivot_acc_limit = 0.6
+climb_power_mult_when_low = 6
+climbing_pivot_acc_limit = 0.8
 
 # -- Elevator --
 
