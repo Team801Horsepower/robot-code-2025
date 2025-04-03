@@ -52,6 +52,18 @@ class Pivot(Subsystem):
                 *config.pivot_pid_constraint_constants
             ),
         )
+        self.climb_theta_pid = ProfiledPIDController(
+            config.pivot_climb_p,
+            0,
+            0,
+            constraints=TrapezoidProfile.Constraints(
+                1000, config.climbing_pivot_acc_limit
+            ),
+        )
+        # This should probably be removed, but I won't be the one to do it.
+        self.climb_theta_pid.setConstraints(
+            TrapezoidProfile.Constraints(1000, config.climbing_pivot_acc_limit)
+        )
 
         self.pivot_encoder = DutyCycleEncoder(config.pivot_encoder_id)
 
@@ -83,19 +95,14 @@ class Pivot(Subsystem):
         self.theta_pid.setP(new_constants[0])
         self.theta_pid.setI(new_constants[1])
         self.theta_pid.setD(new_constants[2])
-        if self.climbing:
-            self.theta_pid.setConstraints(
-                TrapezoidProfile.Constraints(1000, config.climbing_pivot_acc_limit)
+
+        self.theta_pid.setConstraints(
+            TrapezoidProfile.Constraints(
+                1000,
+                lerp_over_table(config.pivot_acc_lim, self.elevator.get_extension())[0],
             )
-        else:
-            self.theta_pid.setConstraints(
-                TrapezoidProfile.Constraints(
-                    1000,
-                    lerp_over_table(
-                        config.pivot_acc_lim, self.elevator.get_extension()
-                    )[0],
-                )
-            )
+        )
+
         self.acceleration = (
             self.pivot_motor_encoders[0].getVelocity() - self.last_velocity
         ) / (time.time() - self.last_update_time)
@@ -121,8 +128,11 @@ class Pivot(Subsystem):
         if not self.has_flipped_middle_finger:
             target = config.middle_finger_angle + units.degreesToRadians(2)
 
+        normal_pid_output = self.theta_pid.calculate(self.get_angle(), target)
+        climb_pid_output = self.climb_theta_pid.calculate(self.get_angle(), target)
+
         if self.climbing:
-            pid_output = config.pivot_climb_p * (target - self.get_angle())
+            pid_output = climb_pid_output
             if self.get_angle() < config.climb_power_increase_angle:
                 pid_output *= config.climb_power_mult_when_low
             else:
@@ -130,7 +140,7 @@ class Pivot(Subsystem):
             self.set_power(pid_output)
             return
 
-        pid_output = self.theta_pid.calculate(self.get_angle(), target)
+        pid_output = normal_pid_output
 
         current_direction = 1 if pid_output > 0 else -1
         if current_direction != self.last_direction:
