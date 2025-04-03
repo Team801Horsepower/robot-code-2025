@@ -139,8 +139,6 @@ pivot_pid_constants: List[Tuple[float, ...]] = format_table([
     (1.906579590, 130 * 0.45, 0, 0),
 ])
 
-pivot_climb_p = 0.65
-
 # (extension, acc)
 pivot_acc_lim: List[Tuple[float, ...]] = format_table([
     (0.7366, 10),
@@ -158,6 +156,7 @@ pivot_backlash_compensator: List[Tuple[float, ...]] = format_table([
 
 # fmt: on
 
+pivot_climb_p = 0.65
 climb_power_mult = 2
 climb_power_increase_angle = units.degreesToRadians(25)
 climb_power_mult_when_low = 6
