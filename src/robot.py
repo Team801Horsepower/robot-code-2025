@@ -343,7 +343,8 @@ class Robot(wpilib.TimedRobot):
             units.radiansToDegrees(self.periscope.arm.wrist.target_angle),
         )
 
-        self.morse_cmd = self.blink_morse("Horsepower")
+        # FIXME: Takes several hundred milliseconds for some reason
+        # self.morse_cmd = self.blink_morse("Horsepower")
 
     @time_f("periodic teleop")
     def teleopPeriodic(self):
@@ -557,6 +558,7 @@ class Robot(wpilib.TimedRobot):
         ):
             self.periscope.arm.set_target(config.transit_setpoint)
 
+    @time_f("blink_morse")
     def blink_morse(self, message):
         def flip_turn_signals(value):
             self.turn_signals.signal(1, value)
