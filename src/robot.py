@@ -25,6 +25,7 @@ from auto_actions import make_auto_methods
 
 
 class Robot(wpilib.TimedRobot):
+    @time_f("init robot")
     def robotInit(self):
         DataLogManager.start()
         self.scheduler = CommandScheduler()
@@ -238,6 +239,7 @@ class Robot(wpilib.TimedRobot):
     def disabledExit(self):
         pass
 
+    @time_f("init autonomous")
     def autonomousInit(self):
         self.auto_start_time = time.time()
 
@@ -314,12 +316,14 @@ class Robot(wpilib.TimedRobot):
             reduce(Command.andThen, cmds).andThen(InstantCommand(log_time))
         )
 
+    @time_f("periodic autonomous")
     def autonomousPeriodic(self):
         self.autolower()
 
     def autonomousExit(self):
         pass
 
+    @time_f("init teleop")
     def teleopInit(self):
         self.target_align_cmd = None
         self.right_bumper_toggle = False
