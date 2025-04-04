@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from os import getpid, system
+
 import wpilib
 from wpilib import SmartDashboard, DataLogManager
 from wpilib.interfaces import GenericHID
@@ -587,4 +589,7 @@ class Robot(wpilib.TimedRobot):
 
 
 if __name__ == "__main__":
+    pid = getpid() # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
+    system(f"sudo renice -20 -p {pid}")
+
     wpilib.run(Robot)
