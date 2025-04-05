@@ -2,7 +2,6 @@
 
 from os import getpid, system
 
-from numpy import rint
 import wpilib
 from wpilib import SmartDashboard, DataLogManager
 from wpilib.interfaces import GenericHID
