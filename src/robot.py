@@ -2,6 +2,7 @@
 
 from os import getpid, system
 
+from numpy import rint
 import wpilib
 from wpilib import SmartDashboard, DataLogManager
 from wpilib.interfaces import GenericHID
@@ -77,6 +78,9 @@ class Robot(wpilib.TimedRobot):
 
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
+
+        self.right_auto = self.generate_auto(False)
+        self.left_auto = self.generate_auto(True)
 
         SmartDashboard.putNumber(
             "new pivot target",
@@ -260,62 +264,14 @@ class Robot(wpilib.TimedRobot):
             )
         )
 
-        g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
-
-        if left_start:
-            cmds = [
-                s(3, 3),
-                g(True),
-                s(4, 3),
-                g(True),
-                s(5, 3),
-            ]
-        else:
-            cmds = [
-                s(10, 3),
-                g(False),
-                s(9, 3),
-                g(False),
-                s(8, 3),
-            ]
-
-        # cmds = [
-        #     # s(11, 3),
-        #     s(11, 2),
-        #     g(False),
-        #     # s(8, 3),
-        #     s(9, 2),
-        #     g(False),
-        #     s(8, 2),
-        # ]
-
-        # cmds = [
-        #     s(2, 3),
-        #     g(True),
-        #     s(5, 3),
-        #     g(True),
-        #     s(4, 3),
-        # ]
-
-        # cmds = [
-        #     s(11, 3),
-        #     g(False),
-        #     s(8, 3),
-        #     g(False),
-        #     s(11, 2),
-        #     g(False),
-        #     s(8, 2),
-        #     g(False),
-        #     s(11, 1),
-        #     g(False),
-        #     s(8, 1),
-        # ]
         def log_time():
             auto_took = time.time() - self.auto_start_time
             SmartDashboard.putNumber("auto took", auto_took)
 
         self.scheduler.schedule(
-            reduce(Command.andThen, cmds).andThen(InstantCommand(log_time))
+            (self.left_auto if left_start else self.right_auto).andThen(
+                InstantCommand(log_time)
+            )
         )
 
     @time_f("periodic autonomous")
@@ -587,9 +543,62 @@ class Robot(wpilib.TimedRobot):
         self.turn_signals.should_turn_signal = False
         return cmd
 
+    def generate_auto(self, left_start: bool):
+        g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
+
+        if left_start:
+            cmds = [
+                s(3, 3),
+                g(True),
+                s(4, 3),
+                g(True),
+                s(5, 3),
+            ]
+        else:
+            cmds = [
+                s(10, 3),
+                g(False),
+                s(9, 3),
+                g(False),
+                s(8, 3),
+            ]
+
+        # cmds = [
+        #     # s(11, 3),
+        #     s(11, 2),
+        #     g(False),
+        #     # s(8, 3),
+        #     s(9, 2),
+        #     g(False),
+        #     s(8, 2),
+        # ]
+
+        # cmds = [
+        #     s(2, 3),
+        #     g(True),
+        #     s(5, 3),
+        #     g(True),
+        #     s(4, 3),
+        # ]
+
+        # cmds = [
+        #     s(11, 3),
+        #     g(False),
+        #     s(8, 3),
+        #     g(False),
+        #     s(11, 2),
+        #     g(False),
+        #     s(8, 2),
+        #     g(False),
+        #     s(11, 1),
+        #     g(False),
+        #     s(8, 1),
+        # ]
+        return reduce(Command.andThen, cmds)
+
 
 if __name__ == "__main__":
-    pid = getpid() # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
+    pid = getpid()  # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
     system(f"sudo renice -20 -p {pid}")
 
     wpilib.run(Robot)
