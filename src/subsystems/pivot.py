@@ -77,7 +77,7 @@ class Pivot(Subsystem):
         self.has_flipped_middle_finger = False
         self.climbing = False
 
-        self.last_direction = 0
+        self.last_direction = 1
 
         SmartDashboard.putNumber("climbing acc limit", config.climbing_pivot_acc_limit)
 

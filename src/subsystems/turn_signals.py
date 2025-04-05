@@ -5,6 +5,7 @@ from wpilib import Relay
 
 from subsystems.manipulator_controller import ManipulatorController
 from subsystems.claw import Claw
+from utils import time_f
 
 
 class TurnSignals(Subsystem):
@@ -23,6 +24,7 @@ class TurnSignals(Subsystem):
         self.flash_side = 0
         self.should_turn_signal = True
 
+    @time_f("periodic turn signals")
     def periodic(self):
         if self.manip_controller.stalk_selection is not None and self.claw.has_coral():
             self.flash_side = -1 if self.manip_controller.stalk_selection % 2 else 1
