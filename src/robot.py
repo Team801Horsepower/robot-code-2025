@@ -77,6 +77,9 @@ class Robot(wpilib.TimedRobot):
 
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
+        self.auto_cmd = self.generate_auto(False)
+        self.left_start = False
+        self.last_left_start = False
 
         SmartDashboard.putNumber(
             "new pivot target",
@@ -107,8 +110,6 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("align threshold", 1.2)
 
         SmartDashboard.putBoolean("start auto on left", False)
-
-        SmartDashboard.putString("morse message", "801!")
 
     @time_f("periodic robot")
     def robotPeriodic(self):
@@ -236,7 +237,10 @@ class Robot(wpilib.TimedRobot):
         pass
 
     def disabledPeriodic(self):
-        pass
+        self.left_start = SmartDashboard.getBoolean("start auto on left", False)
+        if self.left_start != self.last_left_start:
+            self.auto_cmd = self.generate_auto(self.left_start)
+        self.last_left_start = self.left_start
 
     def disabledExit(self):
         pass
@@ -248,10 +252,8 @@ class Robot(wpilib.TimedRobot):
         self.periscope.arm.pivot.has_flipped_middle_finger = False
         self.periscope.arm.set_target(config.transit_setpoint)
 
-        left_start = SmartDashboard.getBoolean("start auto on left", False)
-
         start_y = 0.5
-        if left_start:
+        if self.left_start:
             start_y = config.field_width - start_y
         self.drive.odometry.reset(
             Pose2d(
@@ -260,63 +262,11 @@ class Robot(wpilib.TimedRobot):
             )
         )
 
-        g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
-
-        if left_start:
-            cmds = [
-                s(3, 3),
-                g(True),
-                s(4, 3),
-                g(True),
-                s(5, 3),
-            ]
-        else:
-            cmds = [
-                s(10, 3),
-                g(False),
-                s(9, 3),
-                g(False),
-                s(8, 3),
-            ]
-
-        # cmds = [
-        #     # s(11, 3),
-        #     s(11, 2),
-        #     g(False),
-        #     # s(8, 3),
-        #     s(9, 2),
-        #     g(False),
-        #     s(8, 2),
-        # ]
-
-        # cmds = [
-        #     s(2, 3),
-        #     g(True),
-        #     s(5, 3),
-        #     g(True),
-        #     s(4, 3),
-        # ]
-
-        # cmds = [
-        #     s(11, 3),
-        #     g(False),
-        #     s(8, 3),
-        #     g(False),
-        #     s(11, 2),
-        #     g(False),
-        #     s(8, 2),
-        #     g(False),
-        #     s(11, 1),
-        #     g(False),
-        #     s(8, 1),
-        # ]
         def log_time():
             auto_took = time.time() - self.auto_start_time
             SmartDashboard.putNumber("auto took", auto_took)
 
-        self.scheduler.schedule(
-            reduce(Command.andThen, cmds).andThen(InstantCommand(log_time))
-        )
+        self.scheduler.schedule(self.auto_cmd.andThen(InstantCommand(log_time)))
 
     @time_f("periodic autonomous")
     def autonomousPeriodic(self):
@@ -587,9 +537,62 @@ class Robot(wpilib.TimedRobot):
         self.turn_signals.should_turn_signal = False
         return cmd
 
+    def generate_auto(self, left_start):
+        g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
+
+        if left_start:
+            cmds = [
+                s(3, 3),
+                g(True),
+                s(4, 3),
+                g(True),
+                s(5, 3),
+            ]
+        else:
+            cmds = [
+                s(10, 3),
+                g(False),
+                s(9, 3),
+                g(False),
+                s(8, 3),
+            ]
+
+        # cmds = [
+        #     # s(11, 3),
+        #     s(11, 2),
+        #     g(False),
+        #     # s(8, 3),
+        #     s(9, 2),
+        #     g(False),
+        #     s(8, 2),
+        # ]
+
+        # cmds = [
+        #     s(2, 3),
+        #     g(True),
+        #     s(5, 3),
+        #     g(True),
+        #     s(4, 3),
+        # ]
+
+        # cmds = [
+        #     s(11, 3),
+        #     g(False),
+        #     s(8, 3),
+        #     g(False),
+        #     s(11, 2),
+        #     g(False),
+        #     s(8, 2),
+        #     g(False),
+        #     s(11, 1),
+        #     g(False),
+        #     s(8, 1),
+        # ]
+        return reduce(Command.andThen, cmds)
+
 
 if __name__ == "__main__":
-    pid = getpid() # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
+    pid = getpid()  # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
     system(f"sudo renice -20 -p {pid}")
 
     wpilib.run(Robot)
