@@ -36,6 +36,7 @@ class Pivot(Subsystem):
             # Alternate inverting for correct rotation, positive is up
             motor_config.inverted(i % 2 == 0)
             motor_config.closedLoop.pid(0.01, 0, 0)
+            motor_config.smartCurrentLimit(95)
             motor.configure(
                 motor_config,
                 SparkFlex.ResetMode.kResetSafeParameters,
@@ -76,6 +77,7 @@ class Pivot(Subsystem):
 
         self.has_flipped_middle_finger = False
         self.climbing = False
+        self.climbed = False
 
         self.last_direction = 1
 
@@ -123,6 +125,11 @@ class Pivot(Subsystem):
             "pivot current", self.pivot_motors[0].getOutputCurrent()
         )
 
+        for i in range(4):
+            SmartDashboard.putNumber(
+                f"pivot {i} current", self.pivot_motors[i].getOutputCurrent()
+            )
+
     def target_target_angle(self, target: float):
         self.has_flipped_middle_finger |= self.get_angle() >= config.middle_finger_angle
         if not self.has_flipped_middle_finger:
@@ -132,12 +139,15 @@ class Pivot(Subsystem):
         climb_pid_output = self.climb_theta_pid.calculate(self.get_angle(), target)
 
         if self.climbing:
-            pid_output = climb_pid_output
-            if self.get_angle() < config.climb_power_increase_angle:
-                pid_output *= config.climb_power_mult_when_low
+            if self.climbed:
+                self.set_power(0)
             else:
-                pid_output *= config.climb_power_mult
-            self.set_power(pid_output)
+                pid_output = climb_pid_output
+                if self.get_angle() < config.climb_power_increase_angle:
+                    pid_output *= config.climb_power_mult_when_low
+                else:
+                    pid_output *= config.climb_power_mult
+                self.set_power(pid_output)
             return
 
         pid_output = normal_pid_output

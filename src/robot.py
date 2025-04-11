@@ -388,7 +388,10 @@ class Robot(wpilib.TimedRobot):
         if self.driver_controller.getAButtonPressed():
             self.periscope.arm.set_target(config.transit_setpoint)
         elif self.driver_controller.getRightStickButtonPressed():
-            self.periscope.arm.set_target(config.source_setpoint)
+            if self.periscope.arm.pivot.climbing:
+                self.periscope.arm.pivot.climbed ^= True
+            else:
+                self.periscope.arm.set_target(config.source_setpoint)
         elif self.driver_controller.getYButtonPressed():
             self.periscope.arm.set_target(
                 Transform2d(
@@ -465,9 +468,10 @@ class Robot(wpilib.TimedRobot):
             self.periscope.claw.set(0)
 
             self.periscope.climber.climb(
-                max(
-                    self.driver_controller.getLeftTriggerAxis(),
-                    self.driver_controller.getRightTriggerAxis(),
+                0.5
+                * (
+                    self.driver_controller.getRightTriggerAxis()
+                    - self.driver_controller.getLeftTriggerAxis()
                 )
             )
         else:
@@ -589,7 +593,9 @@ class Robot(wpilib.TimedRobot):
 
 
 if __name__ == "__main__":
-    pid = getpid() # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
+    pid = (
+        getpid()
+    )  # IMPORTANT: this is a process ID, not a Proportional Integral Derivative controller
     system(f"sudo renice -20 -p {pid}")
 
     wpilib.run(Robot)
