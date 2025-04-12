@@ -77,8 +77,10 @@ claw_motor_id = 51
 claw_beam_break_id = 0
 
 # -- Climber --
-
 climb_motor_id = 60
+cage_current_threshold = 48 # TODO: Set threshold and multipliers to optimal values (current vals work okay)
+current_multiplier = 1
+input_multiplier = 3
 
 # -- Arm --
 
