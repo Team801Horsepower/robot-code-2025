@@ -49,7 +49,7 @@ class Arm(Subsystem):
         if self.real_target is not None:
             self.pivot.target_angle = self.real_target[0]
             self.elevator.target_extension = self.real_target[1]
-            self.wrist.target_angle = self.real_target[2]
+            self.wrist.set_target(self.real_target[2])
 
     def at_target(self) -> bool:
         return (

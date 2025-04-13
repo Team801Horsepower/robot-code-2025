@@ -2,7 +2,7 @@ from commands2 import Command
 from wpimath.geometry import Pose2d, Transform2d, Rotation2d, Translation2d
 from wpimath.controller import PIDController
 from wpilib import SmartDashboard
-from math import pi, sqrt
+from math import pi, sqrt, inf
 import time
 
 from subsystems.drive import Drive
@@ -18,12 +18,14 @@ class DriveToPose(Command):
         speed: float = config.auto_drive_speed,
         turn_speed: float = config.auto_turn_speed,
         passthrough: float = 0,
+        heading_pt: float = inf,
     ):
         self.target = target
         self.drive = drive
         self.speed = speed
         self.turn_speed = turn_speed
         self.passthrough = passthrough
+        self.heading_pt = heading_pt
 
         self.x_pid = PIDController(8.0, 0, 0)
         self.y_pid = PIDController(8.0, 0, 0)
@@ -96,18 +98,23 @@ class DriveToPose(Command):
             self.slow_time = now
 
         error = (self.target.translation() - current_pose.translation()).norm()
+        heading_error = abs(
+            self.target.rotation().radians() - current_pose.rotation().radians()
+        )
+
+        heading_good = abs(omega) < self.theta_tolerance
 
         slow_time_to_stop = 0.5
         # slow_time_to_stop = 3
         if (
-            now - self.slow_time > slow_time_to_stop
-            or (
-                drive_vel.norm() < self.vel_tolerance
-                and abs(omega) < self.theta_tolerance
+            (
+                pt_triggered := error < self.passthrough
+                and heading_error < self.heading_pt
             )
-            or error < self.passthrough
+            or now - self.slow_time > slow_time_to_stop
+            or (drive_vel.norm() < self.vel_tolerance and heading_good)
         ):
-            if error >= self.passthrough:
+            if not pt_triggered:
                 self.drive.drive(Transform2d())
             self.finished = True
 

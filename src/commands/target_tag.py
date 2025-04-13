@@ -33,6 +33,9 @@ class TargetTag(Command):
         # P value with which to attempt to bound the rotation speed to keep the tag in frame
         self.camera_bound_p = 15.0
 
+        self.sum_threshold = units.degreesToRadians(1.2)
+        self.diff_threshold = units.degreesToRadians(1.2)
+
     @property
     @abstractmethod
     def drive(self) -> Drive:
@@ -181,15 +184,15 @@ class TargetTag(Command):
             # SmartDashboard.putNumber("omega max", omega_max)
             # omega = clamp(omega_min, omega_max, omega)
 
-            threshold = SmartDashboard.getNumber("align threshold", 1.1)
-
-            sum_within_threshold = abs(
-                left_param + right_param - (self.left_target + self.right_target)
-            ) < units.degreesToRadians(threshold)
+            sum_within_threshold = (
+                abs(left_param + right_param - (self.left_target + self.right_target))
+                < self.sum_threshold
+            )
             # ) < units.degreesToRadians(1.5)
-            diff_within_threshold = abs(
-                left_param - right_param - (self.left_target - self.right_target)
-            ) < units.degreesToRadians(threshold)
+            diff_within_threshold = (
+                abs(left_param - right_param - (self.left_target - self.right_target))
+                < self.diff_threshold
+            )
             # ) < units.degreesToRadians(1.5)
 
             SmartDashboard.putBoolean("tt sum within threshold", sum_within_threshold)

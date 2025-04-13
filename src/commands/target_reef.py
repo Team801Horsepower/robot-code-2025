@@ -34,6 +34,9 @@ class TargetReef(TargetTag):
 
         super().__init__()
 
+        if algae:
+            self.diff_threshold = units.degreesToRadians(8)
+
     @property
     def drive(self) -> Drive:
         return self.drive_

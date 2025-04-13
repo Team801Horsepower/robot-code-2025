@@ -104,7 +104,6 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("reef approach D", 0.0)
         SmartDashboard.putNumber("reef strafe D", 0.0)
         SmartDashboard.putNumber("reef align speed", 4.0)
-        SmartDashboard.putNumber("align threshold", 1.2)
 
         SmartDashboard.putBoolean("start auto on left", False)
 
@@ -248,68 +247,99 @@ class Robot(wpilib.TimedRobot):
         self.periscope.arm.pivot.has_flipped_middle_finger = False
         self.periscope.arm.set_target(config.transit_setpoint)
 
-        left_start = SmartDashboard.getBoolean("start auto on left", False)
+        # left_start = SmartDashboard.getBoolean("start auto on left", False)
 
-        start_y = 0.5
-        if left_start:
-            start_y = config.field_width - start_y
+        # start_y = 0.5
+        # if left_start:
+        #     start_y = config.field_width - start_y
+        # self.drive.odometry.reset(
+        #     Pose2d(
+        #         config.flip_red(Translation2d(7.17, start_y)),
+        #         Rotation2d(pi if config.is_red() else 0),
+        #     )
+        # )
+
+        # self.drive.odometry.reset(
+        #     Pose2d(
+        #         config.flip_red(Translation2d(7.17, config.field_width / 2)),
+        #         Rotation2d(0 if config.is_red() else pi),
+        #     )
+        # )
+
         self.drive.odometry.reset(
-            Pose2d(
-                config.flip_red(Translation2d(7.17, start_y)),
-                Rotation2d(pi if config.is_red() else 0),
+            config.flip_red_pose(
+                Pose2d(
+                    7.17,
+                    config.field_width / 2,
+                    pi,
+                )
             )
         )
 
-        g, s = make_auto_methods(self.drive, self.vision, self.periscope, self.graph)
+        g, s, a, sh, dtp, arm = make_auto_methods(
+            self.drive, self.vision, self.periscope, self.graph
+        )
 
-        if left_start:
-            cmds = [
-                s(3, 3),
-                g(True),
-                s(4, 3),
-                g(True),
-                s(5, 3),
-            ]
-        else:
-            cmds = [
-                s(10, 3),
-                g(False),
-                s(9, 3),
-                g(False),
-                s(8, 3),
-            ]
+        # if left_start:
+        #     cmds = [
+        #         s(3, 3),
+        #         g(True),
+        #         s(4, 3),
+        #         g(True),
+        #         s(5, 3),
+        #     ]
+        # else:
+        #     cmds = [
+        #         s(10, 3),
+        #         g(False),
+        #         s(9, 3),
+        #         g(False),
+        #         s(8, 3),
+        #     ]
 
-        # cmds = [
-        #     # s(11, 3),
-        #     s(11, 2),
-        #     g(False),
-        #     # s(8, 3),
-        #     s(9, 2),
-        #     g(False),
-        #     s(8, 2),
-        # ]
+        cmds = [
+            s(0, 3),
+            sh(Transform2d(0.65, 0, 0), passthrough=0.4),
+            a(0),
+            arm(config.processor_setpoint),
+            # dtp(
+            #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
+            #     passthrough=0.1,
+            #     heading_pt=units.degreesToRadians(10),
+            # ),
+            dtp(
+                config.flip_red_pose(
+                    Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
+                ),
+                passthrough=0.1,
+                heading_pt=units.degreesToRadians(10),
+            ),
+            InstantCommand(lambda: self.drive.drive(Transform2d())),
+            InstantCommand(lambda: self.periscope.claw.set(-1))
+            .andThen(WaitCommand(0.4))
+            .andThen(InstantCommand(lambda: self.periscope.claw.set(0))),
+            arm(config.transit_setpoint),
+            sh(Transform2d(0.5, 0, 0), passthrough=0.3),
+            a(5),
+            arm(config.processor_setpoint),
+            # dtp(
+            #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
+            #     passthrough=0.1,
+            #     heading_pt=units.degreesToRadians(10),
+            # ),
+            dtp(
+                config.flip_red_pose(
+                    Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
+                ),
+                passthrough=0.1,
+                heading_pt=units.degreesToRadians(10),
+            ),
+            InstantCommand(lambda: self.drive.drive(Transform2d())),
+            InstantCommand(lambda: self.periscope.claw.set(-1))
+            .andThen(WaitCommand(1))
+            .andThen(InstantCommand(lambda: self.periscope.claw.set(0))),
+        ]
 
-        # cmds = [
-        #     s(2, 3),
-        #     g(True),
-        #     s(5, 3),
-        #     g(True),
-        #     s(4, 3),
-        # ]
-
-        # cmds = [
-        #     s(11, 3),
-        #     g(False),
-        #     s(8, 3),
-        #     g(False),
-        #     s(11, 2),
-        #     g(False),
-        #     s(8, 2),
-        #     g(False),
-        #     s(11, 1),
-        #     g(False),
-        #     s(8, 1),
-        # ]
         def log_time():
             auto_took = time.time() - self.auto_start_time
             SmartDashboard.putNumber("auto took", auto_took)
@@ -388,16 +418,18 @@ class Robot(wpilib.TimedRobot):
         if self.driver_controller.getAButtonPressed():
             self.periscope.arm.set_target(config.transit_setpoint)
         elif self.driver_controller.getRightStickButtonPressed():
+            self.periscope.arm.set_target(config.source_setpoint)
+        elif self.driver_controller.getYButtonPressed():
             if self.periscope.arm.pivot.climbing:
                 self.periscope.arm.pivot.climbed ^= True
             else:
-                self.periscope.arm.set_target(config.source_setpoint)
-        elif self.driver_controller.getYButtonPressed():
-            self.periscope.arm.set_target(
-                Transform2d(
-                    config.ik_neutral_x, config.ik_neutral_y, config.ik_neutral_wrist
+                self.periscope.arm.set_target(
+                    Transform2d(
+                        config.ik_neutral_x,
+                        config.ik_neutral_y,
+                        config.ik_neutral_wrist,
+                    )
                 )
-            )
         elif self.driver_controller.getRightBumperButtonPressed():
             self.periscope.arm.set_target(self.manip_controller.arm_setpoint)
         elif (
@@ -514,7 +546,7 @@ class Robot(wpilib.TimedRobot):
 
     def testPeriodic(self):
         if self.driver_controller.getAButtonPressed():
-            self.read_typed_ik_input()
+            self.read_typed_arm_input()
             # entry = list(config.elevator_dynamics_table[5])
             # entry[1] = SmartDashboard.getNumber("hff", 0.0065)
             # config.elevator_dynamics_table[5] = tuple(entry)

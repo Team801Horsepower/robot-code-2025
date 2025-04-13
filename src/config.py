@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 from wpimath import units
-from wpimath.geometry import Translation2d, Transform2d
+from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 from wpilib import DriverStation
 from os import path
 from math import pi
@@ -21,6 +21,22 @@ def is_red() -> bool:
 
 def flip_red(pos: Translation2d) -> Translation2d:
     return Translation2d(field_length, field_width) - pos if is_red() else pos
+
+
+def flip_red_pose(pose: Pose2d) -> Pose2d:
+    return Pose2d(
+        flip_red(pose.translation()),
+        pose.rotation().rotateBy(Rotation2d.fromDegrees(180))
+        if is_red()
+        else pose.rotation(),
+    )
+
+
+def flip_red_transform(transform: Transform2d) -> Transform2d:
+    if is_red():
+        return Transform2d(-transform.translation(), transform.rotation())
+    else:
+        return transform
 
 
 code_path = path.dirname(__file__) + "/"
@@ -199,7 +215,11 @@ wrist_passthrough_min_extension = 1.8
 
 # wrist_gear_ratio = 62.5 * 2 * pi
 # Weird measured thing; TODO: find out why
-wrist_gear_ratio = 11.45
+# wrist_gear_ratio = 11.45
+# wrist_gear_ratio = 62.5
+# wrist_gear_ratio = 104.0309
+# wrist_gear_ratio = 65.625
+wrist_gear_ratio = 71.664
 
 # -- Setpoints --
 
