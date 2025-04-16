@@ -18,6 +18,7 @@ from subsystems import drive, periscope, vision, manipulator_controller, turn_si
 from commands.approach_reef import ApproachReef
 from commands.approach_hps import ApproachHPS
 from commands.target_reef import TargetReef
+from commands.grab_algae import GrabAlgae
 from commands.continuous import Continuous
 
 from utils.graph import Graph
@@ -454,26 +455,25 @@ class Robot(wpilib.TimedRobot):
                 self.target_align_cmd.cancel()
 
             if self.manip_controller.disable_pathfinding:
-                self.target_align_cmd = Continuous(
-                    TargetReef(
-                        self.drive,
-                        self.vision,
-                        self.manip_controller.stalk_selection,
-                        self.manip_controller.reef_algae_selected,
-                    )
+                cmd = TargetReef(
+                    self.drive,
+                    self.vision,
+                    self.manip_controller.stalk_selection,
+                    self.manip_controller.reef_algae_selected,
                 )
             else:
-                self.target_align_cmd = Continuous(
-                    ApproachReef(
-                        self.drive,
-                        self.vision,
-                        self.periscope.arm,
-                        self.graph,
-                        self.manip_controller.stalk_selection,
-                        self.manip_controller.target_level or 0,
-                        self.manip_controller.reef_algae_selected,
-                    )
+                cmd = ApproachReef(
+                    self.drive,
+                    self.vision,
+                    self.periscope.arm,
+                    self.graph,
+                    self.manip_controller.stalk_selection,
+                    self.manip_controller.target_level or 1,
+                    self.manip_controller.reef_algae_selected,
                 )
+            if self.manip_controller.reef_algae_selected:
+                cmd = cmd.andThen(GrabAlgae(self.drive, self.periscope.claw))
+            self.target_align_cmd = Continuous(cmd)
 
             self.scheduler.schedule(self.target_align_cmd)
         elif not self.manip_controller.climb_mode and (
@@ -525,10 +525,11 @@ class Robot(wpilib.TimedRobot):
 
             if not (
                 self.target_align_cmd is not None
-                and isinstance(self.target_align_cmd.inner, ApproachHPS)
+                and (
+                    isinstance(self.target_align_cmd.inner, ApproachHPS)
+                    or self.manip_controller.reef_algae_selected
+                )
                 and self.target_align_cmd.isScheduled()
-                # self.target_align_cmd is not None
-                # and self.target_align_cmd.isScheduled()
             ):
                 claw_power = (
                     self.driver_controller.getLeftTriggerAxis()
