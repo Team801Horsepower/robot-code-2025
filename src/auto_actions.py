@@ -1,6 +1,6 @@
 from commands2 import Command, InstantCommand, WaitCommand
 from wpimath.geometry import Pose2d, Transform2d
-from typing import Callable, Tuple, List
+from typing import Callable, Tuple
 from wpimath import units
 from functools import reduce
 from math import pi, inf
@@ -41,6 +41,7 @@ def make_auto_methods(
     Callable[..., Command],
     Callable[..., Command],
     Callable[[Transform2d | Tuple[float, float, float]], Command],
+    Callable[[Pose2d], Command],
 ]:
     def g(left_hps: bool):
         return ApproachHPS(drive, vision, periscope, graph, left_hps).andThen(
@@ -78,19 +79,29 @@ def make_auto_methods(
     def arm(setpoint: Transform2d | Tuple[float, float, float]):
         return InstantCommand(lambda: periscope.arm.set_target(setpoint))
 
-    return (g, s, a, sh, dtp, arm)
+    def start_at(pose: Pose2d):
+        return InstantCommand(lambda: drive.odometry.reset(pose))
+
+    return (g, s, a, sh, dtp, arm, start_at)
 
 
 class Autos:
     def __init__(
         self, drive: Drive, vision: Vision, periscope: Periscope, graph: Graph
     ):
-        g, s, a, sh, dtp, arm = make_auto_methods(drive, vision, periscope, graph)
+        g, s, a, sh, dtp, arm, start_at = make_auto_methods(
+            drive, vision, periscope, graph
+        )
 
         def auto(*cmds: Command) -> Command:
             return reduce(Command.andThen, cmds)
 
+        right_y = 0.5
+        left_y = config.field_width - right_y
+        center_y = config.field_width / 2
+
         self.left = auto(
+            start_at(config.flip_red_pose(Pose2d(7.17, left_y, 0))),
             s(3, 3),
             g(True),
             s(4, 3),
@@ -99,6 +110,7 @@ class Autos:
         )
 
         self.right = auto(
+            start_at(config.flip_red_pose(Pose2d(7.17, right_y, 0))),
             s(10, 3),
             g(False),
             s(9, 3),
@@ -107,6 +119,7 @@ class Autos:
         )
 
         self.center = auto(
+            start_at(config.flip_red_pose(Pose2d(7.17, center_y, pi))),
             s(0, 3),
             sh(Transform2d(0.65, 0, 0), passthrough=0.4),
             a(0),

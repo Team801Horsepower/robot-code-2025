@@ -3,7 +3,7 @@
 from os import getpid, system
 
 import wpilib
-from wpilib import SmartDashboard, DataLogManager
+from wpilib import SmartDashboard, DataLogManager, SendableChooser
 from wpilib.interfaces import GenericHID
 from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
 from commands2 import CommandScheduler, Command, InstantCommand, WaitCommand
@@ -23,7 +23,7 @@ from commands.continuous import Continuous
 from utils.graph import Graph
 from utils import time_f, letter_to_morse
 
-from auto_actions import make_auto_methods
+from auto_actions import make_auto_methods, Autos
 
 
 class Robot(wpilib.TimedRobot):
@@ -78,6 +78,14 @@ class Robot(wpilib.TimedRobot):
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
 
+        self.auto_red = config.is_red()
+        self.autos = Autos(self.drive, self.vision, self.periscope, self.graph)
+        self.auto_chooser = SendableChooser()
+        self.auto_chooser.setDefaultOption("center", self.autos.center)
+        self.auto_chooser.addOption("left", self.autos.left)
+        self.auto_chooser.addOption("right", self.autos.right)
+        SmartDashboard.putData("auto select", self.auto_chooser)
+
         SmartDashboard.putNumber(
             "new pivot target",
             units.radiansToDegrees(self.periscope.arm.pivot.target_angle),
@@ -105,7 +113,7 @@ class Robot(wpilib.TimedRobot):
         SmartDashboard.putNumber("reef strafe D", 0.0)
         SmartDashboard.putNumber("reef align speed", 4.0)
 
-        SmartDashboard.putBoolean("start auto on left", False)
+        # SmartDashboard.putBoolean("start auto on left", False)
 
         SmartDashboard.putString("morse message", "801!")
 
@@ -266,19 +274,19 @@ class Robot(wpilib.TimedRobot):
         #     )
         # )
 
-        self.drive.odometry.reset(
-            config.flip_red_pose(
-                Pose2d(
-                    7.17,
-                    config.field_width / 2,
-                    pi,
-                )
-            )
-        )
+        # self.drive.odometry.reset(
+        #     config.flip_red_pose(
+        #         Pose2d(
+        #             7.17,
+        #             config.field_width / 2,
+        #             pi,
+        #         )
+        #     )
+        # )
 
-        g, s, a, sh, dtp, arm = make_auto_methods(
-            self.drive, self.vision, self.periscope, self.graph
-        )
+        # g, s, a, sh, dtp, arm = make_auto_methods(
+        #     self.drive, self.vision, self.periscope, self.graph
+        # )
 
         # if left_start:
         #     cmds = [
@@ -297,56 +305,60 @@ class Robot(wpilib.TimedRobot):
         #         s(8, 3),
         #     ]
 
-        cmds = [
-            s(0, 3),
-            sh(Transform2d(0.65, 0, 0), passthrough=0.4),
-            a(0),
-            arm(config.processor_setpoint),
-            # dtp(
-            #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
-            #     passthrough=0.1,
-            #     heading_pt=units.degreesToRadians(10),
-            # ),
-            dtp(
-                config.flip_red_pose(
-                    Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
-                ),
-                passthrough=0.1,
-                heading_pt=units.degreesToRadians(10),
-            ),
-            InstantCommand(lambda: self.drive.drive(Transform2d())),
-            InstantCommand(lambda: self.periscope.claw.set(-1))
-            .andThen(WaitCommand(0.4))
-            .andThen(InstantCommand(lambda: self.periscope.claw.set(0))),
-            arm(config.transit_setpoint),
-            sh(Transform2d(0.5, 0, 0), passthrough=0.3),
-            a(5),
-            arm(config.processor_setpoint),
-            # dtp(
-            #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
-            #     passthrough=0.1,
-            #     heading_pt=units.degreesToRadians(10),
-            # ),
-            dtp(
-                config.flip_red_pose(
-                    Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
-                ),
-                passthrough=0.1,
-                heading_pt=units.degreesToRadians(10),
-            ),
-            InstantCommand(lambda: self.drive.drive(Transform2d())),
-            InstantCommand(lambda: self.periscope.claw.set(-1))
-            .andThen(WaitCommand(1))
-            .andThen(InstantCommand(lambda: self.periscope.claw.set(0))),
-        ]
+        # cmds = [
+        #     s(0, 3),
+        #     sh(Transform2d(0.65, 0, 0), passthrough=0.4),
+        #     a(0),
+        #     arm(config.processor_setpoint),
+        #     # dtp(
+        #     #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
+        #     #     passthrough=0.1,
+        #     #     heading_pt=units.degreesToRadians(10),
+        #     # ),
+        #     dtp(
+        #         config.flip_red_pose(
+        #             Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
+        #         ),
+        #         passthrough=0.1,
+        #         heading_pt=units.degreesToRadians(10),
+        #     ),
+        #     InstantCommand(lambda: self.drive.drive(Transform2d())),
+        #     InstantCommand(lambda: self.periscope.claw.set(-1))
+        #     .andThen(WaitCommand(0.4))
+        #     .andThen(InstantCommand(lambda: self.periscope.claw.set(0))),
+        #     arm(config.transit_setpoint),
+        #     sh(Transform2d(0.5, 0, 0), passthrough=0.3),
+        #     a(5),
+        #     arm(config.processor_setpoint),
+        #     # dtp(
+        #     #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
+        #     #     passthrough=0.1,
+        #     #     heading_pt=units.degreesToRadians(10),
+        #     # ),
+        #     dtp(
+        #         config.flip_red_pose(
+        #             Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
+        #         ),
+        #         passthrough=0.1,
+        #         heading_pt=units.degreesToRadians(10),
+        #     ),
+        #     InstantCommand(lambda: self.drive.drive(Transform2d())),
+        #     InstantCommand(lambda: self.periscope.claw.set(-1))
+        #     .andThen(WaitCommand(1))
+        #     .andThen(InstantCommand(lambda: self.periscope.claw.set(0))),
+        # ]
+
+        auto_cmd = self.auto_chooser.getSelected()
 
         def log_time():
             auto_took = time.time() - self.auto_start_time
             SmartDashboard.putNumber("auto took", auto_took)
 
-        self.scheduler.schedule(
-            reduce(Command.andThen, cmds).andThen(InstantCommand(log_time))
-        )
+        # self.scheduler.schedule(
+        #     reduce(Command.andThen, cmds).andThen(InstantCommand(log_time))
+        # )
+
+        self.scheduler.schedule(auto_cmd.andThen(InstantCommand(log_time)))
 
     @time_f("periodic autonomous")
     def autonomousPeriodic(self):
