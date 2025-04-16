@@ -100,7 +100,10 @@ class Autos:
         left_y = config.field_width - right_y
         center_y = config.field_width / 2
 
+        color = "red" if config.is_red() else "blue"
+
         self.left = auto(
+            InstantCommand(lambda: print(f"running {color} left auto")),
             start_at(config.flip_red_pose(Pose2d(7.17, left_y, 0))),
             s(3, 3),
             g(True),
@@ -110,6 +113,7 @@ class Autos:
         )
 
         self.right = auto(
+            InstantCommand(lambda: print(f"running {color} right auto")),
             start_at(config.flip_red_pose(Pose2d(7.17, right_y, 0))),
             s(10, 3),
             g(False),
@@ -119,6 +123,7 @@ class Autos:
         )
 
         self.center = auto(
+            InstantCommand(lambda: print(f"running {color} center auto")),
             start_at(config.flip_red_pose(Pose2d(7.17, center_y, pi))),
             s(0, 3),
             sh(Transform2d(0.65, 0, 0), passthrough=0.4),
