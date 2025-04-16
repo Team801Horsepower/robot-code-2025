@@ -87,70 +87,64 @@ class Autos:
     ):
         g, s, a, sh, dtp, arm = make_auto_methods(drive, vision, periscope, graph)
 
-        def auto(cmds: List[Command]) -> Command:
+        def auto(*cmds: Command) -> Command:
             return reduce(Command.andThen, cmds)
 
         self.left = auto(
-            [
-                s(3, 3),
-                g(True),
-                s(4, 3),
-                g(True),
-                s(5, 3),
-            ]
+            s(3, 3),
+            g(True),
+            s(4, 3),
+            g(True),
+            s(5, 3),
         )
 
         self.right = auto(
-            [
-                s(10, 3),
-                g(False),
-                s(9, 3),
-                g(False),
-                s(8, 3),
-            ]
+            s(10, 3),
+            g(False),
+            s(9, 3),
+            g(False),
+            s(8, 3),
         )
 
         self.center = auto(
-            [
-                s(0, 3),
-                sh(Transform2d(0.65, 0, 0), passthrough=0.4),
-                a(0),
-                arm(config.processor_setpoint),
-                # dtp(
-                #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
-                #     passthrough=0.1,
-                #     heading_pt=units.degreesToRadians(10),
-                # ),
-                dtp(
-                    config.flip_red_pose(
-                        Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
-                    ),
-                    passthrough=0.1,
-                    heading_pt=units.degreesToRadians(10),
+            s(0, 3),
+            sh(Transform2d(0.65, 0, 0), passthrough=0.4),
+            a(0),
+            arm(config.processor_setpoint),
+            # dtp(
+            #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
+            #     passthrough=0.1,
+            #     heading_pt=units.degreesToRadians(10),
+            # ),
+            dtp(
+                config.flip_red_pose(
+                    Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
                 ),
-                InstantCommand(lambda: drive.drive(Transform2d())),
-                InstantCommand(lambda: periscope.claw.set(-1))
-                .andThen(WaitCommand(0.4))
-                .andThen(InstantCommand(lambda: periscope.claw.set(0))),
-                arm(config.transit_setpoint),
-                sh(Transform2d(0.5, 0, 0), passthrough=0.3),
-                a(5),
-                arm(config.processor_setpoint),
-                # dtp(
-                #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
-                #     passthrough=0.1,
-                #     heading_pt=units.degreesToRadians(10),
-                # ),
-                dtp(
-                    config.flip_red_pose(
-                        Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
-                    ),
-                    passthrough=0.1,
-                    heading_pt=units.degreesToRadians(10),
+                passthrough=0.1,
+                heading_pt=units.degreesToRadians(10),
+            ),
+            InstantCommand(lambda: drive.drive(Transform2d())),
+            InstantCommand(lambda: periscope.claw.set(-1))
+            .andThen(WaitCommand(0.4))
+            .andThen(InstantCommand(lambda: periscope.claw.set(0))),
+            arm(config.transit_setpoint),
+            sh(Transform2d(0.5, 0, 0), passthrough=0.3),
+            a(5),
+            arm(config.processor_setpoint),
+            # dtp(
+            #     config.flip_red_pose(Pose2d(5.77, 0.85, 3 * pi / 2)),
+            #     passthrough=0.1,
+            #     heading_pt=units.degreesToRadians(10),
+            # ),
+            dtp(
+                config.flip_red_pose(
+                    Pose2d(5.44, 0.85, 3 * pi / 2 + units.degreesToRadians(8.01))
                 ),
-                InstantCommand(lambda: drive.drive(Transform2d())),
-                InstantCommand(lambda: periscope.claw.set(-1))
-                .andThen(WaitCommand(1))
-                .andThen(InstantCommand(lambda: periscope.claw.set(0))),
-            ]
+                passthrough=0.1,
+                heading_pt=units.degreesToRadians(10),
+            ),
+            InstantCommand(lambda: drive.drive(Transform2d())),
+            InstantCommand(lambda: periscope.claw.set(-1))
+            .andThen(WaitCommand(1))
+            .andThen(InstantCommand(lambda: periscope.claw.set(0))),
         )
