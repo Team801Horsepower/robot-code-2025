@@ -78,13 +78,10 @@ class Robot(wpilib.TimedRobot):
         graph_path = config.code_path + "graph.json"
         self.graph = Graph(graph_path)
 
-        self.auto_red = config.is_red()
-        self.autos = Autos(self.drive, self.vision, self.periscope, self.graph)
-        self.auto_chooser = SendableChooser()
-        self.auto_chooser.setDefaultOption("center", self.autos.center)
-        self.auto_chooser.addOption("left", self.autos.left)
-        self.auto_chooser.addOption("right", self.autos.right)
-        SmartDashboard.putData("auto select", self.auto_chooser)
+        SmartDashboard.putString("auto color", "red" if config.is_red() else "blue")
+        SmartDashboard.putBoolean("rescan auto color", False)
+
+        self.create_autos()
 
         SmartDashboard.putNumber(
             "new pivot target",
@@ -151,6 +148,11 @@ class Robot(wpilib.TimedRobot):
         config.auto_turn_speed = SmartDashboard.getNumber(
             "auto turn speed", config.auto_turn_speed
         )
+
+        if SmartDashboard.getBoolean("rescan auto color", False):
+            self.create_autos()
+            SmartDashboard.putString("auto color", "red" if config.is_red() else "blue")
+            SmartDashboard.putBoolean("rescan auto color", False)
 
         self.drive.elevator_height = self.periscope.arm.elevator.get_extension() * sin(
             self.periscope.arm.pivot.get_angle()
@@ -634,6 +636,14 @@ class Robot(wpilib.TimedRobot):
         self.scheduler.schedule(cmd := reduce(Command.andThen, led_cmds))
         self.turn_signals.should_turn_signal = False
         return cmd
+
+    def create_autos(self):
+        self.autos = Autos(self.drive, self.vision, self.periscope, self.graph)
+        self.auto_chooser = SendableChooser()
+        self.auto_chooser.setDefaultOption("center", self.autos.center)
+        self.auto_chooser.addOption("left", self.autos.left)
+        self.auto_chooser.addOption("right", self.autos.right)
+        SmartDashboard.putData("auto select", self.auto_chooser)
 
 
 if __name__ == "__main__":
