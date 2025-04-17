@@ -92,6 +92,8 @@ turn_pid = (0.5, 0, 0)
 claw_motor_id = 51
 claw_beam_break_id = 0
 
+algae_sensor_threshold = 500
+
 # -- Climber --
 
 climb_motor_id = 60

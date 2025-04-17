@@ -27,8 +27,16 @@ class Claw(Subsystem):
 
         self.limit_eject_power = False
 
+        SmartDashboard.putNumber(
+            "algae sensor threshold", config.algae_sensor_threshold
+        )
+
     @time_f("periodic claw")
     def periodic(self):
+        config.algae_sensor_threshold = SmartDashboard.getNumber(
+            "algae sensor threshold", config.algae_sensor_threshold
+        )
+
         if not self.coral_detected():
             self.coral_detected_time = None
         elif self.coral_detected_time is None:
@@ -59,7 +67,7 @@ class Claw(Subsystem):
             self.motor.set(power)
 
     def algae_detected(self) -> bool:
-        return self.algae_sensor.getValue() > 400
+        return self.algae_sensor.getValue() > config.algae_sensor_threshold
 
     def coral_detected(self) -> bool:
         return not self.coral_sensor.get()
