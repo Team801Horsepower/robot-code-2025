@@ -36,10 +36,10 @@ class DriveToPose(Command):
 
         self.finished = False
 
-        self.slow_time = time.time()
+        self.slow_time = None
 
     def initialize(self):
-        self.slow_time = time.time()
+        pass
 
     def execute(self):
         if self.finished:
@@ -95,7 +95,9 @@ class DriveToPose(Command):
         )
         now = time.time()
         if not is_slow:
-            self.slow_time = now
+            self.slow_time = None
+        elif self.slow_time is None:
+            self.slow_time = time.time()
 
         error = (self.target.translation() - current_pose.translation()).norm()
         heading_error = abs(
@@ -111,7 +113,8 @@ class DriveToPose(Command):
                 pt_triggered := error < self.passthrough
                 and heading_error < self.heading_pt
             )
-            or now - self.slow_time > slow_time_to_stop
+            or self.slow_time is not None
+            and now - self.slow_time > slow_time_to_stop
             or (drive_vel.norm() < self.vel_tolerance and heading_good)
         ):
             if not pt_triggered:
