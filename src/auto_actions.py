@@ -112,9 +112,29 @@ class Autos:
             s(5, 3),
         )
 
+        self.flipped_left = auto(
+            InstantCommand(lambda: print(f"running {color} flipped left auto")),
+            start_at(config.flip_red_pose(Pose2d(7.17, left_y, pi))),
+            s(3, 3),
+            g(True),
+            s(4, 3),
+            g(True),
+            s(5, 3),
+        )
+
         self.right = auto(
             InstantCommand(lambda: print(f"running {color} right auto")),
             start_at(config.flip_red_pose(Pose2d(7.17, right_y, 0))),
+            s(10, 3),
+            g(False),
+            s(9, 3),
+            g(False),
+            s(8, 3),
+        )
+
+        self.flipped_right = auto(
+            InstantCommand(lambda: print(f"running {color} flipped right auto")),
+            start_at(config.flip_red_pose(Pose2d(7.17, right_y, pi))),
             s(10, 3),
             g(False),
             s(9, 3),

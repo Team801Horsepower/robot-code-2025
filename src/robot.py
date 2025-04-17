@@ -644,6 +644,8 @@ class Robot(wpilib.TimedRobot):
         self.auto_chooser.setDefaultOption("center", self.autos.center)
         self.auto_chooser.addOption("left", self.autos.left)
         self.auto_chooser.addOption("right", self.autos.right)
+        self.auto_chooser.addOption("flipped left", self.autos.flipped_left)
+        self.auto_chooser.addOption("flipped right", self.autos.flipped_right)
         SmartDashboard.putData("auto select", self.auto_chooser)
 
 
