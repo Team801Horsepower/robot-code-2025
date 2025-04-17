@@ -548,6 +548,9 @@ class Robot(wpilib.TimedRobot):
             self.driver_controller.getLeftBumperButton()
             and self.target_align_cmd is not None
             and self.target_align_cmd.inner_finished()
+        ) or (
+            self.periscope.climber.cage_gathered()
+            and self.manip_controller.climb_mode
         )
         self.driver_controller.setRumble(
             GenericHID.RumbleType.kBothRumble, 1 if should_rumble else 0
