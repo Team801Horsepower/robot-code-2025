@@ -17,7 +17,7 @@ class Shift(DriveToPose):
         heading_pt: float = inf,
     ):
         self.delta = config.flip_red_transform(delta)
-        target = drive.odometry.pose() + delta
+        target = drive.odometry.pose() + self.delta
         super().__init__(target, drive, speed, turn_speed, passthrough, heading_pt)
 
     def initialize(self):
