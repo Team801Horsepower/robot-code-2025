@@ -39,7 +39,10 @@ class DriveToPose(Command):
         self.slow_time = None
 
     def initialize(self):
-        pass
+        SmartDashboard.putNumberArray(
+            "target pose",
+            [self.target.x, self.target.y, self.target.rotation().radians()],
+        )
 
     def execute(self):
         if self.finished:
