@@ -18,5 +18,5 @@ class Periscope(Subsystem):
 
     @time_f("periodic periscope")
     def periodic(self):
-        self.arm.wrist_passthrough_allowed_by_algae = not self.claw.algae_detected()
+        self.arm.wrist_passthrough_allowed_by_algae = not self.claw.has_algae()
         self.claw.limit_eject_power = self.arm.target == config.reef_setpoints[0]

@@ -166,7 +166,8 @@ class Autos:
             .andThen(WaitCommand(0.4))
             .andThen(InstantCommand(lambda: periscope.claw.set(0))),
             arm(config.transit_setpoint),
-            sh(Transform2d(0.5, 0, 0), passthrough=0.3),
+            # sh(Transform2d(0.5, 0, 0), passthrough=0.3),
+            sh(Transform2d(0, 0.5, 0), passthrough=0.3),
             a(5),
             arm(config.processor_setpoint),
             # dtp(

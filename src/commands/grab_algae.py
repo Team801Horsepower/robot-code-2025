@@ -1,5 +1,5 @@
 from commands2 import Command
-from wpimath.geometry import Transform2d, Translation2d, Rotation2d
+from wpimath.geometry import Transform2d, Translation2d, Rotation2d, Pose2d
 from functools import reduce
 import time
 
@@ -52,9 +52,15 @@ class GrabAlgae(Command):
     #         self.dtps.end(interrupted)
 
     def initialize(self):
-        self.return_pose = self.drive.odometry.pose() + Transform2d(
-            Translation2d(-0.3, 0).rotateBy(self.drive.odometry.rotation()),
-            Rotation2d(),
+        # self.return_pose = self.drive.odometry.pose() + Transform2d(
+        #     Translation2d(-0.3, 0).rotateBy(self.drive.odometry.rotation()),
+        #     Rotation2d(),
+        # )
+        cur_pose = self.drive.odometry.pose()
+        self.return_pose = Pose2d(
+            cur_pose.translation()
+            + Translation2d(-0.3, 0).rotateBy(cur_pose.rotation()),
+            cur_pose.rotation(),
         )
 
     def execute(self):

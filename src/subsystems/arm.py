@@ -34,8 +34,9 @@ class Arm(Subsystem):
         self.pivot.climbing = self.target == config.climb_lowered_setpoint
 
         self.wrist.passthrough_allowed = (
-            self.wrist_passthrough_allowed_by_algae
-            and self.elevator.get_extension() > config.wrist_passthrough_min_extension
+            # THIS WAS CAUSING THE WRIST TWITCHING
+            # self.wrist_passthrough_allowed_by_algae
+            self.elevator.get_extension() > config.wrist_passthrough_min_extension
             and self.elevator.target_extension > config.wrist_passthrough_min_extension
         )
         self.elevator.wrist_up = self.wrist.angle() > config.wrist_neutral_angle

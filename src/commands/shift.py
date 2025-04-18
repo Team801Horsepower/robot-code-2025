@@ -1,4 +1,4 @@
-from wpimath.geometry import Transform2d
+from wpimath.geometry import Transform2d, Pose2d
 from math import inf
 
 from subsystems.drive import Drive
@@ -17,9 +17,17 @@ class Shift(DriveToPose):
         heading_pt: float = inf,
     ):
         self.delta = config.flip_red_transform(delta)
-        target = drive.odometry.pose() + self.delta
+        self.drive = drive
+        target = self.make_target()
         super().__init__(target, drive, speed, turn_speed, passthrough, heading_pt)
 
     def initialize(self):
-        self.target = self.drive.odometry.pose() + self.delta
+        self.target = self.make_target()
         super().initialize()
+
+    def make_target(self) -> Pose2d:
+        cur_pose = self.drive.odometry.pose()
+        return Pose2d(
+            cur_pose.translation() + self.delta.translation(),
+            cur_pose.rotation() + self.delta.rotation(),
+        )
