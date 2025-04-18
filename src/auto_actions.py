@@ -56,7 +56,7 @@ def make_auto_methods(
     def a(face_i: int):
         return ApproachReef(
             drive, vision, periscope.arm, graph, face_i * 2, 0, True
-        ).andThen(GrabAlgae(drive, periscope.claw))
+        ).andThen(WaitCommand(3).deadlineWith(GrabAlgae(drive, periscope.claw)))
 
     def sh(
         delta: Transform2d,

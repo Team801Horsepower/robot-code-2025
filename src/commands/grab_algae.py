@@ -76,7 +76,7 @@ class GrabAlgae(Command):
         )
 
         if really_has_algae:
-            self.claw.set(0)
+            self.claw.set(0.5)
             if self.return_pose is not None:
                 if self.dtp is None:
                     self.dtp = DriveToPose(
