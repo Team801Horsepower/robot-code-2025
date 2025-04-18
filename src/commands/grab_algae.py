@@ -90,3 +90,6 @@ class GrabAlgae(Command):
 
     def isFinished(self) -> bool:
         return self.dtp is not None and self.dtp.isFinished()
+
+    def end(self, interrupted: bool):
+        self.claw.set(0)
