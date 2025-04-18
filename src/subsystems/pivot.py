@@ -86,6 +86,7 @@ class Pivot(Subsystem):
     @time_f("periodic pivot")
     def periodic(self):
         self.climbed &= self.climbing
+        self.climbed |= self.climbing and self.get_angle() < config.climb_latched_angle
 
         config.climbing_pivot_acc_limit = SmartDashboard.getNumber(
             "climbing acc limit", config.climbing_pivot_acc_limit

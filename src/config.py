@@ -183,6 +183,7 @@ climb_power_mult = 2
 climb_power_increase_angle = units.degreesToRadians(35)
 climb_power_mult_when_low = 10
 climbing_pivot_acc_limit = 2
+climb_latched_angle = units.degreesToRadians(15.5)
 
 # -- Elevator --
 

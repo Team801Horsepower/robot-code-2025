@@ -19,6 +19,7 @@ class GrabAlgae(Command):
         self.dtp = None
         self.has_algae_time = None
         self.min_has_algae_time = 0.05
+        self.start_time = None
 
     # def initialize(self):
     #     cur_pose = self.drive.odometry.pose()
@@ -63,6 +64,8 @@ class GrabAlgae(Command):
             cur_pose.rotation(),
         )
 
+        self.start_time = time.time()
+
     def execute(self):
         if self.claw.has_algae():
             if self.has_algae_time is None:
@@ -75,7 +78,11 @@ class GrabAlgae(Command):
             and time.time() - self.has_algae_time > self.min_has_algae_time
         )
 
-        if really_has_algae:
+        if (
+            really_has_algae
+            or self.start_time is not None
+            and time.time() - self.start_time > 1.1
+        ):
             self.claw.set(0.5)
             if self.return_pose is not None:
                 if self.dtp is None:

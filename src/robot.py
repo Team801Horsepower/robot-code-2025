@@ -368,7 +368,7 @@ class Robot(wpilib.TimedRobot):
         self.autolower()
 
     def autonomousExit(self):
-        pass
+        self.create_autos()
 
     @time_f("init teleop")
     def teleopInit(self):
@@ -539,18 +539,22 @@ class Robot(wpilib.TimedRobot):
 
         should_rumble = (
             (
-                self.driver_controller.getRightTriggerAxis() > 0.1
-                or self.driver_controller.getXButton()
-                or self.driver_controller.getBButton()
+                (
+                    self.driver_controller.getRightTriggerAxis() > 0.1
+                    or self.driver_controller.getXButton()
+                    or self.driver_controller.getBButton()
+                )
+                and self.periscope.claw.has_coral()
             )
-            and self.periscope.claw.has_coral()
-        ) or (
-            self.driver_controller.getLeftBumperButton()
-            and self.target_align_cmd is not None
-            and self.target_align_cmd.inner_finished()
-        ) or (
-            self.periscope.climber.cage_gathered()
-            and self.manip_controller.climb_mode
+            or (
+                self.driver_controller.getLeftBumperButton()
+                and self.target_align_cmd is not None
+                and self.target_align_cmd.inner_finished()
+            )
+            or (
+                self.periscope.climber.cage_gathered()
+                and self.manip_controller.climb_mode
+            )
         )
         self.driver_controller.setRumble(
             GenericHID.RumbleType.kBothRumble, 1 if should_rumble else 0
